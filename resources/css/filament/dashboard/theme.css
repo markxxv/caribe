@@ -1,0 +1,127 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+.fi-fo-builder-item thead {
+
+}
+
+
+span.fi-sidebar-group-label {
+    @apply
+    text-[10px]
+    font-semibold
+    text-gray-400
+    dark:text-zinc-700
+    ;
+}
+
+.fi-sidebar-header,
+.fi-sidebar-nav {
+    padding-right: 0.8rem!important;
+}
+
+.fi-sidebar-header,
+.fi-topbar > nav
+{
+    @apply
+    h-10
+    ;
+    background: transparent!important;
+    border-color: transparent!important;
+    box-shadow: none!important;
+}
+
+.fi-sidebar-item-label {
+    @apply
+    text-xs
+    ;
+}
+
+.fi-active .fi-sidebar-item-button {
+    @apply
+    bg-white
+    shadow
+    hover:bg-white
+    hover:shadow-sm
+    duration-300
+    ;
+}
+
+.fi-topbar .fi-avatar {
+    @apply
+    w-9 h-9
+    ;
+}
+
+.fi-sidebar-group-items {
+    @apply
+        -ml-2
+    ;
+}
+
+/* Sidebar */
+.fi-sidebar {
+    @apply
+        w-[175px]
+    ;
+}
+
+.fi-main {
+    @apply
+        pl-4
+    ;
+}
+
+.fi-sidebar-footer {
+    @apply
+        p-0
+        m-0
+    ;
+}
+
+.fi-sidebar-item-icon {
+    @apply
+    w-4
+    h-4
+    ;
+}
+
+.fi-breadcrumbs-item {
+    @apply
+        text-xs
+    ;
+}
+
+.fi-header-heading {
+    @apply
+        text-xl
+    ;
+}
+
+.fi-fo-builder-item-header {
+    @apply
+        text-xs
+        py-2
+        opacity-60
+    ;
+}
+
+.fi-fo-builder-item-header-label {
+    @apply
+        text-xs
+    ;
+}
+
+.fi-fo-builder-item-header .fi-icon {
+    @apply
+        w-4 h-4
+    ;
+}
+
+.fi-fo-builder-item-header {
+    @apply
+        gap-1.5
+    ;
+}

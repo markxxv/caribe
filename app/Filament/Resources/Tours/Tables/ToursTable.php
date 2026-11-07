@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Filament\Resources\Tours\Tables;
+
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+
+class ToursTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->defaultSort('id', 'desc')
+            ->columns([
+                SpatieMediaLibraryImageColumn::make('tour_cover')
+                    ->label('Обложка')
+                    ->collection('tour_cover')
+                    ->conversion('thumb')
+                    ->size(60),
+                TextColumn::make('title')
+                    ->label('Заголовок')
+                    ->searchable(),
+                IconColumn::make('active')
+                    ->boolean(),
+                IconColumn::make('active')
+                    ->label('Публ.')
+                    ->boolean(),
+                TextColumn::make('countries.title')
+                    ->label('Страны')
+                    ->badge()
+                    ->separator(', ')
+                    ->limitList(3),
+                TextColumn::make('slug')
+                    ->icon('tabler-link')
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+
+            ])
+            ->recordActions([
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+}
