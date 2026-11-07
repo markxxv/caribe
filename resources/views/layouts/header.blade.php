@@ -53,7 +53,6 @@
             <!-- Left Side -->
             <div class="w-1/3">
                 <div class="md:flex hidden justify-start items-center space-x-8 text-xs uppercase tracking-widest relative z-10">
-                    <a href="/services" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Услуги</a>
                     <a href="/tours" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                     <a href="/blog" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
                 </div>
