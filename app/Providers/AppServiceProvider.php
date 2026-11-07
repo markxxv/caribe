@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,5 +21,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('layouts.app', 'layout');
+
+        // One pagination style for all public pages using ->links().
+        Paginator::defaultView('components.ui.pagination');
+        Paginator::defaultSimpleView('components.ui.pagination');
     }
 }
