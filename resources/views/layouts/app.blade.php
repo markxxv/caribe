@@ -40,7 +40,7 @@
 @include('layouts.header')
 {{ $slot }}
 
-{{--@include('layouts.footer')--}}
+@include('layouts.footer')
 
 @vite('resources/js/app.js')
 </body>
