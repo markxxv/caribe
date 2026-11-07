@@ -100,30 +100,12 @@
                                     <x-tabler-arrow-right class="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" stroke-width="1.6"/>
                                 </a>
 
-                                <a href="/emigration"
+                                <a href="/blog"
                                    class="group inline-flex items-center gap-2.5 px-4 py-3 rounded-full
                   bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20
                   backdrop-blur-sm transition-colors">
-                                    <x-tabler-e-passport class="w-5 h-5 text-white/90" stroke-width="1.3"/>
-                                    <span class="text-xs md:text-sm uppercase tracking-[0.22em] text-white/90">Эммиграция</span>
-                                    <x-tabler-arrow-right class="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" stroke-width="1.6"/>
-                                </a>
-
-                                <a href="/real-estate"
-                                   class="group inline-flex items-center gap-2.5 px-4 py-3 rounded-full
-                  bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20
-                  backdrop-blur-sm transition-colors">
-                                    <x-tabler-home-search class="w-5 h-5 text-white/90" stroke-width="1.3"/>
-                                    <span class="text-xs md:text-sm uppercase tracking-[0.22em] text-white/90">Недвижимость</span>
-                                    <x-tabler-arrow-right class="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" stroke-width="1.6"/>
-                                </a>
-
-                                <a href="/ads"
-                                   class="group inline-flex items-center gap-2.5 px-4 py-3 rounded-full
-                  bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20
-                  backdrop-blur-sm transition-colors">
-                                    <x-tabler-speakerphone class="w-5 h-5 text-white/90" stroke-width="1.3"/>
-                                    <span class="text-xs md:text-sm uppercase tracking-[0.22em] text-white/90">Объявления</span>
+                                    <x-tabler-news class="w-5 h-5 text-white/90" stroke-width="1.3"/>
+                                    <span class="text-xs md:text-sm uppercase tracking-[0.22em] text-white/90">Новости</span>
                                     <x-tabler-arrow-right class="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" stroke-width="1.6"/>
                                 </a>
                             </div>
