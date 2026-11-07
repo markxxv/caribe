@@ -71,3 +71,13 @@
         </div>
     </div>
 </footer>
+
+{{-- Floating WhatsApp booking widget, shared by all pages through the layout. --}}
+<a href="https://wa.me/34660024093" target="_blank" rel="noopener noreferrer" aria-label="Заказать экскурсию в WhatsApp" class="group fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-[60] flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#43ad69] md:bottom-7 md:right-7 md:gap-5">
+    <span class="rounded-full bg-black px-4 py-3 text-xs font-normal text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-colors group-hover:bg-[#192b24] sm:px-5 sm:text-base">
+        Заказать экскурсию
+    </span>
+    <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#43ad69] text-white shadow-[0_12px_35px_rgba(28,112,57,0.22)] transition-transform duration-200 group-hover:scale-105 sm:size-[76px]" aria-hidden="true">
+        <x-tabler-brand-whatsapp class="size-8 sm:size-10" stroke-width="1.8" />
+    </span>
+</a>
