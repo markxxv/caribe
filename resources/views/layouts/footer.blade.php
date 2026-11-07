@@ -43,6 +43,10 @@
                 <h2 class="text-[11px] font-medium uppercase tracking-[0.2em] text-[#eccd31]">Контакты</h2>
                 <p class="mt-6 max-w-xs text-sm leading-6 text-white/55">Поможем выбрать маршрут и спланировать поездку.</p>
                 <address class="mt-6 flex flex-col gap-4 not-italic">
+                    <a href="https://t.me/elenavivas" target="_blank" rel="noopener noreferrer" class="group inline-flex items-start gap-3 text-sm leading-6 text-white/85 transition-colors hover:text-white">
+                        <x-tabler-brand-telegram class="mt-0.5 size-5 shrink-0 text-[#eccd31]" stroke-width="1.5" />
+                        <span class="group-hover:underline">@elenavivas</span>
+                    </a>
                     <a href="mailto:elena.vivas.garcia@gmail.com" class="group inline-flex items-start gap-3 text-sm leading-6 text-white/85 transition-colors hover:text-white">
                         <x-tabler-mail class="mt-0.5 size-5 shrink-0 text-[#eccd31]" stroke-width="1.5" />
                         <span class="break-all group-hover:underline">elena.vivas.garcia@gmail.com</span>

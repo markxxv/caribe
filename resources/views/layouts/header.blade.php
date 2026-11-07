@@ -108,7 +108,7 @@
                 <a href="/tours" class="text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                 <a href="/blog" class="text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
                 <a href="/about" class="text-white hover:text-gg-gold transition-colors duration-300">Обо мне</a>
-                <a href="/contacts" class="text-white hover:text-gg-gold transition-colors duration-300">Контакты</a>
+                <a href="/contact" class="text-white hover:text-gg-gold transition-colors duration-300">Контакты</a>
             </nav>
 
             <div class="pt-8 mt-8 border-t border-white/10 w-24"></div>
