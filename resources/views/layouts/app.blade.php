@@ -6,6 +6,9 @@
 
     <title>@yield('metaTitle')</title>
     <meta name="description" content="@yield('metaDescription')" />
+    @hasSection('canonicalUrl')
+        <link rel="canonical" href="@yield('canonicalUrl')" />
+    @endif
 
     <meta property="og:site_name" content="Карибские каникулы" />
     <meta property="og:type" content="article" />

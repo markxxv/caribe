@@ -1,5 +1,8 @@
-@section('metaTitle', 'Туры с гидом по Латинской Америке')
-@section('metaDescription', '')
+@section('metaTitle', $isArgentina ? 'Туры по Аргентине с русскоязычным гидом | Visita Caribe' : 'Туры с гидом по Латинской Америке | Visita Caribe')
+@section('metaDescription', $isArgentina ? 'Авторские туры и экскурсии по Аргентине с русскоязычным гидом Еленой Вивас. Буэнос-Айрес, Барилоче, Патагония и гастрономические маршруты.' : 'Авторские туры и экскурсии по Латинской Америке с русскоязычным гидом. Выберите маршрут и откройте для себя самые интересные места.')
+@if($isArgentina)
+    @section('canonicalUrl', route('tours.argentina'))
+@endif
 
 <x-layout>
     <!-- Hero Section -->
@@ -12,10 +15,10 @@
         <div class="container mx-auto px-4 md:px-8 relative z-10">
             <div class="max-w-3xl mx-auto text-center">
                 <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                    Туры по Латинской Америке
+                    {{ $isArgentina ? 'Туры по Аргентине' : 'Туры по Латинской Америке' }}
                 </h1>
                 <p class="text-xl text-gray-600 mb-8">
-                    Откройте для себя культуру, традиции и достопримечательности Латинской Америки с профессиональным гидом
+                    {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Откройте для себя культуру, традиции и достопримечательности Латинской Америки с профессиональным гидом' }}
                 </p>
 
 {{--                <!-- Search Bar -->--}}
@@ -62,7 +65,7 @@
                         >
                             <option value="all">Все страны</option>
                             @foreach($countries as $country)
-                                <option value="{{ $country->id }}" {{ request('country') == $country->id ? 'selected' : '' }}>
+                                <option value="{{ $country->id }}" {{ (string) $selectedCountryId === (string) $country->id ? 'selected' : '' }}>
                                     {{ $country->title }}
                                 </option>
                             @endforeach
@@ -89,23 +92,23 @@
                 </form>
 
                 <!-- Active Filters Display -->
-                @if(request('country') && request('country') !== 'all')
-                    <a href="{{ route('tours.index', array_filter(request()->except('country'))) }}"
+                @if($selectedCountryId !== 'all')
+                    <a href="{{ route('tours.index', array_filter(request()->except('country', 'page'))) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
-                        {{ $countries->firstWhere('id', request('country'))->title ?? '' }}
+                        {{ $countries->firstWhere('id', $selectedCountryId)->title ?? ($isArgentina ? 'Аргентина' : '') }}
                         <x-tabler-x class="w-3 h-3" />
                     </a>
                 @endif
 
                 @if(request('search'))
-                    <a href="{{ route('tours.index', array_filter(request()->except('search'))) }}"
+                    <a href="{{ route($isArgentina ? 'tours.argentina' : 'tours.index', array_filter(request()->except('search', 'country', 'page'))) }}"
                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
                         "{{ request('search') }}"
                         <x-tabler-x class="w-3 h-3" />
                     </a>
                 @endif
 
-                @if(request()->hasAny(['country', 'search']))
+                @if($selectedCountryId !== 'all' || request()->filled('search'))
                     <a href="{{ route('tours.index') }}"
                        class="text-sm text-gray-600 hover:text-emerald-600 transition-colors whitespace-nowrap">
                         Сбросить всё
@@ -202,13 +205,13 @@
                     </div>
                     <h3 class="text-2xl font-light text-gray-900 mb-2">Туров не найдено</h3>
                     <p class="text-gray-600 mb-6">
-                        @if(request()->hasAny(['country', 'search']))
+                        @if($selectedCountryId !== 'all' || request()->filled('search'))
                             Попробуйте изменить параметры поиска
                         @else
                             В данный момент нет опубликованных туров в этой категории
                         @endif
                     </p>
-                    @if(request()->hasAny(['country', 'search']))
+                    @if($selectedCountryId !== 'all' || request()->filled('search'))
                         <a href="{{ route('tours.index') }}"
                            class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors">
                             Показать все туры

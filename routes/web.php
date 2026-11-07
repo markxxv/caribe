@@ -11,6 +11,7 @@ Route::get('/', [Front::class, 'index'])->name('home');
 Route::get('/blog', [Front::class, 'blogIndex'])->name('blog.index');
 Route::get('/blog/{slug}', [Front::class, 'blogShow'])->name('blog.show');
 Route::get('/tours', [Front::class, 'toursIndex'])->name('tours.index');
+Route::get('/tours/argentina', [Front::class, 'toursArgentina'])->name('tours.argentina');
 Route::get('/tours/{slug}', [Front::class, 'toursShow'])->name('tours.show');
 
 Route::view('/services', 'services')->name('services');

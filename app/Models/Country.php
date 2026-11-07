@@ -13,4 +13,9 @@ class Country extends Model
         return $this->belongsToMany(Blog::class, 'blog_country');
     }
 
+    public function tours()
+    {
+        return $this->belongsToMany(Tour::class, 'country_tour');
+    }
+
 }
