@@ -1,0 +1,74 @@
+# Firefox Realestate Importer
+
+Расширение для Firefox (Manifest V3). Оно загружает страницу Zonaprop в браузере, получает объявления из DOM, затем последовательно открывает каждую карточку в фоновой вкладке. Данные собираются в JSON, который можно скачать или отправить в Laravel.
+
+## Установка в Firefox
+
+1. Откройте `about:debugging#/runtime/this-firefox`.
+2. Нажмите **Загрузить временное дополнение / Load Temporary Add-on**.
+3. Выберите `firefox-realestate-importer/manifest.json`.
+4. Откройте иконку дополнения и нажмите **Открыть панель во вкладке**, чтобы видеть ход длительного сбора, не закрывая панель.
+5. Вставьте URL выдачи, например `https://www.zonaprop.com.ar/casas-venta-pinamar-pagina-2.html`.
+6. Для предварительной проверки нажмите **Собрать JSON**, а затем **Скачать JSON**. Для импорта заполните endpoint и API-токен, после чего нажмите **Отправить готовый JSON**. Можно выполнить сбор и импорт сразу.
+
+После перезапуска Firefox временное дополнение потребуется загрузить снова. Для постоянной установки требуется подписанная сборка XPI (Firefox Add-ons/AMO либо корпоративный механизм установки).
+
+## Laravel
+
+В `.env` задайте уникальный случайный токен (не коммитьте его в Git):
+
+```dotenv
+PROPERTY_IMPORT_TOKEN=<random-long-private-value>
+PROPERTY_IMPORT_IMAGE_HOSTS=imgar.zonapropcdn.com
+```
+
+Запустите:
+
+```bash
+php artisan migrate
+php artisan config:clear
+php artisan storage:link
+php artisan route:list --path=api/realestate
+php artisan test --filter=RealestateImportTest
+```
+
+Endpoint: `POST https://YOUR_DOMAIN/api/realestate/import`, заголовки `Authorization: Bearer ...`, `Content-Type: application/json`.
+
+Пример:
+
+```json
+{
+  "items": [
+    {
+      "source_platform": "zonaprop",
+      "source_url": "https://www.zonaprop.com.ar/propiedades/clasificado/ejemplo-123.html",
+      "title": "Casa en Pinamar",
+      "country": "Argentina",
+      "region": "Buenos Aires",
+      "city": "Pinamar",
+      "land_area": 615,
+      "covered_area": 135,
+      "semi_covered_area": 20,
+      "currency": "USD",
+      "price": 215000,
+      "photos": []
+    }
+  ]
+}
+```
+
+API принимает 1–5 объектов в одном запросе. Расширение отправляет по одному, чтобы показывать прогресс и ошибки каждого. Все новые объекты создаются со значением `active=false`; `newbuild=false`, `sold=false`. `source_url` — единственный внешний ключ, из URL убираются query-параметры. Дубли обновляются, а вручную опубликованные объекты сохраняют свои исправленные данные и `active=true`.
+
+Географические Country → Region → City → District создаются автоматически, если для них хватает информации. Фотографии хранятся в коллекции `photos` Spatie Media Library, первая фотография также копируется в `cover`. Поддерживаются JPEG, PNG и WebP, максимум 15 МБ на фото и 40 фотографий на объект. Разрешённые хосты изображений задаются через `PROPERTY_IMPORT_IMAGE_HOSTS`.
+
+## Ограничения и контроль качества
+
+- Сканируется **только одна переданная страница** выдачи. Следующие страницы указываются отдельно.
+- Если Zonaprop изменит DOM или выдаст блокировку, конкретная запись останется в JSON с `incomplete=true`; такая запись не отправляется на API.
+- Галереи могут загружать полные фотографии только по действию пользователя: расширение собирает доступные в DOM URL и при необходимости дополняет их фотографиями из карточки выдачи. Проверьте количество и качество фото.
+- Данные `m² tot.` не записываются в `total_area`. Из описания детальной страницы извлекаются `land_area`, `covered_area`, `semi_covered_area`.
+- Расширение не выставляет `sold` и `newbuild` по косвенным признакам. После импорта проверьте объекты в Filament и публикуйте вручную.
+- API-токен не сохраняется в профиле расширения. Настройки URL сохраняются локально.
+- Используйте сбор данных и изображений только там, где разрешено партнёром и условиями источника.
+
+Файлы: `parser.js` — извлечение DOM; `background.js` — обход ссылок и отправка; `popup.html` / `popup.js` — интерфейс расширения.
