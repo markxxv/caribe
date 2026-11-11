@@ -47,7 +47,7 @@
     }
 
 </style>
-<header id="site_header" x-data="{mobileMenuOpen: false, langMenuOpen: false, currentLang: 'ru'}" class="fixed top-0 left-0 w-full z-50">
+<header id="site_header" class="fixed top-0 left-0 w-full z-50">
     <div class="container px-2 mx-auto">
         <div class="flex items-center justify-between py-6">
             <!-- Left Side -->
@@ -76,11 +76,11 @@
 
             <!-- Mobile Menu Button - Only visible on mobile -->
             <div class="md:hidden absolute right-4">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="text-white focus:outline-none">
-                    <svg x-show="!mobileMenuOpen" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button data-site-menu-toggle type="button" aria-controls="site-mobile-menu" aria-expanded="false" aria-label="Открыть меню" class="text-white focus:outline-none">
+                    <svg data-site-menu-open-icon class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
-                    <svg x-show="mobileMenuOpen" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                    <svg data-site-menu-close-icon class="hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -91,9 +91,9 @@
     </div>
 
     <!-- Mobile Menu -->
-    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-40 bg-black/95 backdrop-blur-md" style="display: none;">
+    <div id="site-mobile-menu" data-site-mobile-menu class="fixed inset-0 z-40 hidden bg-black/95 backdrop-blur-md">
         <div class="relative h-screen flex flex-col justify-center items-center p-8 space-y-8 text-center bg-black/90 backdrop-blur-sm">
-            <button @click="mobileMenuOpen = false" class="absolute top-6 right-6 text-white focus:outline-none">
+            <button data-site-menu-close type="button" aria-label="Закрыть меню" class="absolute top-6 right-6 text-white focus:outline-none">
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
