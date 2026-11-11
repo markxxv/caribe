@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Visita Caribe — импорт недвижимости",
+  "version": "1.0.0",
+  "description": "Собирает объявления Zonaprop через Firefox и отправляет их в Laravel как черновики.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.zonaprop.com.ar/*",
+    "https://*.zonaprop.com.ar/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_title": "Импорт недвижимости",
+    "default_popup": "popup.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "realestate-importer@visitacaribe.com",
+      "strict_min_version": "128.0"
+    }
+  }
+}
