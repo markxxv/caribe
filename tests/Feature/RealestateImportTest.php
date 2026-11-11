@@ -42,7 +42,7 @@ class RealestateImportTest extends TestCase
         $this->withToken('secret-key')->postJson('/api/realestate/import', $this->payload())->assertUnauthorized();
     }
 
-    public function test_import_creates_a_draft_and_upserts_by_canonical_source_url(): void
+    public function test_import_creates_a_draft_and_reuses_existing_object_without_overwriting(): void
     {
         config()->set('property_import.token', 'secret-key');
 
@@ -73,11 +73,125 @@ class RealestateImportTest extends TestCase
             ->postJson('/api/realestate/import', $payload)
             ->assertOk()
             ->assertJsonPath('created', 0)
-            ->assertJsonPath('updated', 1);
+            ->assertJsonPath('existing', 1)
+            ->assertJsonPath('updated', 0);
 
         $this->assertSame(1, Realestate::count());
         $this->assertTrue($model->fresh()->active);
         $this->assertSame('Проверенный объект', $model->fresh()->title);
+    }
+
+    public function test_reimport_protects_every_field_of_an_existing_draft_and_published_property(): void
+    {
+        config()->set('property_import.token', 'secret-key');
+
+        foreach ([false, true] as $published) {
+            $item = $this->payload();
+            $item['items'][0]['source_url'] = 'https://www.zonaprop.com.ar/propiedades/casa-protegida-' . (int) $published . '.html';
+
+            $this->withToken('secret-key')
+                ->postJson('/api/realestate/import', $item)
+                ->assertOk()
+                ->assertJsonPath('created', 1);
+
+            $property = Realestate::query()
+                ->where('source_url', $item['items'][0]['source_url'])
+                ->firstOrFail();
+
+            $property->update([
+                'title' => 'Título SEO editado ' . (int) $published,
+                'slug' => 'manual-seo-slug-' . (int) $published,
+                'description' => '<p>Авторское SEO-описание, не трогать.</p>',
+                'meta_title' => 'Manual SEO meta title',
+                'meta_description' => 'Manual SEO meta description',
+                'price' => 321987,
+                'currency' => 'EUR',
+                'address' => 'Dirección editada',
+                'land_area' => 444,
+                'features' => ['pool' => true],
+                'amenities' => ['security' => true],
+                'active' => $published,
+                'sold' => true,
+                'newbuild' => true,
+            ]);
+
+            $before = $property->fresh()->getRawOriginal();
+
+            $maliciousReimport = $item;
+            $maliciousReimport['items'][0] = array_replace($maliciousReimport['items'][0], [
+                'title' => 'Текст партнёра, который нельзя применить',
+                'description' => 'Текст партнёра вместо SEO',
+                'price' => 100,
+                'currency' => 'USD',
+                'region' => 'Capital Federal',
+                'city' => 'Buenos Aires',
+                'district' => 'Recoleta',
+                'address' => 'No longer correct',
+                'land_area' => 1000,
+                'features' => ['pool' => false],
+                'amenities' => ['security' => false],
+                'active' => ! $published,
+                'sold' => false,
+                'newbuild' => false,
+            ]);
+            $maliciousReimport['items'][0]['source_url'] .= '?tracking=reimport';
+
+            $this->withToken('secret-key')
+                ->postJson('/api/realestate/import', $maliciousReimport)
+                ->assertOk()
+                ->assertJsonPath('created', 0)
+                ->assertJsonPath('existing', 1)
+                ->assertJsonPath('updated', 0);
+
+            $this->assertSame($before, $property->fresh()->getRawOriginal());
+        }
+
+        $this->assertSame(2, Realestate::count());
+        $this->assertSame(1, \App\Models\Realestate\Region::count());
+        $this->assertSame(1, \App\Models\Realestate\City::count());
+    }
+
+    public function test_photo_reimport_does_not_delete_existing_gallery_images(): void
+    {
+        config()->set('property_import.token', 'secret-key');
+
+        $payload = $this->payload();
+        $this->withToken('secret-key')
+            ->postJson('/api/realestate/import', $payload)
+            ->assertOk();
+
+        $property = Realestate::firstOrFail();
+        $originalUrl = 'https://imgar.zonapropcdn.com/avisos/1/00/60/64/32/28/360x266/2090606899.jpg';
+
+        $photo = $property->media()->create([
+            'collection_name' => 'photos',
+            'name' => 'Photo imported earlier',
+            'file_name' => 'old-image.jpg',
+            'mime_type' => 'image/jpeg',
+            'disk' => 'public',
+            'conversions_disk' => 'public',
+            'size' => 1234,
+            'manipulations' => [],
+            'custom_properties' => [
+                'source_url' => $originalUrl,
+                'source_key' => '2090606899.jpg',
+            ],
+            'generated_conversions' => [],
+            'responsive_images' => [],
+        ]);
+
+        $payload['items'][0]['photos_complete'] = true;
+        $payload['items'][0]['photos'] = [
+            'https://imgar.zonapropcdn.com/avisos/1/00/58/88/45/69/1200x1200/2046926477.jpg',
+        ];
+
+        $this->withToken('secret-key')
+            ->postJson('/api/realestate/import', $payload)
+            ->assertOk()
+            ->assertJsonPath('items.0.photo_count', 1)
+            ->assertJsonPath('items.0.photo_sources.0.source_url', $originalUrl);
+
+        $this->assertDatabaseHas('media', ['id' => $photo->id]);
     }
 
     public function test_metadata_import_never_fetches_images_or_dispatches_jobs(): void
