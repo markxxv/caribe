@@ -86,12 +86,14 @@ function scrapeZonaprop(mode) {
     };
     const addressParts = text => {
         const parts = clean(text).split(/\s*,\s*/).filter(Boolean);
-        // Detail page: street, city, region. Listing may only have city and region.
-        return {
-            address: parts.length >= 3 ? parts.slice(0, -2).join(', ') : null,
-            city: parts.length >= 3 ? parts.at(-2) : parts.length === 2 ? parts[0] : parts[0] || null,
-            region: parts.length >= 3 ? parts.at(-1) : parts.length === 2 ? parts[1] : null,
-        };
+        const last = clean(parts.at(-1)).toLowerCase();
+        const isRegion = /buenos aires|costa atl[aá]ntica|gba|capital federal|c[oó]rdoba|santa fe|mendoza|entre r[ií]os|neuqu[eé]n|r[ií]o negro|tucum[aá]n|salta|misiones|chubut|san juan|san luis|la pampa|corrientes|chaco|formosa|jujuy|catamarca|la rioja|santa cruz|tierra del fuego/i.test(last);
+        return isRegion
+            ? {address: parts.length >= 3 ? parts.slice(0, -2).join(', ') : null,
+                city: parts.at(-2) || null, region: parts.at(-1) || null, district: null}
+            : {address: parts.length >= 3 ? parts.slice(0, -2).join(', ') : null,
+                city: parts.at(-1) || null, region: null,
+                district: parts.length >= 2 ? parts.at(-2) : null};
     };
     if (mode === 'listing') {
         const cards = [...document.querySelectorAll('[data-qa="posting PROPERTY"][data-to-posting]')];
