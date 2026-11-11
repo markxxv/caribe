@@ -100,10 +100,95 @@ function scrapeZonaprop(mode) {
             .find(node => node.querySelector('i')?.className.includes(name));
         return tag ? number(tag.textContent) : null;
     };
+    const locationFromPageData = () => {
+        // Zonaprop embeds a typed location tree (BARRIO -> CIUDAD -> PAIS)
+        // in an inline script. It is more reliable than the address label.
+        for (const script of document.querySelectorAll('script:not([src])')) {
+            const source = script.textContent || '';
+            if (! source.includes('locationId')) continue;
+
+            const matcher = /['"]location['"]\s*:\s*\{/g;
+            let match;
+
+            while ((match = matcher.exec(source))) {
+                const start = match.index + match[0].length - 1;
+                let depth = 0;
+                let quoted = false;
+                let escaped = false;
+                let end = -1;
+
+                for (let i = start; i < source.length; i++) {
+                    const char = source[i];
+
+                    if (quoted) {
+                        if (escaped) escaped = false;
+                        else if (char === '\\') escaped = true;
+                        else if (char === '"') quoted = false;
+                    } else if (char === '"') {
+                        quoted = true;
+                    } else if (char === '{') {
+                        depth++;
+                    } else if (char === '}' && --depth === 0) {
+                        end = i + 1;
+                        break;
+                    }
+                }
+
+                if (end < 0) continue;
+
+                let tree;
+                try {
+                    tree = JSON.parse(source.slice(start, end));
+                } catch {
+                    continue;
+                }
+
+                if (! tree?.locationId || ! tree?.label) continue;
+
+                const result = {};
+                for (let node = tree; node && typeof node === 'object'; node = node.parent) {
+                    const name = clean(node.name);
+                    if (! name) continue;
+
+                    switch (clean(node.label).toUpperCase()) {
+                        case 'PAIS': result.country = name; break;
+                        case 'PROVINCIA': result.region = name; break;
+                        case 'CIUDAD': result.city = name; break;
+                        case 'LOCALIDAD':
+                            result.city ||= name;
+                            break;
+                        case 'BARRIO': result.district = name; break;
+                    }
+                }
+
+                // CABA is a city and a federal jurisdiction. Our DB has
+                // separate region and city levels, so represent both.
+                if (/^(capital federal|caba|ciudad aut[oó]noma de buenos aires)$/i.test(result.city || '')) {
+                    result.region = 'Capital Federal';
+                    result.city = 'Buenos Aires';
+                }
+
+                if (result.country && result.city) return result;
+            }
+        }
+
+        return null;
+    };
+
     const addressParts = text => {
         const parts = clean(text).split(/\s*,\s*/).filter(Boolean);
         const last = clean(parts.at(-1)).toLowerCase();
-        const isRegion = /buenos aires|costa atl[aá]ntica|gba|capital federal|c[oó]rdoba|santa fe|mendoza|entre r[ií]os|neuqu[eé]n|r[ií]o negro|tucum[aá]n|salta|misiones|chubut|san juan|san luis|la pampa|corrientes|chaco|formosa|jujuy|catamarca|la rioja|santa cruz|tierra del fuego/i.test(last);
+
+        if (/^(capital federal|caba|ciudad aut[oó]noma de buenos aires)$/i.test(last)) {
+            return {
+                address: parts.length >= 3 ? parts.slice(0, -2).join(', ') : null,
+                region: 'Capital Federal',
+                city: 'Buenos Aires',
+                district: parts.length >= 2 ? parts.at(-2) : null,
+            };
+        }
+
+        const isRegion = /buenos aires|costa atl[aá]ntica|gba|c[oó]rdoba|santa fe|mendoza|entre r[ií]os|neuqu[eé]n|r[ií]o negro|tucum[aá]n|salta|misiones|chubut|san juan|san luis|la pampa|corrientes|chaco|formosa|jujuy|catamarca|la rioja|santa cruz|tierra del fuego/i.test(last);
         return isRegion
             ? {address: parts.length >= 3 ? parts.slice(0, -2).join(', ') : null,
                 city: parts.at(-2) || null, region: parts.at(-1) || null, district: null}
@@ -123,13 +208,6 @@ function scrapeZonaprop(mode) {
             const details = txt(card, '[data-qa="POSTING_CARD_FEATURES"]');
             const locationText = txt(card, '[data-qa="POSTING_CARD_LOCATION"]');
             const parts = addressParts(locationText);
-            // A listing may show district + city instead of city + region.
-            const segments = clean(locationText).split(/\s*,\s*/).filter(Boolean);
-            if (segments.length === 2 && !/buenos aires|costa atl[aá]ntica|provincia/i.test(segments[1])) {
-                parts.city = segments[1];
-                parts.region = null;
-                parts.district = segments[0];
-            }
             const priceInfo = price(card);
             list.push({
                 source_platform: 'zonaprop',
@@ -144,6 +222,7 @@ function scrapeZonaprop(mode) {
                 address: txt(card, '.postingLocations-module__location-address'),
                 city: parts.city,
                 region: parts.region,
+                district: parts.district,
                 country: 'Argentina',
                 // Do not assume "m² tot." is covered area: on Zonaprop it can mean lot.
                 rooms: number(details.match(/[\d.,]+\s*amb/i)?.[0]),
@@ -159,7 +238,10 @@ function scrapeZonaprop(mode) {
         const title = txt(document, 'h1.title-property, h1');
         const intro = txt(document, '.title-type-sup-property');
         const addressText = txt(document, '.section-location-property h4');
-        const locationInfo = addressParts(addressText);
+        const locationInfo = {
+            ...addressParts(addressText),
+            ...locationFromPageData(),
+        };
         const descNode = document.querySelector('#longDescription, .article-section-description');
         const description = descNode?.innerText?.trim() || descNode?.textContent?.trim() || '';
         const facts = [...document.querySelectorAll('[class*="generalFeaturesProperty-module__description-text"]')]
