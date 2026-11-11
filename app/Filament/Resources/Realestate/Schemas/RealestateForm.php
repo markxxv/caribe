@@ -104,8 +104,10 @@ class RealestateForm
     {
         // Unknown partner attributes remain editable instead of disappearing.
         foreach ($stored ?? [] as $key => $value) {
-            if (is_string($key) && ! array_key_exists($key, $known)) {
-                $known[$key] = Str::headline($key);
+            $option = is_string($key) ? $key : (is_string($value) ? $value : null);
+
+            if ($option !== null && ! array_key_exists($option, $known)) {
+                $known[$option] = Str::headline($option);
             }
         }
 
