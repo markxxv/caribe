@@ -113,7 +113,12 @@ function merge(summary, detail) {
     else result[key] = value;
   }
   const photos = new Map();
-  for (const photoUrl of [...(detail.photos || []), ...(summary.photos || [])]) {
+  // The complete gallery from posting pictures is authoritative.
+  // Card previews must not add unrelated images.
+  const sources = detail.photos_complete && detail.photos?.length
+    ? detail.photos
+    : [...(detail.photos || []), ...(summary.photos || [])];
+  for (const photoUrl of sources) {
     const key = new URL(photoUrl).pathname.split("/").at(-1);
     if (!photos.has(key)) photos.set(key, photoUrl);
   }
