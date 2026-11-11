@@ -155,45 +155,45 @@ class RealestateForm
                 ->schema([
                     Grid::make(1)
                         ->schema([
-                        Section::make('Описание объекта')
-                            ->icon('tabler-align-left')
-                            ->schema([
-                                TextInput::make('title')
-                                    ->label('Название объекта')
-                                    ->required()
-                                    ->maxLength(255),
+                            Section::make('Описание объекта')
+                                ->icon('tabler-align-left')
+                                ->schema([
+                                    TextInput::make('title')
+                                        ->label('Название объекта')
+                                        ->required()
+                                        ->maxLength(255),
 
-                                RichEditor::make('description')
-                                    ->label('Описание')
-                                    ->toolbarButtons([
-                                        ['bold', 'italic', 'underline', 'strike', 'link'],
-                                        ['h2', 'h3'],
-                                        ['bulletList', 'orderedList', 'blockquote'],
-                                        ['undo', 'redo'],
-                                    ])
-                                    ->columnSpanFull(),
+                                    RichEditor::make('description')
+                                        ->label('Описание')
+                                        ->toolbarButtons([
+                                            ['bold', 'italic', 'underline', 'strike', 'link'],
+                                            ['h2', 'h3'],
+                                            ['bulletList', 'orderedList', 'blockquote'],
+                                            ['undo', 'redo'],
+                                        ])
+                                        ->columnSpanFull(),
 
-                                Section::make('SEO')
-                                    ->icon('tabler-brand-google')
-                                    ->schema([
-                                        TextInput::make('slug')
-                                            ->label('Адрес страницы (slug)')
-                                            ->helperText('Создаётся автоматически из названия. При необходимости можно изменить.')
-                                            ->unique(ignoreRecord: true)
-                                            ->maxLength(255),
+                                    Section::make('SEO')
+                                        ->icon('tabler-brand-google')
+                                        ->schema([
+                                            TextInput::make('slug')
+                                                ->label('Адрес страницы (slug)')
+                                                ->helperText('Создаётся автоматически из названия. При необходимости можно изменить.')
+                                                ->unique(ignoreRecord: true)
+                                                ->maxLength(255),
 
-                                        TextInput::make('meta_title')
-                                            ->label('Meta title')
-                                            ->maxLength(255),
+                                            TextInput::make('meta_title')
+                                                ->label('Meta title')
+                                                ->maxLength(255),
 
-                                        Textarea::make('meta_description')
-                                            ->label('Meta description')
-                                            ->rows(3)
-                                            ->maxLength(500),
-                                    ])
-                                    ->collapsible()
-                                    ->collapsed(),
-                            ]),
+                                            Textarea::make('meta_description')
+                                                ->label('Meta description')
+                                                ->rows(3)
+                                                ->maxLength(500),
+                                        ])
+                                        ->collapsible()
+                                        ->collapsed(),
+                                ]),
 
                             Section::make('Площади')
                                 ->icon('tabler-ruler-measure')
