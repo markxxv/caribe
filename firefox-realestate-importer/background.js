@@ -2,6 +2,11 @@
 const API_TIMEOUT_MS = 120000;
 const PAGE_TIMEOUT_MS = 45000;
 const MAX_UPLOAD_ATTEMPTS = 3;
+const IMAGE_DOWNLOAD_TIMEOUT_MS = 12000;
+const IMAGE_UPLOAD_TIMEOUT_MS = 30000;
+const IMAGE_BATCH_LIMIT_MS = 120000;
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+
 
 let busy = false;
 let cancel = false;
@@ -228,6 +233,126 @@ async function sendItem(endpoint, token, item, signal) {
   }
 }
 
+async function photoRequest(operation, timeoutMs, signal) {
+  stopped(signal);
+  const controller = new AbortController();
+  let timedOut = false;
+  const onCancel = () => controller.abort();
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  signal.addEventListener("abort", onCancel, {once: true});
+
+  try {
+    return await operation(controller.signal);
+  } catch (error) {
+    if (signal.aborted || cancel) throw Error("Импорт остановлен");
+    if (timedOut) throw Error("Превышено время ожидания фотографии (" + Math.ceil(timeoutMs / 1000) + " с)");
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    signal.removeEventListener("abort", onCancel);
+  }
+}
+
+function checkedImageUrl(value) {
+  const u = new URL(value);
+  if (u.protocol !== "https:" || u.hostname !== "imgar.zonapropcdn.com"
+      || !u.pathname.startsWith("/avisos/") || u.username || u.password) {
+    throw Error("Недопустимый URL фотографии Zonaprop");
+  }
+  return u;
+}
+
+async function transferPhotos(endpoint, token, item, realestateId, existingSources, signal, onProgress) {
+  const images = [...new Set(item.photos || [])];
+  const known = new Map((existingSources || []).filter(p => p.source_key).map(p => [p.source_key, p.source_url]));
+  const warnings = [];
+  const uploaded = [];
+  const startedAt = Date.now();
+  const photoEndpoint = new URL("/api/realestate/import/photo", endpoint).href;
+
+  for (let i = 0; i < images.length; i++) {
+    stopped(signal);
+    const url = images[i];
+    const remaining = IMAGE_BATCH_LIMIT_MS - (Date.now() - startedAt);
+
+    if (remaining <= 0) {
+      warnings.push("Лимит времени на фотографии (120 с). Остальные фото пропущены.");
+      break;
+    }
+
+    try {
+      const imageUrl = checkedImageUrl(url);
+      const key = imageUrl.pathname.split("/").at(-1);
+
+      if (known.get(key) === url) continue;
+
+      await onProgress(i + 1, images.length, url);
+
+      // Firefox downloads bytes from Zonaprop. Laravel performs no CDN requests.
+      const blob = await photoRequest(async requestSignal => {
+        const response = await fetch(url, {
+          method: "GET",
+          signal: requestSignal,
+          credentials: "omit",
+          referrerPolicy: "no-referrer",
+        });
+
+        if (!response.ok) throw Error("CDN HTTP " + response.status);
+
+        const mime = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
+        if (!["image/jpeg", "image/png", "image/webp"].includes(mime))
+          throw Error("Неизвестный формат фотографии: " + mime);
+
+        const size = Number(response.headers.get("content-length") || 0);
+        if (size > MAX_IMAGE_BYTES) throw Error("Фотография превышает 15 МБ");
+
+        const file = await response.blob();
+        if (!file.size || file.size > MAX_IMAGE_BYTES)
+          throw Error("Некорректный размер фотографии");
+
+        return {file, mime};
+      }, Math.min(IMAGE_DOWNLOAD_TIMEOUT_MS, remaining), signal);
+
+      const form = new FormData();
+      const extension = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}[blob.mime];
+      form.append("photo", blob.file, "zonaprop." + extension);
+      form.append("source_url", url);
+      form.append("realestate_id", String(realestateId));
+
+      const saved = await photoRequest(async requestSignal => {
+        const response = await fetch(photoEndpoint, {
+          method: "POST",
+          signal: requestSignal,
+          headers: {
+            Authorization: "Bearer " + token,
+            Accept: "application/json",
+          },
+          body: form,
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!data) throw Error("Laravel вернул не-JSON ответ (HTTP " + response.status + ")");
+        const details = apiErrors(data);
+        if (details) throw Error(details);
+        if (!response.ok || !data.id) throw Error(data.message || "HTTP " + response.status);
+        return data;
+      }, Math.min(IMAGE_UPLOAD_TIMEOUT_MS, Math.max(1, IMAGE_BATCH_LIMIT_MS - (Date.now() - startedAt))), signal);
+
+      if (!saved.skipped) uploaded.push(url);
+      known.set(key, url);
+    } catch (error) {
+      stopped(signal);
+      warnings.push("Фото " + (i + 1) + "/" + images.length + ": " + String(error.message || error));
+    }
+  }
+
+  return {uploaded, warnings};
+}
+
 async function upload(endpoint, token, signal) {
   const all = (await browser.storage.local.get("items")).items || [];
   const items = all.filter(item => item.source_url && item.title && !item.incomplete);
@@ -253,11 +378,37 @@ async function upload(endpoint, token, signal) {
         stopped(signal);
         try {
           const result = await sendItem(endpoint, token, item, signal);
-          completed.push({
+          const propertyResult = result.data.items[0];
+          const entry = {
             source_url: item.source_url,
-            id: result.data.items[0].id,
-            warnings: result.data.items[0].warnings || [],
-          });
+            id: propertyResult.id,
+            warnings: propertyResult.warnings || [],
+            photos_uploaded: 0,
+          };
+          completed.push(entry);
+          await browser.storage.local.set({results: completed});
+          await status({uploaded: completed.length, current: "Сохранён объект: " + item.source_url});
+
+          // Photo errors are not property errors. One inaccessible image
+          // never prevents importing other images or the next property.
+          try {
+            const photos = await transferPhotos(
+              endpoint, token, item, entry.id, propertyResult.photo_sources, signal,
+              async (number, total, url) => status({
+                current: "Фото " + number + "/" + total + ": " + url,
+              })
+            );
+            entry.photos_uploaded = photos.uploaded.length;
+            entry.warnings.push(...photos.warnings);
+            for (const warning of photos.warnings) {
+              errors.push({url: item.source_url, message: warning});
+            }
+          } catch (error) {
+            stopped(signal);
+            const warning = "Фото не отправлены: " + String(error.message || error);
+            entry.warnings.push(warning);
+            errors.push({url: item.source_url, message: warning});
+          }
           saved = true;
           break;
         } catch (error) {
