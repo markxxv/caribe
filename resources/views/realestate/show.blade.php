@@ -16,6 +16,11 @@
             $realestate->country?->name,
         ])->filter()->unique()->join(', ');
         $description = strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>'], "\n", $realestate->description ?? ''));
+        $galleryImages = $realestate->getMedia('photos');
+
+        if ($galleryImages->isEmpty() && ($cover = $realestate->getFirstMedia('cover'))) {
+            $galleryImages = collect([$cover]);
+        }
     @endphp
 
     <main class="min-h-screen bg-white pt-32 pb-20 text-zinc-900 md:pt-40">
@@ -53,6 +58,73 @@
                     </div>
                 @endif
             </div>
+
+            @if($galleryImages->isNotEmpty())
+                <section class="mb-12 -mx-5 max-w-4xl md:mx-0 md:mb-14" aria-label="Фотографии недвижимости">
+                    <div data-realestate-gallery>
+                        <div class="relative overflow-hidden bg-zinc-100 md:rounded-xl">
+                            <div data-gallery-viewport class="overflow-hidden" aria-roledescription="карусель" aria-label="Фотографии объекта">
+                                <div class="flex touch-pan-y">
+                                    @foreach($galleryImages as $photo)
+                                        @php
+                                            $isCover = $photo->collection_name === 'cover';
+                                            $largeConversion = $isCover ? 'big' : 'photo_large';
+                                            $imageUrl = $photo->hasGeneratedConversion($largeConversion)
+                                                ? $photo->getUrl($largeConversion)
+                                                : $photo->getUrl();
+                                        @endphp
+                                        <figure class="min-w-0 flex-[0_0_100%]">
+                                            <img src="{{ $imageUrl }}"
+                                                alt="{{ $realestate->title }} — фото {{ $loop->iteration }}"
+                                                class="aspect-[4/3] w-full object-cover md:aspect-[16/10]"
+                                                width="1600" height="1000"
+                                                {{ $loop->first ? 'fetchpriority=high' : 'loading=lazy' }}
+                                                decoding="async">
+                                        </figure>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            @if($galleryImages->count() > 1)
+                                <button type="button" data-gallery-prev aria-label="Предыдущее фото"
+                                    class="absolute left-4 top-1/2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 md:inline-flex">
+                                    <x-tabler-chevron-left class="size-5" />
+                                </button>
+                                <button type="button" data-gallery-next aria-label="Следующее фото"
+                                    class="absolute right-4 top-1/2 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 md:inline-flex">
+                                    <x-tabler-chevron-right class="size-5" />
+                                </button>
+                                <div class="absolute bottom-4 right-4 rounded-full bg-zinc-950/70 px-3 py-1.5 text-xs font-medium tabular-nums text-white"
+                                    aria-live="polite" aria-atomic="true" data-gallery-counter>
+                                    1 / {{ $galleryImages->count() }}
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($galleryImages->count() > 1)
+                            <div data-gallery-thumbnails
+                                class="mt-3 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-0"
+                                role="group" aria-label="Выбрать фотографию">
+                                @foreach($galleryImages as $photo)
+                                    @php
+                                        $thumbConversion = $photo->collection_name === 'cover' ? 'thumb' : 'photo_thumb';
+                                        $thumbUrl = $photo->hasGeneratedConversion($thumbConversion)
+                                            ? $photo->getUrl($thumbConversion)
+                                            : $photo->getUrl();
+                                    @endphp
+                                    <button type="button" data-gallery-thumb="{{ $loop->index }}"
+                                        aria-label="Показать фото {{ $loop->iteration }} из {{ $galleryImages->count() }}"
+                                        aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
+                                        class="shrink-0 overflow-hidden rounded-lg transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 {{ $loop->first ? 'opacity-100' : 'opacity-50' }}">
+                                        <img src="{{ $thumbUrl }}" alt="" loading="lazy" decoding="async"
+                                            class="h-14 w-[76px] object-cover md:h-16 md:w-24" width="96" height="64">
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </section>
+            @endif
 
             <section class="mb-12">
                 <h2 class="mb-5 text-xl font-semibold">Характеристики</h2>

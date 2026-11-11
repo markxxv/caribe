@@ -11,7 +11,7 @@ class RealestateController extends Controller
     {
         $realestate = Realestate::query()
             ->where('slug', $url)
-            ->with(['country', 'region', 'city', 'district'])
+            ->with(['country', 'region', 'city', 'district', 'media'])
             ->firstOrFail();
 
         // Drafts are available for review in the admin session, but not publicly.
