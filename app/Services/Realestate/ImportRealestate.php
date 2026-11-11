@@ -2,8 +2,6 @@
 
 namespace App\Services\Realestate;
 
-use App\Jobs\ImportRealestatePhoto;
-use App\Support\Realestate\PhotoQuality;
 use App\Models\Realestate\City;
 use App\Models\Realestate\Country;
 use App\Models\Realestate\District;
@@ -63,8 +61,8 @@ class ImportRealestate
             return $property;
         });
 
-        // Store the property immediately; CDN downloads run in the database queue.
-        $queued = 0;
+        // Store only property metadata. Firefox uploads image files separately.
+        // Laravel never requests image URLs or dispatches background jobs.
         $urls = array_values(array_unique($item['photos'] ?? []));
         $existingPhotos = $property->getMedia('photos');
 
@@ -91,34 +89,12 @@ class ImportRealestate
             $existingPhotos = $property->getMedia('photos');
         }
 
-        foreach ($urls as $url) {
-            $sourceKey = basename((string) parse_url($url, PHP_URL_PATH));
-
-            $existing = $existingPhotos->first(
-                fn ($media): bool => $media->getCustomProperty('source_url') === $url
-                    || ($sourceKey !== '' && $media->getCustomProperty('source_key') === $sourceKey)
-            );
-
-            if ($existing && ! PhotoQuality::isUpgrade(
-                $url, $existing->getCustomProperty('source_url')
-            )) {
-                continue;
-            }
-
-            ImportRealestatePhoto::dispatch($property->id, $url)
-                ->onConnection('database')
-                ->onQueue('realestate-photos');
-
-            ++$queued;
-        }
-
         return [
             'id' => $property->id,
             'source_url' => $sourceUrl,
             'created' => $created,
             'active' => $property->active,
             'photos_added' => 0,
-            'photos_queued' => $queued,
             'photo_count' => $existingPhotos->count(),
             'warnings' => [],
         ];
