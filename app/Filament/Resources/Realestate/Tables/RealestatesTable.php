@@ -2,13 +2,20 @@
 
 namespace App\Filament\Resources\Realestate\Tables;
 
+use App\Actions\Realestate\AssignGeography;
 use App\Filament\Resources\Realestate\Schemas\RealestateForm;
+use App\Models\Realestate\City;
+use App\Models\Realestate\Region;
 use App\Models\Realestate\Realestate;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\ViewColumn;
@@ -97,6 +104,56 @@ class RealestatesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('assign_geography')
+                        ->label('Изменить регион и город')
+                        ->icon('tabler-map-pin')
+                        ->form([
+                            Select::make('region_id')
+                                ->label('Регион')
+                                ->options(fn (): array => Region::query()
+                                    ->with('country')
+                                    ->orderBy('name')
+                                    ->get()
+                                    ->mapWithKeys(fn (Region $region): array => [
+                                        $region->id => $region->name . ' · ' . ($region->country?->name ?? ''),
+                                    ])
+                                    ->all())
+                                ->searchable()
+                                ->preload()
+                                ->native(false)
+                                ->live()
+                                ->required()
+                                ->afterStateUpdated(fn (Set $set) => $set('city_id', null)),
+
+                            Select::make('city_id')
+                                ->label('Город')
+                                ->options(fn (Get $get): array => filled($get('region_id'))
+                                    ? City::query()
+                                        ->where('region_id', $get('region_id'))
+                                        ->orderBy('name')
+                                        ->pluck('name', 'id')
+                                        ->all()
+                                    : [])
+                                ->searchable()
+                                ->preload()
+                                ->native(false)
+                                ->required()
+                                ->disabled(fn (Get $get): bool => blank($get('region_id'))),
+                        ])
+                        ->modalHeading('Массовое изменение географии')
+                        ->modalDescription('Регион и город будут изменены у всех выбранных объектов. Страна определяется по региону, а несовместимый район будет сброшен.')
+                        ->modalSubmitActionLabel('Применить ко всем')
+                        ->action(function (Collection $records, array $data): void {
+                            app(AssignGeography::class)->handle($records, (int) $data['region_id'], (int) $data['city_id']);
+
+                            Notification::make()
+                                ->title('География обновлена')
+                                ->body('Объектов: ' . $records->count())
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
                     BulkAction::make('publish')
                         ->label('Опубликовать')
                         ->icon('tabler-bolt')
