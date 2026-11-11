@@ -78,6 +78,97 @@ function scrapeZonaprop(mode) {
         }
         return [...found.values()];
     };
+    const detailGallery = () => {
+        // Zonaprop's inline posting data contains the actual photo sequence.
+        // DOM images only contain the hero and a handful of 360px previews,
+        // while unrelated recommendation cards appear elsewhere on the page.
+        for (const script of document.querySelectorAll('script:not([src])')) {
+            const source = script.textContent || '';
+            const matcher = /['"]pictures['"]\s*:\s*\[/g;
+            let match;
+
+            while ((match = matcher.exec(source))) {
+                const start = source.indexOf('[', match.index);
+                let depth = 0;
+                let quoted = false;
+                let escaped = false;
+                let end = -1;
+
+                for (let i = start; i < source.length; i++) {
+                    const char = source[i];
+                    if (quoted) {
+                        if (escaped) escaped = false;
+                        else if (char === '\\') escaped = true;
+                        else if (char === '"') quoted = false;
+                    } else if (char === '"') {
+                        quoted = true;
+                    } else if (char === '[') {
+                        depth++;
+                    } else if (char === ']' && --depth === 0) {
+                        end = i + 1;
+                        break;
+                    }
+                }
+
+                if (end < 0) continue;
+
+                let pictures;
+                try {
+                    pictures = JSON.parse(source.slice(start, end));
+                } catch {
+                    continue;
+                }
+
+                if (!Array.isArray(pictures) || !pictures.length) continue;
+
+                const seen = new Set();
+                const photos = pictures
+                    .filter(item => Number(item?.multimediaTypeId) === 2)
+                    .sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0))
+                    .map(item => {
+                        // Prefer direct, non-resize CDN URLs. /avisos/resize/
+                        // sometimes returns connection errors from the server.
+                        const candidates = [
+                            item.url1200x1200, item.resizeUrl1200x1200,
+                            item.url730x532, item.resizeUrl720x532,
+                            item.url360x266,
+                        ];
+                        return candidates.map(photoUrl).find(Boolean) || null;
+                    })
+                    .filter(link => {
+                        if (!link) return false;
+                        const key = link.split('/').at(-1);
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+
+                if (photos.length) return {photos, complete: true};
+            }
+        }
+
+        // Fallback only to the actual property's gallery, never all images
+        // on the page: recommendations belong to other properties.
+        const primary = [...document.querySelectorAll(
+            '[class*="imageGrid-module__imgProperty"], [data-qa="PROPERTY_GALLERY"] img'
+        )];
+
+        const original = images({querySelectorAll: () => primary});
+        const promoted = original.map(link => {
+            const large = link.replace(/\/avisos\/resize\//, '/avisos/')
+                .replace(/\/(?:100x75|215x159|360x266|720x532)\//, '/1200x1200/');
+            return photoUrl(large);
+        }).filter(Boolean);
+
+        if (promoted.length) {
+            return {photos: promoted, complete: false};
+        }
+
+        const og = document.querySelector('meta[property="og:image"]')?.getAttribute('content');
+        const fallback = photoUrl(og);
+        return {photos: fallback ? [fallback] : [], complete: false};
+    };
+
     const kind = value => {
         const t = clean(value).toLowerCase();
         if (/casa|chalet|vivienda/.test(t)) return 'house';
@@ -276,6 +367,7 @@ function scrapeZonaprop(mode) {
         if (yes(/electricidad/i)) amenities.electricity = true;
         if (yes(/\bcloaca\b|\bcloacas\b/i)) amenities.sewer = true;
 
+        const gallery = detailGallery();
         const result = {
             source_platform: 'zonaprop',
             source_url: url(location.href),
@@ -307,7 +399,8 @@ function scrapeZonaprop(mode) {
             })(),
             features,
             amenities,
-            photos: images(document),
+            photos: gallery.photos,
+            photos_complete: gallery.complete,
             ...price(document),
         };
         // The detail's "m² tot." is interpreted as a lot only for houses and land.
