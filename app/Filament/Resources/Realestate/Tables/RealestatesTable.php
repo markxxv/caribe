@@ -7,6 +7,7 @@ use App\Models\Realestate\Realestate;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -109,6 +110,10 @@ class RealestatesTable
                         ->color('danger')
                         ->action(fn (Collection $records) => $records->each->update(['active' => false]))
                         ->deselectRecordsAfterCompletion(),
+
+                    DeleteBulkAction::make()
+                        ->label('Удалить выбранные')
+                        ->requiresConfirmation(),
                 ]),
             ]);
     }

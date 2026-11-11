@@ -7,6 +7,8 @@ use App\Models\Realestate\Country;
 use App\Models\Realestate\District;
 use App\Models\Realestate\Region;
 use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -109,6 +111,13 @@ class GeographyTable
             })
             ->recordActions([
                 EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('Удалить выбранные')
+                        ->requiresConfirmation(),
+                ]),
             ]);
     }
 }
