@@ -22,11 +22,11 @@ class GeographyForm
 {
     public static function configure(Schema $schema, string $level): Schema
     {
-        $name = match ($level) {
-            'country' => 'Страна',
-            'region' => 'Регион',
-            'city' => 'Город',
-            'district' => 'Район',
+        $nameLabel = match ($level) {
+            'country' => 'Название страны',
+            'region' => 'Название региона',
+            'city' => 'Название города',
+            'district' => 'Название района',
         };
 
         return $schema->components([
@@ -36,7 +36,7 @@ class GeographyForm
                         ->icon('tabler-align-left')
                         ->schema([
                             TextInput::make('name')
-                                ->label('Название: ' . mb_strtolower($name))
+                                ->label($nameLabel)
                                 ->required()
                                 ->maxLength(255),
 
@@ -156,9 +156,12 @@ class GeographyForm
 
                     $set('country_id', $countryId);
                 })
-                ->afterStateUpdated(function (Set $set): void {
+                ->afterStateUpdated(function (Set $set) use ($level): void {
                     $set('region_id', null);
-                    $set('city_id', null);
+
+                    if ($level === 'district') {
+                        $set('city_id', null);
+                    }
                 }),
 
             Select::make('region_id')
@@ -170,8 +173,7 @@ class GeographyForm
                 ->native(false)
                 ->live()
                 ->required()
-                ->disabled(fn (Get $get): bool => blank($get('country_id')))
-                ->afterStateUpdated(fn (Set $set) => $set('city_id', null)),
+                ->disabled(fn (Get $get): bool => blank($get('country_id'))),
         ];
 
         if ($level === 'city') {
@@ -181,6 +183,7 @@ class GeographyForm
         // The district only persists city_id. country_id and region_id are
         // selection helpers; they must never be written to property_districts.
         $fields[1] = $fields[1]
+            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
             ->dehydrated(false)
             ->afterStateHydrated(function (Set $set, ?Model $record): void {
                 if ($record) {
