@@ -153,44 +153,77 @@ class RealestateForm
         return $schema->components([
             Grid::make(['default' => 1, 'xl' => 3])
                 ->schema([
-                    Section::make('Описание объекта')
-                        ->icon('tabler-align-left')
+                    Grid::make(1)
                         ->schema([
-                            TextInput::make('title')
-                                ->label('Название объекта')
-                                ->required()
-                                ->maxLength(255),
+                        Section::make('Описание объекта')
+                            ->icon('tabler-align-left')
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Название объекта')
+                                    ->required()
+                                    ->maxLength(255),
 
-                            RichEditor::make('description')
-                                ->label('Описание')
-                                ->toolbarButtons([
-                                    ['bold', 'italic', 'underline', 'strike', 'link'],
-                                    ['h2', 'h3'],
-                                    ['bulletList', 'orderedList', 'blockquote'],
-                                    ['undo', 'redo'],
-                                ])
-                                ->columnSpanFull(),
+                                RichEditor::make('description')
+                                    ->label('Описание')
+                                    ->toolbarButtons([
+                                        ['bold', 'italic', 'underline', 'strike', 'link'],
+                                        ['h2', 'h3'],
+                                        ['bulletList', 'orderedList', 'blockquote'],
+                                        ['undo', 'redo'],
+                                    ])
+                                    ->columnSpanFull(),
 
-                            Section::make('SEO')
-                                ->icon('tabler-brand-google')
-                                ->schema([
-                                    TextInput::make('slug')
-                                        ->label('Адрес страницы (slug)')
-                                        ->helperText('Создаётся автоматически из названия. При необходимости можно изменить.')
-                                        ->unique(ignoreRecord: true)
-                                        ->maxLength(255),
+                                Section::make('SEO')
+                                    ->icon('tabler-brand-google')
+                                    ->schema([
+                                        TextInput::make('slug')
+                                            ->label('Адрес страницы (slug)')
+                                            ->helperText('Создаётся автоматически из названия. При необходимости можно изменить.')
+                                            ->unique(ignoreRecord: true)
+                                            ->maxLength(255),
 
-                                    TextInput::make('meta_title')
-                                        ->label('Meta title')
-                                        ->maxLength(255),
+                                        TextInput::make('meta_title')
+                                            ->label('Meta title')
+                                            ->maxLength(255),
 
-                                    Textarea::make('meta_description')
-                                        ->label('Meta description')
-                                        ->rows(3)
-                                        ->maxLength(500),
-                                ])
-                                ->collapsible()
-                                ->collapsed(),
+                                        Textarea::make('meta_description')
+                                            ->label('Meta description')
+                                            ->rows(3)
+                                            ->maxLength(500),
+                                    ])
+                                    ->collapsible()
+                                    ->collapsed(),
+                            ])
+
+                        Section::make('Площади')
+                            ->icon('tabler-ruler-measure')
+                            ->schema([
+                                self::area('land_area', 'Участок'),
+                                self::area('covered_area', 'Крытая площадь'),
+                                self::area('semi_covered_area', 'Полукрытая площадь'),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull(),
+
+                        Section::make('Планировка')
+                            ->icon('tabler-home-stats')
+                            ->schema([
+                                self::count('rooms', 'Комнаты'),
+                                self::count('bedrooms', 'Спальни'),
+                                self::count('bathrooms', 'Ванные'),
+                                self::count('toilets', 'Гостевые туалеты'),
+                                self::count('parking_spaces', 'Машиноместа'),
+                                Select::make('parking_type')
+                                    ->label('Тип парковки')
+                                    ->native(false)
+                                    ->options([
+                                        'covered' => 'Крытая',
+                                        'semi_covered' => 'Полукрытая',
+                                        'uncovered' => 'Открытая',
+                                    ]),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull(),
                         ])
                         ->columnSpan(['default' => 1, 'xl' => 2]),
 
@@ -279,36 +312,6 @@ class RealestateForm
                                 ]),
                         ])
                         ->columnSpan(['default' => 1, 'xl' => 1]),
-
-                    Section::make('Площади')
-                        ->icon('tabler-ruler-measure')
-                        ->schema([
-                            self::area('land_area', 'Участок'),
-                            self::area('covered_area', 'Крытая площадь'),
-                            self::area('semi_covered_area', 'Полукрытая площадь'),
-                        ])
-                        ->columns(3)
-                        ->columnSpanFull(),
-
-                    Section::make('Планировка')
-                        ->icon('tabler-home-stats')
-                        ->schema([
-                            self::count('rooms', 'Комнаты'),
-                            self::count('bedrooms', 'Спальни'),
-                            self::count('bathrooms', 'Ванные'),
-                            self::count('toilets', 'Гостевые туалеты'),
-                            self::count('parking_spaces', 'Машиноместа'),
-                            Select::make('parking_type')
-                                ->label('Тип парковки')
-                                ->native(false)
-                                ->options([
-                                    'covered' => 'Крытая',
-                                    'semi_covered' => 'Полукрытая',
-                                    'uncovered' => 'Открытая',
-                                ]),
-                        ])
-                        ->columns(3)
-                        ->columnSpanFull(),
 
                     Section::make('Здание и участок')
                         ->icon('tabler-building')
