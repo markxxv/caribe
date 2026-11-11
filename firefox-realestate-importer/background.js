@@ -320,10 +320,9 @@ async function process(message) {
 browser.runtime.onMessage.addListener(message => {
   if (message?.type === "cancel") {
     cancel = true;
+    // Let process() write the final "canceled" state. A concurrent
+    // "stopping" storage write could otherwise overwrite it afterwards.
     runController?.abort();
-    if (busy) {
-      status({phase: "stopping", message: "Остановка текущего запроса…"}).catch(console.error);
-    }
     return Promise.resolve({ok: true});
   }
 
