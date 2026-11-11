@@ -29,65 +29,42 @@ class ImportRealestate
         $created = false;
 
         $property = DB::transaction(function () use ($item, $sourceUrl, &$created): Realestate {
-            // Serializes concurrent writes to the same source URL via the DB unique index.
+            // Reimports are photo-only. An existing record is NEVER saved,
+            // regardless of active status, so all editorial and SEO data
+            // (including updated_at) stays exactly as it was.
             $property = Realestate::where('source_url', $sourceUrl)->lockForUpdate()->first();
 
-            if (! $property) {
-                $property = new Realestate();
-                $property->source_url = $sourceUrl;
-                $property->active = false;
-                $property->newbuild = false;
-                $property->sold = false;
-                $created = true;
+            if ($property) {
+                return $property;
             }
 
-            // Published properties may have been reviewed/edited manually.
-            if ($created || ! $property->active) {
-                $property->fill(Arr::only($item, self::FIELDS));
+            $property = new Realestate();
+            $property->source_url = $sourceUrl;
+            $property->active = false;
+            $property->newbuild = false;
+            $property->sold = false;
 
-                if (array_key_exists('description', $item)) {
-                    // Scraped content is treated as plain text, never untrusted HTML.
-                    $property->description = nl2br(e($item['description'] ?? ''));
-                }
+            $property->fill(Arr::only($item, self::FIELDS));
 
-                $geography = $this->geography($item);
-                foreach ($geography as $key => $value) {
-                    $property->{$key} = $value;
-                }
+            if (array_key_exists('description', $item)) {
+                // Scraped content is treated as plain text, never untrusted HTML.
+                $property->description = nl2br(e($item['description'] ?? ''));
+            }
+
+            foreach ($this->geography($item) as $key => $value) {
+                $property->{$key} = $value;
             }
 
             $property->save();
+            $created = true;
 
             return $property;
         });
 
-        // Store only property metadata. Firefox uploads image files separately.
-        // Laravel never requests image URLs or dispatches background jobs.
-        $urls = array_values(array_unique($item['photos'] ?? []));
+        // Do not mutate existing property records or remove their photos.
+        // Firefox compares this list and uploads only missing/better files.
+        // Media is managed exclusively by the separate photo upload endpoint.
         $existingPhotos = $property->getMedia('photos');
-
-        // The new parser explicitly identifies the complete official photo
-        // list. Remove previously scraped recommendation-card thumbnails
-        // only for drafts, leaving published or manually uploaded media intact.
-        if (! $property->active && ! empty($urls) && ($item['photos_complete'] ?? false)) {
-            $sourceKeys = array_fill_keys(array_map(
-                fn (string $url): string => basename((string) parse_url($url, PHP_URL_PATH)),
-                $urls
-            ), true);
-
-            foreach ($existingPhotos as $media) {
-                $sourceUrl = $media->getCustomProperty('source_url');
-                $key = $media->getCustomProperty('source_key')
-                    ?: basename((string) parse_url($sourceUrl ?? '', PHP_URL_PATH));
-
-                if ($sourceUrl && ! isset($sourceKeys[$key])) {
-                    $media->delete();
-                }
-            }
-
-            $property->unsetRelation('media');
-            $existingPhotos = $property->getMedia('photos');
-        }
 
         return [
             'id' => $property->id,

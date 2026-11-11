@@ -64,12 +64,12 @@ class RealestateImportController extends Controller
             return response()->json(['message' => 'Invalid data', 'errors' => $validator->errors()], 422);
         }
 
-        $result = ['created' => 0, 'updated' => 0, 'photos_added' => 0, 'items' => [], 'errors' => []];
+        $result = ['created' => 0, 'existing' => 0, 'updated' => 0, 'photos_added' => 0, 'items' => [], 'errors' => []];
 
         foreach ($validator->validated()['items'] as $item) {
             try {
                 $response = $import->handle($item);
-                ++$result[$response['created'] ? 'created' : 'updated'];
+                ++$result[$response['created'] ? 'created' : 'existing'];
                 $result['photos_added'] += $response['photos_added'];
                 $result['items'][] = $response;
             } catch (\Throwable $e) {
