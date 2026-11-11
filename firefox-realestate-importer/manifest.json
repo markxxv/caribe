@@ -19,6 +19,7 @@
   ],
   "background": {
     "scripts": [
+      "parser.js",
       "background.js"
     ]
   },
