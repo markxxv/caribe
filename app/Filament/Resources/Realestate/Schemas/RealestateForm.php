@@ -193,37 +193,37 @@ class RealestateForm
                                     ])
                                     ->collapsible()
                                     ->collapsed(),
-                            ])
+                            ]),
 
-                        Section::make('Площади')
-                            ->icon('tabler-ruler-measure')
-                            ->schema([
-                                self::area('land_area', 'Участок'),
-                                self::area('covered_area', 'Крытая площадь'),
-                                self::area('semi_covered_area', 'Полукрытая площадь'),
-                            ])
-                            ->columns(3)
-                            ->columnSpanFull(),
+                            Section::make('Площади')
+                                ->icon('tabler-ruler-measure')
+                                ->schema([
+                                    self::area('land_area', 'Участок'),
+                                    self::area('covered_area', 'Крытая площадь'),
+                                    self::area('semi_covered_area', 'Полукрытая площадь'),
+                                ])
+                                ->columns(3)
+                                ->columnSpanFull(),
 
-                        Section::make('Планировка')
-                            ->icon('tabler-home-stats')
-                            ->schema([
-                                self::count('rooms', 'Комнаты'),
-                                self::count('bedrooms', 'Спальни'),
-                                self::count('bathrooms', 'Ванные'),
-                                self::count('toilets', 'Гостевые туалеты'),
-                                self::count('parking_spaces', 'Машиноместа'),
-                                Select::make('parking_type')
-                                    ->label('Тип парковки')
-                                    ->native(false)
-                                    ->options([
-                                        'covered' => 'Крытая',
-                                        'semi_covered' => 'Полукрытая',
-                                        'uncovered' => 'Открытая',
-                                    ]),
-                            ])
-                            ->columns(3)
-                            ->columnSpanFull(),
+                            Section::make('Планировка')
+                                ->icon('tabler-home-stats')
+                                ->schema([
+                                    self::count('rooms', 'Комнаты'),
+                                    self::count('bedrooms', 'Спальни'),
+                                    self::count('bathrooms', 'Ванные'),
+                                    self::count('toilets', 'Гостевые туалеты'),
+                                    self::count('parking_spaces', 'Машиноместа'),
+                                    Select::make('parking_type')
+                                        ->label('Тип парковки')
+                                        ->native(false)
+                                        ->options([
+                                            'covered' => 'Крытая',
+                                            'semi_covered' => 'Полукрытая',
+                                            'uncovered' => 'Открытая',
+                                        ]),
+                                ])
+                                ->columns(3)
+                                ->columnSpanFull(),
                         ])
                         ->columnSpan(['default' => 1, 'xl' => 2]),
 
