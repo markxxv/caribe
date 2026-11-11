@@ -1,4 +1,4 @@
-@section('metaTitle', $selectedLocation ? 'Недвижимость в ' . $selectedLocation . ' — Visita Caribe' : 'Недвижимость в Латинской Америке — Visita Caribe')
+@section('metaTitle', $metaTitle)
 @section('metaDescription', 'Дома, квартиры и участки в Латинской Америке. Подбор недвижимости по местоположению, бюджету и характеристикам.')
 @section('canonicalUrl', $canonicalUrl)
 
@@ -36,6 +36,10 @@
                         <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
                             @if($selectedLocation)
                                 Недвижимость в <span class="text-[#c9d9c6]">{{ $selectedLocation }}</span>
+                            @elseif($state['deal'] === 'buy')
+                                Недвижимость <span class="text-[#c9d9c6]">для покупки.</span>
+                            @elseif($state['deal'] === 'rent')
+                                Недвижимость <span class="text-[#c9d9c6]">для аренды.</span>
                             @else
                                 Найдите своё место <span class="text-[#c9d9c6]">под солнцем.</span>
                             @endif

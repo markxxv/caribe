@@ -118,6 +118,21 @@ class RealestateController extends Controller
 
         $types = CatalogFilters::TYPES;
         $currencies = CatalogFilters::CURRENCIES;
+        $metaTitle = match ($state['deal']) {
+            'buy' => 'Недвижимость на продажу',
+            'rent' => 'Недвижимость в аренду',
+            default => 'Недвижимость в Латинской Америке',
+        };
+
+        if ($state['type']) {
+            $metaTitle .= ' · ' . $types[$state['type']];
+        }
+
+        if ($selectedLocation) {
+            $metaTitle .= ' · ' . $selectedLocation;
+        }
+
+        $metaTitle .= ' — Visita Caribe';
         $hasFilters = CatalogFilters::path(array_replace($state, ['page' => 1])) !== '';
         $indexable = $state['price_min'] === null && $state['price_max'] === null
             && $state['area_min'] === null && $state['area_max'] === null
@@ -127,7 +142,7 @@ class RealestateController extends Controller
 
         return response()->view('realestate.index', compact(
             'properties', 'state', 'locations', 'types', 'currencies',
-            'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable'
+            'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle'
         ))->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
     }
