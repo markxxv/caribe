@@ -66,8 +66,11 @@ class ImportRealestate
         $photosAdded = 0;
 
         foreach (array_unique($item['photos'] ?? []) as $url) {
+            $sourceKey = basename((string) parse_url($url, PHP_URL_PATH));
+
             if ($property->getMedia('photos')->contains(
                 fn ($media): bool => $media->getCustomProperty('source_url') === $url
+                    || ($sourceKey !== '' && $media->getCustomProperty('source_key') === $sourceKey)
             )) {
                 continue;
             }
@@ -83,9 +86,10 @@ class ImportRealestate
 
                     $property->addMedia($path)
                         ->usingFileName(Str::random(24) . '.' . $ext)
-                        ->withCustomProperties(['source_url' => $url])
+                        ->withCustomProperties(['source_url' => $url, 'source_key' => $sourceKey])
                         ->toMediaCollection('photos', 'public');
 
+                    $property->unsetRelation('media');
                     ++$photosAdded;
                 } finally {
                     if (is_file($path)) {
