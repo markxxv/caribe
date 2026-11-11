@@ -56,6 +56,7 @@ class RealestateImportController extends Controller
             'items.*.features' => ['nullable', 'array'],
             'items.*.amenities' => ['nullable', 'array'],
             'items.*.photos' => ['nullable', 'array', 'max:40'],
+            'items.*.photos_complete' => ['sometimes', 'boolean'],
             'items.*.photos.*' => ['required', 'url:http,https', 'max:2048'],
         ]);
 

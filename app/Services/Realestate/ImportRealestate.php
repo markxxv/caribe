@@ -3,6 +3,7 @@
 namespace App\Services\Realestate;
 
 use App\Jobs\ImportRealestatePhoto;
+use App\Support\Realestate\PhotoQuality;
 use App\Models\Realestate\City;
 use App\Models\Realestate\Country;
 use App\Models\Realestate\District;
@@ -64,14 +65,42 @@ class ImportRealestate
 
         // Store the property immediately; CDN downloads run in the database queue.
         $queued = 0;
+        $urls = array_values(array_unique($item['photos'] ?? []));
         $existingPhotos = $property->getMedia('photos');
 
-        foreach (array_unique($item['photos'] ?? []) as $url) {
+        // The new parser explicitly identifies the complete official photo
+        // list. Remove previously scraped recommendation-card thumbnails
+        // only for drafts, leaving published or manually uploaded media intact.
+        if (! $property->active && ! empty($urls) && ($item['photos_complete'] ?? false)) {
+            $sourceKeys = array_fill_keys(array_map(
+                fn (string $url): string => basename((string) parse_url($url, PHP_URL_PATH)),
+                $urls
+            ), true);
+
+            foreach ($existingPhotos as $media) {
+                $sourceUrl = $media->getCustomProperty('source_url');
+                $key = $media->getCustomProperty('source_key')
+                    ?: basename((string) parse_url($sourceUrl ?? '', PHP_URL_PATH));
+
+                if ($sourceUrl && ! isset($sourceKeys[$key])) {
+                    $media->delete();
+                }
+            }
+
+            $property->unsetRelation('media');
+            $existingPhotos = $property->getMedia('photos');
+        }
+
+        foreach ($urls as $url) {
             $sourceKey = basename((string) parse_url($url, PHP_URL_PATH));
 
-            if ($existingPhotos->contains(
+            $existing = $existingPhotos->first(
                 fn ($media): bool => $media->getCustomProperty('source_url') === $url
                     || ($sourceKey !== '' && $media->getCustomProperty('source_key') === $sourceKey)
+            );
+
+            if ($existing && ! PhotoQuality::isUpgrade(
+                $url, $existing->getCustomProperty('source_url')
             )) {
                 continue;
             }

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Realestate\Realestate;
+use App\Support\Realestate\PhotoQuality;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,9 +44,13 @@ class ImportRealestatePhoto implements ShouldQueue, ShouldBeUnique
 
         $sourceKey = basename((string) parse_url($this->url, PHP_URL_PATH));
 
-        if ($property->getMedia('photos')->contains(
+        $existing = $property->getMedia('photos')->first(
             fn ($media): bool => $media->getCustomProperty('source_url') === $this->url
                 || ($sourceKey !== '' && $media->getCustomProperty('source_key') === $sourceKey)
+        );
+
+        if ($existing && ! PhotoQuality::isUpgrade(
+            $this->url, $existing->getCustomProperty('source_url')
         )) {
             return;
         }
@@ -60,13 +65,21 @@ class ImportRealestatePhoto implements ShouldQueue, ShouldBeUnique
                     default => 'jpg',
                 };
 
-                $property->addMedia($path)
+                // Save the replacement first. If the CDN or media conversion
+                // fails, the existing photograph remains available.
+                $media = $property->addMedia($path)
                     ->usingFileName(Str::random(24) . '.' . $extension)
                     ->withCustomProperties([
                         'source_url' => $this->url,
                         'source_key' => $sourceKey,
                     ])
                     ->toMediaCollection('photos', 'public');
+
+                if ($existing) {
+                    $media->order_column = $existing->order_column;
+                    $media->save();
+                    $existing->delete();
+                }
 
                 $property->unsetRelation('media');
 
