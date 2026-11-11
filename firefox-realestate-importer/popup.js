@@ -41,7 +41,7 @@ function updatePageMode(){
 }
 function paint(job,items){
   const names={detecting:"Определение страницы",listing:"Загрузка выдачи",details:"Сбор карточек",upload:"Импорт в Laravel",
-    done:"Завершено",canceled:"Остановлено",error:"Ошибка"};
+    done:"Завершено",done_with_errors:"Завершено с ошибками",stopping:"Остановка…",interrupted:"Прервано",canceled:"Остановлено",error:"Ошибка"};
   field("phase").textContent=names[job.phase]||"Готово к запуску";
   field("current").textContent=job.current||job.message||"";
   field("progress").max=Math.max(job.total||1,1);
@@ -50,11 +50,12 @@ function paint(job,items){
   field("count").textContent="Собрано: "+count+" · Обработано: "+(job.processed||0)+"/"+
     (job.total||0)+" · Загружено: "+(job.uploaded||0);
   const errors=job.errors||[];
-  field("errors").textContent=errors.length?"Ошибок: "+errors.length+" · "+errors.at(-1).message:"";
+  field("errors").textContent=errors.length?"Ошибок: "+errors.length+" · "+errors.at(-1).message:(job.phase==="error"||job.phase==="interrupted"?job.message||"":"");
   for(const id of ["collect","collectSend","upload"])field(id).disabled=Boolean(job.running);
   field("upload").disabled=Boolean(job.running)||!items.some(item=>!item.incomplete);
   field("download").disabled=items.length===0;
   field("cancel").hidden=!job.running;
+  field("cancel").disabled=!job.running||job.phase==="stopping";
 }
 const settingsKeys = {source:"sourceUrl",endpoint:"endpointUrl",token:"apiToken"};
 
@@ -148,7 +149,17 @@ async function execute(type,send=false){
 field("collect").onclick=()=>execute("collect");
 field("collectSend").onclick=()=>execute("collect",true);
 field("upload").onclick=()=>execute("upload");
-field("cancel").onclick=()=>browser.runtime.sendMessage({type:"cancel"});
+field("cancel").onclick=async()=>{
+  field("cancel").disabled=true;
+  field("phase").textContent="Остановка…";
+  try{
+    const result=await browser.runtime.sendMessage({type:"cancel"});
+    if(!result?.ok)throw Error(result?.error||"Не удалось остановить импорт");
+  }catch(error){
+    field("cancel").disabled=false;
+    field("errors").textContent=String(error.message||error);
+  }
+};
 field("panel").onclick=()=>browser.tabs.create({url:browser.runtime.getURL("popup.html"),active:true});
 field("download").onclick=async()=>{
   const items=(await browser.storage.local.get("items")).items||[];
