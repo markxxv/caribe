@@ -21,6 +21,12 @@
         if ($galleryImages->isEmpty() && ($cover = $realestate->getFirstMedia('cover'))) {
             $galleryImages = collect([$cover]);
         }
+
+        // Duplicating the two slides gives Embla enough content for a true loop.
+        // Only the original slides appear in the thumbnail navigation.
+        $gallerySlides = $galleryImages->count() === 2
+            ? $galleryImages->concat($galleryImages)
+            : $galleryImages;
     @endphp
 
     <main class="min-h-screen bg-white pt-32 pb-20 text-zinc-900 md:pt-40">
@@ -65,20 +71,22 @@
                         <div class="relative overflow-hidden bg-zinc-100 md:rounded-xl">
                             <div data-gallery-viewport class="overflow-hidden" aria-roledescription="карусель" aria-label="Фотографии объекта">
                                 <div class="flex touch-pan-y">
-                                    @foreach($galleryImages as $photo)
+                                    @foreach($gallerySlides as $photo)
                                         @php
+                                            $photoNumber = ($loop->index % $galleryImages->count()) + 1;
+                                            $isDuplicate = $loop->index >= $galleryImages->count();
                                             $isCover = $photo->collection_name === 'cover';
                                             $largeConversion = $isCover ? 'big' : 'photo_large';
                                             $imageUrl = $photo->hasGeneratedConversion($largeConversion)
                                                 ? $photo->getUrl($largeConversion)
                                                 : $photo->getUrl();
                                         @endphp
-                                        <figure class="min-w-0 flex-[0_0_100%]">
+                                        <figure class="min-w-0 flex-[0_0_100%]" @if($isDuplicate) aria-hidden="true" @endif>
                                             <img src="{{ $imageUrl }}"
-                                                alt="{{ $realestate->title }} — фото {{ $loop->iteration }}"
+                                                alt="{{ $isDuplicate ? '' : $realestate->title . ' — фото ' . $photoNumber }}"
                                                 class="aspect-[4/3] w-full object-cover md:aspect-[16/10]"
                                                 width="1600" height="1000"
-                                                {{ $loop->first ? 'fetchpriority=high' : 'loading=lazy' }}
+                                                @if($loop->first) fetchpriority="high" @else loading="lazy" @endif
                                                 decoding="async">
                                         </figure>
                                     @endforeach

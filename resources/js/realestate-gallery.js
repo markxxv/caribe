@@ -18,7 +18,7 @@ export function initRealestateGalleries() {
         const counter = root.querySelector('[data-gallery-counter]');
 
         function showSelected() {
-            const index = embla.selectedScrollSnap();
+            const index = embla.selectedScrollSnap() % thumbs.length;
 
             if (counter) counter.textContent = (index + 1) + ' / ' + thumbs.length;
 
@@ -48,7 +48,7 @@ export function initRealestateGalleries() {
             const current = embla.selectedScrollSnap();
 
             if (direction === -1 && !embla.canScrollPrev()) {
-                embla.scrollTo(thumbs.length - 1, reduceMotion);
+                embla.scrollTo(embla.scrollSnapList().length - 1, reduceMotion);
             } else if (direction === 1 && !embla.canScrollNext()) {
                 embla.scrollTo(0, reduceMotion);
             } else if (direction === -1) {
@@ -64,7 +64,20 @@ export function initRealestateGalleries() {
         root.querySelector('[data-gallery-next]')?.addEventListener('click', () => move(1));
 
         thumbs.forEach((thumb, index) => {
-            thumb.addEventListener('click', () => embla.scrollTo(index, reduceMotion));
+            thumb.addEventListener('click', () => {
+                const current = embla.selectedScrollSnap();
+                const candidates = [index];
+
+                if (embla.scrollSnapList().length > thumbs.length) {
+                    candidates.push(index + thumbs.length);
+                }
+
+                const nearest = candidates.reduce((best, choice) =>
+                    Math.abs(choice - current) < Math.abs(best - current) ? choice : best
+                );
+
+                embla.scrollTo(nearest, reduceMotion);
+            });
         });
 
         root.addEventListener('keydown', (event) => {
