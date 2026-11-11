@@ -58,7 +58,7 @@
             </div>
         </section>
 
-        <section id="catalog-search" aria-label="Поиск недвижимости" class="relative z-[80] mx-auto -mt-16 max-w-[1320px] lg:z-30" px-4 sm:px-6 lg:px-8">
+        <section id="catalog-search" aria-label="Поиск недвижимости" class="relative z-[80] mx-auto -mt-16 max-w-[1320px] px-4 sm:px-6 lg:px-8 lg:z-30">
             <button type="button" data-catalog-open class="flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl bg-white px-5 text-sm font-medium text-[#17362f] shadow-[0_12px_40px_rgba(19,46,38,0.1)] lg:hidden">
                 <span class="flex items-center gap-3"><x-tabler-adjustments-horizontal class="size-5" stroke-width="1.6" /> Подобрать недвижимость</span>
                 <x-tabler-arrow-right class="size-5" stroke-width="1.6" />

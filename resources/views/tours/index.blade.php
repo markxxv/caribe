@@ -5,39 +5,43 @@
 @endif
 
 <x-layout>
-    <!-- Hero Section -->
-    <section class="relative py-20 lg:py-28 bg-gray-100 overflow-hidden">
-        <div class="absolute inset-0 opacity-5">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(16,185,129,0.3),transparent_50%)]"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.3),transparent_50%)]"></div>
-        </div>
+    <!-- Editorial hero -->
+    <section class="relative overflow-hidden bg-[#153b35] pb-14 pt-32 text-white sm:pb-16 sm:pt-36 lg:pb-20 lg:pt-40">
+        <div aria-hidden="true" class="pointer-events-none absolute -right-24 -top-40 size-[500px] rounded-full bg-[#7b9c8d]/15 blur-3xl lg:right-[5%]"></div>
+        <div aria-hidden="true" class="pointer-events-none absolute bottom-0 right-0 hidden h-[300px] w-[38%] opacity-20 lg:block"
+            style="background: repeating-radial-gradient(circle at 100% 100%, transparent 0 44px, #b6cbbd 45px 46px, transparent 47px 90px)"></div>
 
-        <div class="container mx-auto px-4 md:px-8 relative z-10">
-            <div class="max-w-3xl mx-auto text-center">
-                <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                    {{ $isArgentina ? 'Туры по Аргентине' : 'Туры по Латинской Америке' }}
-                </h1>
-                <p class="text-xl text-gray-600 mb-8">
-                    {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Откройте для себя культуру, традиции и достопримечательности Латинской Америки с профессиональным гидом' }}
-                </p>
+        <div class="relative mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
+            <nav aria-label="Навигация" class="mb-9 flex items-center gap-2 text-xs text-white/55">
+                <a href="/" class="transition hover:text-white">Главная</a>
+                <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
+                <span class="text-white/90">Туры</span>
+            </nav>
 
-{{--                <!-- Search Bar -->--}}
-{{--                <form method="GET" action="{{ route('tours.index') }}" class="max-w-2xl mx-auto">--}}
-{{--                    <div class="relative">--}}
-{{--                        <input--}}
-{{--                            type="text"--}}
-{{--                            name="search"--}}
-{{--                            value="{{ request('search') }}"--}}
-{{--                            placeholder="Поиск статей..."--}}
-{{--                            class="w-full px-6 py-4 pr-12 rounded-full border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"--}}
-{{--                        >--}}
-{{--                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors">--}}
-{{--                            <x-tabler-search class="w-5 h-5" />--}}
-{{--                        </button>--}}
-{{--                    </div>--}}
-{{--                    <input type="hidden" name="country" value="{{ request('country', 'all') }}">--}}
-{{--                    --}}{{-- <input type="hidden" name="category" value="{{ request('category', 'all') }}"> --}}
-{{--                </form>--}}
+            <div class="grid items-end gap-7 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
+                <div class="min-w-0">
+                    <p class="mb-5 flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#c9d9c6]">
+                        <span class="h-px w-9 bg-[#d6c796]"></span>
+                        Visita Caribe · Путешествия
+                    </p>
+                    <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
+                        @if($isArgentina)
+                            Туры по <span class="text-[#c9d9c6]">Аргентине</span>
+                        @else
+                            Туры по <span class="text-[#c9d9c6]">Латинской Америке</span>
+                        @endif
+                    </h1>
+                </div>
+
+                <div class="lg:pb-1">
+                    <p class="max-w-[310px] text-sm leading-7 text-white/65">
+                        {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Откройте для себя культуру, традиции и достопримечательности Латинской Америки с профессиональным гидом' }}
+                    </p>
+                    <div class="mt-6 flex items-center gap-3">
+                        <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($tours->total(), 0, ',', ' ') }}</span>
+                        <span class="text-xs leading-5 text-white/50">туров<br>по вашему запросу</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
