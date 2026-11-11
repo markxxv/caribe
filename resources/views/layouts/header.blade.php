@@ -55,6 +55,7 @@
                 <div class="md:flex hidden justify-start items-center space-x-8 text-xs uppercase tracking-widest relative z-10">
                     <a href="/tours" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                     <a href="/blog" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
+                    <a href="/realestate" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Недвижимость</a>
                 </div>
             </div>
 
@@ -106,6 +107,7 @@
                 <a href="/" class="text-white hover:text-gg-gold transition-colors duration-300">Главная</a>
                 <a href="/tours" class="text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                 <a href="/blog" class="text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
+                <a href="/realestate" class="text-white hover:text-gg-gold transition-colors duration-300">Недвижимость</a>
                 <a href="/about" class="text-white hover:text-gg-gold transition-colors duration-300">Обо мне</a>
                 <a href="/contact" class="text-white hover:text-gg-gold transition-colors duration-300">Контакты</a>
             </nav>

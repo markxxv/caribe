@@ -64,7 +64,9 @@
             <nav aria-label="Навигация" class="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#73817b] sm:mb-7">
                 <a href="/" class="transition-colors hover:text-[#17342f]">Главная</a>
                 <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
-                <span class="text-[#17342f]">Недвижимость</span>
+                <a href="{{ route('realestate.index') }}" class="transition-colors hover:text-[#17342f]">Недвижимость</a>
+                <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
+                <span class="max-w-[240px] truncate text-[#17342f]">{{ $realestate->title }}</span>
             </nav>
 
             <div class="grid items-start gap-x-8 gap-y-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-x-11">

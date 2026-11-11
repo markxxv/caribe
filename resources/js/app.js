@@ -6,3 +6,9 @@ if (document.querySelector('[data-realestate-gallery]')) {
         initRealestateGalleries();
     });
 }
+
+if (document.querySelector('[data-catalog-search]')) {
+    import('./realestate-catalog.js').then(({ initRealestateCatalog }) => {
+        initRealestateCatalog();
+    });
+}
