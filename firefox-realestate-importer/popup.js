@@ -17,13 +17,48 @@ function paint(job,items){
   field("download").disabled=items.length===0;
   field("cancel").hidden=!job.running;
 }
+const settingsKeys = {source:"sourceUrl",endpoint:"endpointUrl",token:"apiToken"};
+
 async function refresh(){
-  const data=await browser.storage.local.get(["job","items","settings"]);
-  if(data.settings&&!field("source").value){
-    field("source").value=data.settings.source||"";
-    field("endpoint").value=data.settings.endpoint||"";
-  }
+  const data=await browser.storage.local.get(["job","items"]);
   paint(data.job||{},data.items||[]);
+}
+
+async function initialize(){
+  const stored=await browser.storage.local.get([
+    "job","items","settings","sourceUrl","endpointUrl","apiToken"
+  ]);
+
+  let activeUrl=null;
+  try{
+    const [tab]=await browser.tabs.query({active:true,currentWindow:true});
+    if(tab?.url){
+      const u=new URL(tab.url);
+      if(u.protocol==="https:" && /(^|\.)zonaprop\.com\.ar$/.test(u.hostname)){
+        activeUrl=u.href;
+      }
+    }
+  }catch{
+    // In a standalone extension tab, fall back to the most recent source URL.
+  }
+
+  field("source").value=activeUrl||stored.sourceUrl||stored.settings?.source||"";
+  field("endpoint").value=stored.endpointUrl||stored.settings?.endpoint||"";
+  field("token").value=stored.apiToken||"";
+
+  // Save on every input, not only after clicking Start. Closing the popup cannot
+  // discard the endpoint or token that was just pasted.
+  for(const [id,key] of Object.entries(settingsKeys)){
+    field(id).addEventListener("input",()=>{
+      browser.storage.local.set({[key]:field(id).value}).catch(console.error);
+    });
+  }
+
+  if(activeUrl && activeUrl!==stored.sourceUrl){
+    await browser.storage.local.set({sourceUrl:activeUrl});
+  }
+
+  paint(stored.job||{},stored.items||[]);
 }
 async function execute(type,send=false){
   try{
@@ -40,7 +75,7 @@ async function execute(type,send=false){
       if(!await browser.permissions.request({origins:[hostPattern]}))throw Error("Нет разрешения для API");
       if(!token)throw Error("Введите API токен");
     }
-    await browser.storage.local.set({settings:{source,endpoint}});
+    await browser.storage.local.set({sourceUrl:source,endpointUrl:endpoint,apiToken:token});
     const response=await browser.runtime.sendMessage({type,url:source,endpoint,token,send});
     if(!response?.ok)throw Error(response?.error||"Ошибка запуска");
     await refresh();
@@ -64,4 +99,7 @@ field("download").onclick=async()=>{
 browser.storage.onChanged.addListener((changes,area)=>{
   if(area==="local"&&(changes.job||changes.items))refresh();
 });
-refresh();
+initialize().catch(error=>{
+  field("phase").textContent="Ошибка загрузки настроек";
+  field("errors").textContent=String(error.message||error);
+});
