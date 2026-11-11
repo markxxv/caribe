@@ -18,9 +18,9 @@ progress::-moz-progress-bar{background:#6687f0}#errors{margin-top:8px;color:#e9a
 <div id="pageType" class="muted" role="status" style="margin-top:6px">Определение типа страницы при сборе</div>
 <label for="endpoint">Laravel API endpoint</label><input id="endpoint" type="url" placeholder="https://visitacaribe.com/api/realestate/import">
 <label for="token">API токен (сохраняется в Firefox)</label><input id="token" type="password" autocomplete="off">
-<button class="primary" id="collect">Собрать JSON</button>
-<button id="collectSend">Собрать и отправить в Laravel</button>
-<div class="two"><button id="upload">Отправить готовый JSON</button><button id="download">Скачать JSON</button></div>
+<button class="primary" id="collect" disabled>Собрать JSON</button>
+<button id="collectSend" disabled>Собрать и отправить в Laravel</button>
+<div class="two"><button id="upload" disabled>Отправить готовый JSON</button><button id="download" disabled>Скачать JSON</button></div>
 <button id="panel">Открыть панель во вкладке</button>
 <button id="cancel" hidden>Остановить</button>
 <div class="status"><strong id="phase">Готово к запуску</strong><div id="current" class="muted"></div>
