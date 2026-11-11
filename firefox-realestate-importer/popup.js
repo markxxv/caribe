@@ -9,6 +9,27 @@ function classifyUrl(value){
   }catch{return "unknown";}
 }
 
+function parseSourceUrl(value){
+  if(!value)throw Error("Укажите URL страницы Zonaprop.");
+  let url;
+  try{url=new URL(value);}catch{throw Error("Некорректный URL страницы Zonaprop.");}
+  if(url.protocol!=="https:"||!/(^|\.)zonaprop\.com\.ar$/.test(url.hostname))
+    throw Error("Ссылка должна вести на zonaprop.com.ar по HTTPS.");
+  return url;
+}
+
+function parseApiUrl(value){
+  if(!value)throw Error("Laravel API endpoint не заполнен. Вставьте адрес /api/realestate/import.");
+  let url;
+  try{url=new URL(value);}catch{throw Error("Некорректный Laravel API endpoint. Нужен полный адрес https://.../api/realestate/import.");}
+  if(url.protocol!=="https:"&&!(url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname)))
+    throw Error("Для Laravel API требуется HTTPS (исключение — localhost).");
+  if(url.pathname.replace(/\/+$/,"")!=="/api/realestate/import")
+    throw Error("Laravel API endpoint должен заканчиваться на /api/realestate/import.");
+  if(url.username||url.password)throw Error("Уберите логин и пароль из адреса API.");
+  return url;
+}
+
 function updatePageMode(){
   const mode=classifyUrl(field("source").value.trim());
   field("pageType").textContent=mode==="detail" ? "Отдельный объект"
@@ -81,25 +102,48 @@ async function initialize(){
   paint(stored.job||{},stored.items||[]);
 }
 async function execute(type,send=false){
+  const source=field("source").value.trim();
+  const endpoint=field("endpoint").value.trim();
+  const token=field("token").value.trim();
+
   try{
-    const source=field("source").value.trim(),endpoint=field("endpoint").value.trim(),token=field("token").value.trim();
-    if(type==="collect"){
-      const u=new URL(source);
-      if(u.protocol!=="https:"||!/(^|\.)zonaprop\.com\.ar$/.test(u.hostname))throw Error("Нужна ссылка Zonaprop");
-    }
+    if(type==="collect")parseSourceUrl(source);
+
     if(send||type==="upload"){
-      const u=new URL(endpoint);
-      if(u.protocol!=="https:"&&!["localhost","127.0.0.1"].includes(u.hostname))throw Error("Для API требуется HTTPS");
-      // Requested directly on the user click; only this endpoint host is granted.
+      // Validate both inputs before the permission prompt. Never construct
+      // URL("") or wipe saved credentials when collecting JSON only.
+      const u=parseApiUrl(endpoint);
+      if(!token){
+        field("token").focus();
+        throw Error("Введите API токен. Он будет сохранён в Firefox.");
+      }
+      // Permission must be requested directly from the button click.
       const hostPattern=u.protocol+"//"+u.hostname+"/*";
-      if(!await browser.permissions.request({origins:[hostPattern]}))throw Error("Нет разрешения для API");
-      if(!token)throw Error("Введите API токен");
+      if(!await browser.permissions.request({origins:[hostPattern]}))
+        throw Error("Firefox не дал расширению доступ к Laravel API.");
     }
-    await browser.storage.local.set({sourceUrl:source,endpointUrl:endpoint,apiToken:token});
+
+    const settings={};
+    if(type==="collect")settings.sourceUrl=source;
+    if(send||type==="upload"){
+      settings.endpointUrl=endpoint;
+      settings.apiToken=token;
+    }
+    if(Object.keys(settings).length)await browser.storage.local.set(settings);
+
     const response=await browser.runtime.sendMessage({type,url:source,endpoint,token,send});
     if(!response?.ok)throw Error(response?.error||"Ошибка запуска");
     await refresh();
-  }catch(e){field("phase").textContent="Ошибка запуска";field("errors").textContent=String(e.message||e);}
+  }catch(e){
+    field("phase").textContent="Ошибка запуска";
+    field("current").textContent="";
+    field("errors").textContent=String(e.message||e);
+    field("progress").max=1;
+    field("progress").value=0;
+    field("count").textContent="Новый запуск не начался · ранее собрано: "+count;
+    if(type==="collect" && !source)field("source").focus();
+    else if((send||type==="upload")&&!endpoint)field("endpoint").focus();
+  }
 }
 field("collect").onclick=()=>execute("collect");
 field("collectSend").onclick=()=>execute("collect",true);
