@@ -61,46 +61,11 @@
 
     <main class="min-h-screen bg-[#f7f8f5] pb-20 pt-32 text-[#17342f] sm:pb-24 md:pt-40">
         <div class="mx-auto max-w-[1260px] px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Навигация" class="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#73817b] sm:mb-10">
+            <nav aria-label="Навигация" class="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#73817b] sm:mb-7">
                 <a href="/" class="transition-colors hover:text-[#17342f]">Главная</a>
                 <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
                 <span class="text-[#17342f]">Недвижимость</span>
             </nav>
-
-            @unless($realestate->active)
-                <div class="mb-7 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-900">
-                    Предпросмотр — объект пока не опубликован.
-                </div>
-            @endunless
-
-            <header class="mb-8 max-w-5xl sm:mb-10">
-                <div class="mb-4 flex flex-wrap items-center gap-2 text-xs text-[#65776f] sm:text-sm">
-                    @if($type)<span>{{ $type }}</span>@endif
-                    @if($type && $operation)<span class="text-[#b6c3b9]">/</span>@endif
-                    @if($operation)<span>{{ $operation }}</span>@endif
-                    @if($realestate->newbuild)
-                        <span class="rounded-full bg-[#e8eee7] px-3 py-1 text-xs font-medium text-[#275b49]">Новостройка</span>
-                    @endif
-                    @if($realestate->sold)
-                        <span class="rounded-full bg-[#f2e7dc] px-3 py-1 text-xs font-medium text-[#946442]">Продано</span>
-                    @endif
-                </div>
-
-                <h1 class="max-w-[950px] text-3xl font-medium tracking-tight text-[#102a27] sm:text-4xl lg:text-[44px] lg:leading-[1.15]">
-                    {{ $realestate->title }}
-                </h1>
-
-                @if($location || $realestate->address)
-                    <div class="mt-4 flex items-start gap-2 text-sm text-[#73817b] sm:text-base">
-                        <x-tabler-map-pin class="mt-0.5 size-4 shrink-0" stroke-width="1.6" />
-                        <p>
-                            @if($location){{ $location }}@endif
-                            @if($location && $realestate->address)<span class="mx-1">·</span>@endif
-                            @if($realestate->address){{ $realestate->address }}@endif
-                        </p>
-                    </div>
-                @endif
-            </header>
 
             <div class="grid items-start gap-x-8 gap-y-8 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-x-11">
                 <section class="min-w-0" aria-label="Фотографии недвижимости">
@@ -178,8 +143,48 @@
                     @endif
                 </section>
 
-                <aside class="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-stretch" aria-label="Цена и связь">
+                <header class="min-w-0 lg:col-start-1 lg:row-start-2">
+                    <h1 class="text-3xl font-medium tracking-tight text-[#102a27] sm:text-4xl lg:text-[38px] lg:leading-[1.2]">
+                        {{ $realestate->title }}
+                    </h1>
+
+                    @if($location || $realestate->address)
+                        <div class="mt-4 flex items-start gap-2 text-sm text-[#73817b] sm:text-base">
+                            <x-tabler-map-pin class="mt-0.5 size-4 shrink-0" stroke-width="1.6" />
+                            <p>
+                                @if($location){{ $location }}@endif
+                                @if($location && $realestate->address)<span class="mx-1">·</span>@endif
+                                @if($realestate->address){{ $realestate->address }}@endif
+                            </p>
+                        </div>
+                    @endif
+                </header>
+
+                <aside class="min-w-0 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-stretch" aria-label="Цена и связь">
                     <div class="rounded-[24px] bg-[#102a27] p-6 text-white shadow-[0_18px_45px_rgba(16,42,39,0.12)] sm:p-8 lg:sticky lg:top-28">
+                        @unless($realestate->active)
+                            <p class="mb-6 rounded-xl bg-amber-400/15 px-4 py-3 text-xs text-[#f6d889]">
+                                Предпросмотр — объект пока не опубликован.
+                            </p>
+                        @endunless
+
+                        @if($type || $operation || $realestate->newbuild || $realestate->sold)
+                            <div class="mb-7 flex flex-wrap gap-2">
+                                @if($type)
+                                    <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90">{{ $type }}</span>
+                                @endif
+                                @if($operation)
+                                    <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90">{{ $operation }}</span>
+                                @endif
+                                @if($realestate->newbuild)
+                                    <span class="rounded-full bg-[#eccd31]/15 px-3 py-1.5 text-xs font-medium text-[#eccd31]">Новостройка</span>
+                                @endif
+                                @if($realestate->sold)
+                                    <span class="rounded-full bg-[#eccd31]/15 px-3 py-1.5 text-xs font-medium text-[#eccd31]">Продано</span>
+                                @endif
+                            </div>
+                        @endif
+
                         <p class="text-xs font-medium uppercase tracking-[0.15em] text-[#e2c34d]">Стоимость объекта</p>
 
                         <p class="mt-3 break-words text-[32px] font-medium tracking-tight sm:text-4xl lg:text-[35px]">
@@ -218,7 +223,7 @@
                     </div>
                 </aside>
 
-                <div class="min-w-0 space-y-11 lg:col-start-1 lg:row-start-2 sm:space-y-14">
+                <div class="min-w-0 space-y-11 lg:col-start-1 lg:row-start-3 sm:space-y-14">
                     @if($specifications->isNotEmpty())
                         <section aria-labelledby="realestate-specifications" class="rounded-[22px] bg-white p-6 sm:p-8">
                             <h2 id="realestate-specifications" class="text-xl font-medium tracking-tight text-[#102a27] sm:text-2xl">
