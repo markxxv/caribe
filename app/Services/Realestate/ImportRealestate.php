@@ -2,6 +2,7 @@
 
 namespace App\Services\Realestate;
 
+use App\Jobs\ImportRealestatePhoto;
 use App\Models\Realestate\City;
 use App\Models\Realestate\Country;
 use App\Models\Realestate\District;
@@ -9,7 +10,6 @@ use App\Models\Realestate\Realestate;
 use App\Models\Realestate\Region;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -62,53 +62,25 @@ class ImportRealestate
             return $property;
         });
 
-        $warnings = [];
-        $photosAdded = 0;
+        // Store the property immediately; CDN downloads run in the database queue.
+        $queued = 0;
+        $existingPhotos = $property->getMedia('photos');
 
         foreach (array_unique($item['photos'] ?? []) as $url) {
             $sourceKey = basename((string) parse_url($url, PHP_URL_PATH));
 
-            if ($property->getMedia('photos')->contains(
+            if ($existingPhotos->contains(
                 fn ($media): bool => $media->getCustomProperty('source_url') === $url
                     || ($sourceKey !== '' && $media->getCustomProperty('source_key') === $sourceKey)
             )) {
                 continue;
             }
 
-            try {
-                $path = $this->downloadImage($url);
-                try {
-                    $ext = match (mime_content_type($path)) {
-                        'image/png' => 'png',
-                        'image/webp' => 'webp',
-                        default => 'jpg',
-                    };
+            ImportRealestatePhoto::dispatch($property->id, $url)
+                ->onConnection('database')
+                ->onQueue('realestate-photos');
 
-                    $property->addMedia($path)
-                        ->usingFileName(Str::random(24) . '.' . $ext)
-                        ->withCustomProperties(['source_url' => $url, 'source_key' => $sourceKey])
-                        ->toMediaCollection('photos', 'public');
-
-                    $property->unsetRelation('media');
-                    ++$photosAdded;
-                } finally {
-                    if (is_file($path)) {
-                        @unlink($path);
-                    }
-                }
-            } catch (\Throwable $e) {
-                report($e);
-                $warnings[] = 'Failed to download image: ' . $url;
-            }
-        }
-
-        if (! $property->getFirstMedia('cover') && ($first = $property->getFirstMedia('photos'))) {
-            try {
-                $first->copy($property, 'cover', 'public');
-            } catch (\Throwable $e) {
-                report($e);
-                $warnings[] = 'Could not create cover from first photo';
-            }
+            ++$queued;
         }
 
         return [
@@ -116,9 +88,10 @@ class ImportRealestate
             'source_url' => $sourceUrl,
             'created' => $created,
             'active' => $property->active,
-            'photos_added' => $photosAdded,
-            'photo_count' => $property->getMedia('photos')->count(),
-            'warnings' => $warnings,
+            'photos_added' => 0,
+            'photos_queued' => $queued,
+            'photo_count' => $existingPhotos->count(),
+            'warnings' => [],
         ];
     }
 
@@ -186,69 +159,4 @@ class ImportRealestate
         return $ids;
     }
 
-    private function downloadImage(string $url): string
-    {
-        $parts = parse_url($url);
-        $host = strtolower($parts['host'] ?? '');
-        $allowed = config('property_import.image_hosts', []);
-
-        if (($parts['scheme'] ?? null) !== 'https' || isset($parts['user']) || isset($parts['pass'])
-            || ! in_array($host, $allowed, true)) {
-            throw new RuntimeException('Image host not allowed');
-        }
-
-        $response = Http::withOptions(['stream' => true, 'allow_redirects' => false])
-            ->connectTimeout(8)
-            ->timeout(25)
-            ->get($url);
-
-        if (! $response->successful() || ! str_starts_with(strtolower((string) $response->header('Content-Type')), 'image/')) {
-            throw new RuntimeException('Invalid image response');
-        }
-
-        $path = tempnam(sys_get_temp_dir(), 'property-photo-');
-        if (! $path) {
-            throw new RuntimeException('Cannot create temp file');
-        }
-
-        try {
-            $stream = $response->toPsrResponse()->getBody();
-            $maxBytes = config('property_import.max_image_bytes', 15728640);
-            $count = 0;
-            $file = fopen($path, 'wb');
-
-            if (! $file) {
-                throw new RuntimeException('Cannot open temp file');
-            }
-
-            try {
-                while (! $stream->eof()) {
-                    $chunk = $stream->read(8192);
-                    if ($chunk === '') {
-                        break;
-                    }
-
-                    $count += strlen($chunk);
-                    if ($count > $maxBytes) {
-                        throw new RuntimeException('Image is too large');
-                    }
-                    if (fwrite($file, $chunk) !== strlen($chunk)) {
-                        throw new RuntimeException('Failed writing image');
-                    }
-                }
-            } finally {
-                fclose($file);
-            }
-
-            $mime = mime_content_type($path);
-            if (! in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true) || ! @getimagesize($path)) {
-                throw new RuntimeException('Unsupported image type');
-            }
-
-            return $path;
-        } catch (\Throwable $e) {
-            @unlink($path);
-            throw $e;
-        }
-    }
 }
