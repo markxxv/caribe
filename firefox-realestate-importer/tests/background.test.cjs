@@ -211,3 +211,61 @@ test('Stop interrupts active CDN download without losing saved property', async 
     assert.equal(app.storage.job.running, false);
     assert.equal(app.storage.results[0].id, 321);
 });
+
+
+test('HTTP 429 on metadata and photo upload is retried using Retry-After', async () => {
+    const photo = 'https://imgar.zonapropcdn.com/avisos/1/00/58/88/45/69/1200x1200/2046926477.jpg';
+    let metadataCalls = 0;
+    let photoCalls = 0;
+    const timestamps = [];
+
+    const tooManyRequests = {
+        status: 429,
+        ok: false,
+        headers: {get: header => header === 'retry-after' ? '0' : null},
+        async json() {return {message: 'Too Many Attempts.'};},
+    };
+
+    const app = createBackground(async (url, options) => {
+        timestamps.push({url, at: Date.now()});
+
+        if (url === endpoint) {
+            if (++metadataCalls === 1) return tooManyRequests;
+            return {
+                status: 200, ok: true,
+                async json() {return {items: [{id: 321, photo_sources: []}], errors: []};},
+            };
+        }
+
+        if (url === photo) {
+            return {
+                ok: true,
+                headers: {get: header => header === 'content-type' ? 'image/jpeg' : '4'},
+                async blob() {return new Blob(['test'], {type: 'image/jpeg'});},
+            };
+        }
+
+        if (url.endsWith('/api/realestate/import/photo')) {
+            assert.equal(options.method, 'POST');
+            if (++photoCalls === 1) return tooManyRequests;
+            return {ok: true, status: 200, async json() {return {id: 42, skipped: false};}};
+        }
+
+        throw new Error('Unexpected URL ' + url);
+    }, {items: [{...item, photos: [photo]}]});
+
+    await app.controls.ready;
+    await app.controls.process({type: 'upload', endpoint, token: 'test-token'});
+
+    assert.equal(metadataCalls, 2);
+    assert.equal(photoCalls, 2);
+    assert.equal(app.storage.job.phase, 'done');
+    assert.equal(app.storage.job.uploaded, 1);
+    assert.equal(app.storage.results[0].photos_uploaded, 1);
+
+    const metadataRequests = timestamps.filter(request => request.url === endpoint);
+    const photoRequests = timestamps.filter(request => request.url.endsWith('/api/realestate/import/photo'));
+
+    assert.ok(metadataRequests[1].at - metadataRequests[0].at >= 3000);
+    assert.ok(photoRequests[1].at - photoRequests[0].at >= 900);
+});
