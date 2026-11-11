@@ -15,6 +15,11 @@ Route::get('/tours', [Front::class, 'toursIndex'])->name('tours.index');
 Route::get('/tours/argentina', [Front::class, 'toursArgentina'])->name('tours.argentina');
 Route::get('/tours/{slug}', [Front::class, 'toursShow'])->name('tours.show');
 
+Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
+// The constrained catch-all allows readable filter paths without hijacking property slugs.
+Route::get('/realestate/{filters}', [RealestateController::class, 'index'])
+    ->where('filters', '(?:buy|rent|in|type|currency|price|area|beds|baths|ref|newbuild|resale|sort|page)(?:/.*)?')
+    ->name('realestate.filtered');
 Route::get('/realestate/{url}', [RealestateController::class, 'show'])->name('realestate.show');
 
 Route::view('/services', 'services')->name('services');
