@@ -96,6 +96,10 @@ class ImportRealestate
             'active' => $property->active,
             'photos_added' => 0,
             'photo_count' => $existingPhotos->count(),
+            'photo_sources' => $existingPhotos->map(fn ($media): array => [
+                'source_key' => $media->getCustomProperty('source_key'),
+                'source_url' => $media->getCustomProperty('source_url'),
+            ])->values()->all(),
             'warnings' => [],
         ];
     }
