@@ -231,6 +231,10 @@ async function sendItem(endpoint, token, item, signal) {
     controller.abort();
   }, API_TIMEOUT_MS);
 
+  // Image URLs are kept in Firefox for direct file uploads. Never send
+  // them in property JSON: Laravel validates a maximum of 40 photos there.
+  const {photos, photos_complete, incomplete, scrape_error, ...metadata} = item;
+
   try {
     const response = await fetch(endpoint, {
       method: "POST",
@@ -240,7 +244,7 @@ async function sendItem(endpoint, token, item, signal) {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({items: [item]}),
+      body: JSON.stringify({items: [metadata]}),
     });
 
     const data = await response.json().catch(() => null);
