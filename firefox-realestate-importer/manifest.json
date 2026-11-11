@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Visita Caribe — импорт недвижимости",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Собирает объявления Zonaprop через Firefox и отправляет их в Laravel как черновики.",
   "permissions": [
     "tabs",

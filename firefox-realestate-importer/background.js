@@ -2,6 +2,14 @@
 const API_TIMEOUT_MS = 120000;
 const PAGE_TIMEOUT_MS = 45000;
 const MAX_UPLOAD_ATTEMPTS = 3;
+// Laravel rate limiting: metadata 20/min, photos 120/min.
+// Use a conservative pace and honor Retry-After on HTTP 429.
+const METADATA_SPACING_MS = 3500;
+const PHOTO_SPACING_MS = 850;
+const MAX_PHOTO_429_RETRIES = 2;
+const DEFAULT_429_DELAY_MS = 15000;
+let lastMetadataRequest = 0;
+let lastPhotoRequest = 0;
 const IMAGE_DOWNLOAD_TIMEOUT_MS = 12000;
 const IMAGE_UPLOAD_TIMEOUT_MS = 30000;
 const IMAGE_BATCH_LIMIT_MS = 120000;
@@ -44,6 +52,29 @@ function delay(ms, signal) {
     }
     signal.addEventListener("abort", abort, {once: true});
   });
+}
+
+async function paceRequest(type, signal) {
+  const now = Date.now();
+  const last = type === "metadata" ? lastMetadataRequest : lastPhotoRequest;
+  const gap = type === "metadata" ? METADATA_SPACING_MS : PHOTO_SPACING_MS;
+  if (last) await delay(Math.max(0, last + gap - now), signal);
+  stopped(signal);
+  if (type === "metadata") lastMetadataRequest = Date.now();
+  else lastPhotoRequest = Date.now();
+}
+
+function retryAfterMs(response, attempt = 0) {
+  const raw = response.headers?.get("retry-after");
+  if (raw != null && raw.trim() !== "") {
+    const seconds = Number(raw);
+    const wait = Number.isFinite(seconds) && seconds >= 0
+      ? seconds * 1000
+      : Date.parse(raw) - Date.now();
+    if (Number.isFinite(wait) && wait >= 0)
+      return Math.min(Math.max(1000, Math.ceil(wait) + 1000), 90000);
+  }
+  return Math.min(DEFAULT_429_DELAY_MS * (attempt + 1), 60000);
 }
 
 function withCancellation(promise, signal) {
@@ -188,6 +219,7 @@ function apiErrors(data) {
 }
 
 async function sendItem(endpoint, token, item, signal) {
+  await paceRequest("metadata", signal);
   stopped(signal);
   const controller = new AbortController();
   let timeout = false;
@@ -213,6 +245,13 @@ async function sendItem(endpoint, token, item, signal) {
 
     const data = await response.json().catch(() => null);
     stopped(signal);
+
+    // 429 can be emitted by Laravel or a reverse proxy, sometimes as HTML.
+    if (response.status === 429) {
+      const error = Error("HTTP 429: " + (data?.message || "Too Many Attempts"));
+      error.retryAfterMs = retryAfterMs(response);
+      throw error;
+    }
 
     if (!data) throw Error("HTTP " + response.status + ": Laravel вернул не-JSON ответ");
     const details = apiErrors(data);
@@ -323,8 +362,13 @@ async function transferPhotos(endpoint, token, item, realestateId, existingSourc
       form.append("source_url", url);
       form.append("realestate_id", String(realestateId));
 
-      const saved = await photoRequest(async requestSignal => {
-        const response = await fetch(photoEndpoint, {
+      let saved;
+      for (let attempt = 0; attempt <= MAX_PHOTO_429_RETRIES; attempt++) {
+        stopped(signal);
+        await paceRequest("photo", signal);
+        try {
+          saved = await photoRequest(async requestSignal => {
+            const response = await fetch(photoEndpoint, {
           method: "POST",
           signal: requestSignal,
           headers: {
@@ -334,13 +378,31 @@ async function transferPhotos(endpoint, token, item, realestateId, existingSourc
           body: form,
         });
 
-        const data = await response.json().catch(() => null);
-        if (!data) throw Error("Laravel вернул не-JSON ответ (HTTP " + response.status + ")");
-        const details = apiErrors(data);
-        if (details) throw Error(details);
-        if (!response.ok || !data.id) throw Error(data.message || "HTTP " + response.status);
-        return data;
-      }, Math.min(IMAGE_UPLOAD_TIMEOUT_MS, Math.max(1, IMAGE_BATCH_LIMIT_MS - (Date.now() - startedAt))), signal);
+            const data = await response.json().catch(() => null);
+            if (response.status === 429) {
+              const error = Error("HTTP 429: " + (data?.message || "Too Many Attempts"));
+              error.retryAfterMs = retryAfterMs(response, attempt);
+              throw error;
+            }
+            if (!data) throw Error("Laravel вернул не-JSON ответ (HTTP " + response.status + ")");
+            const details = apiErrors(data);
+            if (details) throw Error(details);
+            if (!response.ok || !data.id) throw Error(data.message || "HTTP " + response.status);
+            return data;
+          }, Math.min(IMAGE_UPLOAD_TIMEOUT_MS, Math.max(1, IMAGE_BATCH_LIMIT_MS - (Date.now() - startedAt))), signal);
+          break;
+        } catch (error) {
+          stopped(signal);
+          if (error.retryAfterMs === undefined || attempt >= MAX_PHOTO_429_RETRIES) throw error;
+          const left = IMAGE_BATCH_LIMIT_MS - (Date.now() - startedAt);
+          if (left <= error.retryAfterMs + 1000) {
+            throw Error("HTTP 429: лимит времени для фотографий. Повторите импорт позже.");
+          }
+          await status({message: "Laravel ограничил частоту запросов. Пауза " +
+            Math.ceil(error.retryAfterMs / 1000) + " секунд."});
+          await delay(error.retryAfterMs, signal);
+        }
+      }
 
       if (!saved.skipped) uploaded.push(url);
       known.set(key, url);
@@ -370,7 +432,7 @@ async function upload(endpoint, token, signal) {
   for (let i = 0; i < items.length; i++) {
     stopped(signal);
     const item = items[i];
-    await status({current: item.source_url});
+    await status({current: "Импорт объекта: " + item.source_url});
 
     try {
       let saved = false;
@@ -416,8 +478,10 @@ async function upload(endpoint, token, signal) {
           // Only retry explicitly temporary HTTP statuses. Never retry
           // timeouts: the server may have saved the record already.
           if (attempt < MAX_UPLOAD_ATTEMPTS - 1 && /^HTTP (429|503):/.test(error.message)) {
-            await status({message: "Повторная попытка " + (attempt + 2) + " для " + item.source_url});
-            await delay((attempt + 1) * 5000, signal);
+            const wait = error.retryAfterMs ?? (attempt + 1) * 5000;
+            await status({current: "Ожидание ответа Laravel · " + Math.ceil(wait / 1000) +
+              " с · попытка " + (attempt + 2) + "/" + MAX_UPLOAD_ATTEMPTS});
+            await delay(wait, signal);
             continue;
           }
           throw error;
