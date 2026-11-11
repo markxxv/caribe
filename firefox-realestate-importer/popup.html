@@ -14,7 +14,8 @@ button.primary{background:#5676e7}button:disabled{opacity:.35;cursor:default}.tw
 progress::-moz-progress-bar{background:#6687f0}#errors{margin-top:8px;color:#e9a5a5}
 </style></head><body><main>
 <h1>Импорт недвижимости</h1><p>Zonaprop → JSON → Laravel</p>
-<label for="source">URL страницы выдачи</label><input id="source" type="url" placeholder="https://www.zonaprop.com.ar/casas-venta-pinamar-pagina-2.html">
+<label for="source">URL страницы Zonaprop</label><input id="source" type="url" placeholder="Выдача или отдельное объявление">
+<div id="pageType" class="muted" role="status" style="margin-top:6px">Определение типа страницы при сборе</div>
 <label for="endpoint">Laravel API endpoint</label><input id="endpoint" type="url" placeholder="https://visitacaribe.com/api/realestate/import">
 <label for="token">API токен (сохраняется в Firefox)</label><input id="token" type="password" autocomplete="off">
 <button class="primary" id="collect">Собрать JSON</button>

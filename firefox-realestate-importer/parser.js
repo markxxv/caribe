@@ -1,6 +1,22 @@
 // Executed inside the Zonaprop tab by browser.scripting.executeScript.
 // Keep this function self-contained: Firefox serializes it for injection.
 function scrapeZonaprop(mode) {
+    if (mode === 'auto') {
+        const pathname = location.pathname;
+        const isDetail = /^\/propiedades\/[^/]+/i.test(pathname)
+            || (document.querySelector('h1.title-property')
+                && document.querySelector('#longDescription, .section-location-property'));
+        const isListing = document.querySelector('[data-qa="posting PROPERTY"][data-to-posting]');
+
+        // Prefer the object page: related property cards may also appear below it.
+        const detected = isDetail ? 'detail' : isListing ? 'listing' : null;
+        if (!detected) {
+            throw Error('Не удалось определить тип страницы Zonaprop. Проверьте, что объявления загрузились.');
+        }
+
+        return {mode: detected, data: scrapeZonaprop(detected)};
+    }
+
     const clean = value => String(value || '').replace(/\s+/g, ' ').trim();
     const txt = (root, selector) => clean(root?.querySelector(selector)?.textContent);
     const number = value => {

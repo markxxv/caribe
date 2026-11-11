@@ -57,14 +57,27 @@ function merge(summary,detail){
 
 async function collect(source){
   await browser.storage.local.set({items:[]});
-  await status({running:true,phase:"listing",processed:0,total:0,uploaded:0,errors:[],message:""});
-  const page=await scrape(canonical(source),"listing");
-  if(!page.items?.length)throw Error("Объекты на этой странице не найдены");
+  await status({running:true,phase:"detecting",processed:0,total:0,uploaded:0,errors:[],message:"",current:null});
+  const first=await scrape(canonical(source),"auto");
+  if(cancel)return [];
+
+  if(first.mode==="detail"){
+    const item=first.data;
+    if(!item?.source_url||!item.title)throw Error("Не удалось извлечь данные объявления");
+    const items=[{...item,incomplete:false}];
+    await browser.storage.local.set({items});
+    await status({phase:"details",processed:1,total:1,current:null});
+    return items;
+  }
+
+  if(first.mode!=="listing"||!first.data?.items?.length)
+    throw Error("Объекты на этой странице не найдены");
+
   const gathered=[],errors=[];
-  await status({phase:"details",total:page.items.length});
-  for(let i=0;i<page.items.length;i++){
+  await status({phase:"details",total:first.data.items.length,processed:0});
+  for(let i=0;i<first.data.items.length;i++){
     if(cancel)break;
-    const item=page.items[i];
+    const item=first.data.items[i];
     await status({current:item.source_url});
     try{
       gathered.push(merge(item,await scrape(item.source_url,"detail")));

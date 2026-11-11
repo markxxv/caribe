@@ -1,7 +1,25 @@
 const field=id=>document.getElementById(id);
 let count=0;
+
+function classifyUrl(value){
+  try{
+    const url=new URL(value);
+    if(url.protocol!=="https:"||!/(^|\.)zonaprop\.com\.ar$/.test(url.hostname))return "unknown";
+    return /^\/propiedades\/[^/]+/i.test(url.pathname) ? "detail" : "listing";
+  }catch{return "unknown";}
+}
+
+function updatePageMode(){
+  const mode=classifyUrl(field("source").value.trim());
+  field("pageType").textContent=mode==="detail" ? "Отдельный объект"
+    : mode==="listing" ? "Страница выдачи" : "Вставьте ссылку Zonaprop";
+  field("collect").textContent=mode==="detail" ? "Собрать JSON объекта" : "Собрать JSON";
+  field("collectSend").textContent=mode==="detail" ? "Импортировать объект в Laravel" : "Собрать и отправить в Laravel";
+  field("collect").classList.toggle("primary",mode!=="detail");
+  field("collectSend").classList.toggle("primary",mode==="detail");
+}
 function paint(job,items){
-  const names={listing:"Загрузка выдачи",details:"Сбор карточек",upload:"Импорт в Laravel",
+  const names={detecting:"Определение страницы",listing:"Загрузка выдачи",details:"Сбор карточек",upload:"Импорт в Laravel",
     done:"Завершено",canceled:"Остановлено",error:"Ошибка"};
   field("phase").textContent=names[job.phase]||"Готово к запуску";
   field("current").textContent=job.current||job.message||"";
@@ -51,6 +69,7 @@ async function initialize(){
   for(const [id,key] of Object.entries(settingsKeys)){
     field(id).addEventListener("input",()=>{
       browser.storage.local.set({[key]:field(id).value}).catch(console.error);
+      if(id==="source")updatePageMode();
     });
   }
 
@@ -58,6 +77,7 @@ async function initialize(){
     await browser.storage.local.set({sourceUrl:activeUrl});
   }
 
+  updatePageMode();
   paint(stored.job||{},stored.items||[]);
 }
 async function execute(type,send=false){
