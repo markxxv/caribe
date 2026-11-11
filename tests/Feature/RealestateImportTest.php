@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Realestate\Realestate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Jobs\ImportRealestatePhoto;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class RealestateImportTest extends TestCase
@@ -75,6 +78,45 @@ class RealestateImportTest extends TestCase
         $this->assertSame(1, Realestate::count());
         $this->assertTrue($model->fresh()->active);
         $this->assertSame('Проверенный объект', $model->fresh()->title);
+    }
+
+    public function test_images_are_queued_without_blocking_the_import_api(): void
+    {
+        config()->set('property_import.token', 'secret-key');
+        Queue::fake();
+        Http::fake();
+
+        $payload = $this->payload();
+        $payload['items'][0]['photos'] = [
+            'https://imgar.zonapropcdn.com/avisos/test/photo-1.jpg',
+            'https://imgar.zonapropcdn.com/avisos/test/photo-2.jpg',
+        ];
+
+        $this->withToken('secret-key')
+            ->postJson('/api/realestate/import', $payload)
+            ->assertOk()
+            ->assertJsonPath('items.0.photos_queued', 2)
+            ->assertJsonPath('items.0.photos_added', 0);
+
+        $this->assertSame(1, Realestate::count());
+        Queue::assertPushed(ImportRealestatePhoto::class, 2);
+        Http::assertNothingSent();
+    }
+
+    public function test_failed_photo_download_does_not_delete_the_property(): void
+    {
+        Http::fake(['imgar.zonapropcdn.com/*' => Http::response('Unavailable', 503)]);
+
+        $property = Realestate::create(['title' => 'Casa con fotos', 'active' => false]);
+        $job = new ImportRealestatePhoto(
+            $property->id,
+            'https://imgar.zonapropcdn.com/avisos/test/missing.jpg',
+        );
+
+        $job->handle();
+
+        $this->assertDatabaseHas('property_realestates', ['id' => $property->id]);
+        $this->assertCount(0, $property->fresh()->getMedia('photos'));
     }
 
     public function test_invalid_batch_is_rejected(): void
