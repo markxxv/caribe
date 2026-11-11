@@ -2,7 +2,7 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Visita Caribe · Импорт</title>
 <style>
-*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;width:390px;background:#0e1015;color:#f1f3f5;font:13px/1.45 system-ui,-apple-system,Arial,sans-serif}
+*{box-sizing:border-box}html{color-scheme:dark}body{margin:0 auto;width:390px;max-width:100%;background:#0e1015;color:#f1f3f5;font:13px/1.45 system-ui,-apple-system,Arial,sans-serif}
 main{padding:20px}h1{font-size:18px;margin:0 0 3px;font-weight:700}p{color:#989da8;margin:0 0 16px}
 label{display:block;font-weight:600;font-size:12px;margin:14px 0 6px}
 input{display:block;width:100%;background:#20232a;color:#fff;border:0;border-radius:9px;padding:11px;font:inherit;outline:none}
@@ -20,6 +20,7 @@ progress::-moz-progress-bar{background:#6687f0}#errors{margin-top:8px;color:#e9a
 <button class="primary" id="collect">Собрать JSON</button>
 <button id="collectSend">Собрать и отправить в Laravel</button>
 <div class="two"><button id="upload">Отправить готовый JSON</button><button id="download">Скачать JSON</button></div>
+<button id="panel">Открыть панель во вкладке</button>
 <button id="cancel" hidden>Остановить</button>
 <div class="status"><strong id="phase">Готово к запуску</strong><div id="current" class="muted"></div>
 <progress id="progress" max="1" value="0"></progress><div id="count" class="muted"></div><div id="errors" class="muted"></div></div>

@@ -50,6 +50,7 @@ field("collect").onclick=()=>execute("collect");
 field("collectSend").onclick=()=>execute("collect",true);
 field("upload").onclick=()=>execute("upload");
 field("cancel").onclick=()=>browser.runtime.sendMessage({type:"cancel"});
+field("panel").onclick=()=>browser.tabs.create({url:browser.runtime.getURL("popup.html"),active:true});
 field("download").onclick=async()=>{
   const items=(await browser.storage.local.get("items")).items||[];
   if(!items.length)return;

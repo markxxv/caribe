@@ -198,7 +198,7 @@ class ImportRealestate
             ->timeout(25)
             ->get($url);
 
-        if (! $response->successful() || ! str_starts_with(strtolower($response->header('Content-Type', '')), 'image/')) {
+        if (! $response->successful() || ! str_starts_with(strtolower((string) $response->header('Content-Type')), 'image/')) {
             throw new RuntimeException('Invalid image response');
         }
 

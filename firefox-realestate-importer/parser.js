@@ -105,6 +105,13 @@ function scrapeZonaprop(mode) {
             const details = txt(card, '[data-qa="POSTING_CARD_FEATURES"]');
             const locationText = txt(card, '[data-qa="POSTING_CARD_LOCATION"]');
             const parts = addressParts(locationText);
+            // A listing may show district + city instead of city + region.
+            const segments = clean(locationText).split(/\s*,\s*/).filter(Boolean);
+            if (segments.length === 2 && !/buenos aires|costa atl[aá]ntica|provincia/i.test(segments[1])) {
+                parts.city = segments[1];
+                parts.region = null;
+                parts.district = segments[0];
+            }
             const priceInfo = price(card);
             list.push({
                 source_platform: 'zonaprop',
@@ -114,6 +121,8 @@ function scrapeZonaprop(mode) {
                 operation: transaction(source_url + ' ' + title),
                 price: priceInfo.price,
                 currency: priceInfo.currency,
+                expenses: number(txt(card, '[data-qa="expensas"]')) || null,
+                expenses_currency: txt(card, '[data-qa="expensas"]').includes('$') ? 'ARS' : null,
                 address: txt(card, '.postingLocations-module__location-address'),
                 city: parts.city,
                 region: parts.region,
