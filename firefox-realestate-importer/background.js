@@ -45,7 +45,12 @@ function merge(summary,detail){
     if(key==="features"||key==="amenities")result[key]={...(result[key]||{}),...value};
     else result[key]=value;
   }
-  result.photos=[...new Set([...(detail.photos||[]),...(summary.photos||[])])].slice(0,40);
+  const photos=new Map();
+  for(const photoUrl of [...(detail.photos||[]),...(summary.photos||[])]){
+    const key=new URL(photoUrl).pathname.split("/").at(-1);
+    if(!photos.has(key))photos.set(key,photoUrl);
+  }
+  result.photos=[...photos.values()].slice(0,40);
   result.incomplete=false;
   return result;
 }
