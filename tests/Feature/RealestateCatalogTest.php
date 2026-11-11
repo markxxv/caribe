@@ -107,4 +107,15 @@ class RealestateCatalogTest extends TestCase
         $this->get('/realestate/page/2')->assertOk()->assertSee('Residence 1');
         $this->get('/realestate/page/3')->assertNotFound();
     }
+
+    public function test_search_dropdowns_have_opaque_background_scroll_and_overlay_styles(): void
+    {
+        $this->get('/realestate')
+            ->assertOk()
+            ->assertSee('max-h-[340px] overflow-y-auto rounded-xl bg-white p-2', false)
+            ->assertSee('hidden rounded-xl bg-white p-4 shadow-', false)
+            ->assertDontSee('lg:top-full" overflow-y-auto', false)
+            ->assertDontSee('lg:top-full" bg-white', false);
+    }
+
 }
