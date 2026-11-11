@@ -4,12 +4,13 @@ namespace App\Filament\Resources\Realestate\Tables;
 
 use App\Filament\Resources\Realestate\Schemas\RealestateForm;
 use App\Models\Realestate\Realestate;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -31,74 +32,15 @@ class RealestatesTable
                     ->conversion('thumb')
                     ->size(72),
 
-                TextColumn::make('title')
+                ViewColumn::make('title')
                     ->label('Объект')
-                    ->searchable()
-                    ->description(fn (Realestate $record): ?string => $record->address)
-                    ->wrap()
-                    ->limit(55),
-
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->badge()
-                    ->color('gray'),
-
-                TextColumn::make('property_type')
-                    ->label('Тип')
-                    ->formatStateUsing(fn (?string $state): string => RealestateForm::propertyTypes()[$state ?? ''] ?? $state ?? '—')
-                    ->badge()
-                    ->color('gray'),
-
-                TextColumn::make('operation')
-                    ->label('Сделка')
-                    ->formatStateUsing(fn (?string $state): string => RealestateForm::operationTypes()[$state ?? ''] ?? $state ?? '—')
-                    ->badge(),
-
-                TextColumn::make('price')
-                    ->label('Цена')
-                    ->formatStateUsing(fn ($state, Realestate $record): string => $state === null
-                        ? '—'
-                        : number_format((float) $state, 0, ',', ' ') . ($record->currency ? ' ' . $record->currency : ''))
-                    ->sortable(),
-
-                TextColumn::make('city.name')
-                    ->label('Город')
-                    ->placeholder('—'),
-
-                TextColumn::make('covered_area')
-                    ->label('Крытая площадь')
-                    ->numeric(decimalPlaces: 0)
-                    ->suffix(' м²')
-                    ->sortable()
-                    ->toggleable(),
+                    ->view('filament.tables.columns.realestate-summary')
+                    ->searchable(),
 
                 IconColumn::make('active')
                     ->label('Публ.')
                     ->boolean()
                     ->sortable(),
-
-                IconColumn::make('newbuild')
-                    ->label('Нов.')
-                    ->boolean()
-                    ->sortable(),
-
-                IconColumn::make('sold')
-                    ->label('Продано')
-                    ->boolean()
-                    ->sortable(),
-
-                TextColumn::make('source_platform')
-                    ->label('Источник')
-                    ->badge()
-                    ->color('gray')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('created_at')
-                    ->label('Создано')
-                    ->dateTime('d.m.Y')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('property_type')
@@ -144,6 +86,12 @@ class RealestatesTable
             ], layout: FiltersLayout::AboveContentCollapsible)
             ->filtersFormColumns(4)
             ->recordActions([
+                Action::make('preview')
+                    ->label('Просмотр')
+                    ->icon('tabler-external-link')
+                    ->url(fn (Realestate $record): string => route('realestate.show', ['url' => $record->slug]))
+                    ->openUrlInNewTab(),
+
                 EditAction::make(),
             ])
             ->toolbarActions([
