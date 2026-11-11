@@ -11,7 +11,7 @@
             ? ($state['price_min'] ? 'от ' . number_format($state['price_min'], 0, ',', ' ') : '')
                 . ($state['price_min'] && $state['price_max'] ? ' — ' : '')
                 . ($state['price_max'] ? 'до ' . number_format($state['price_max'], 0, ',', ' ') : '')
-            : 'Любая цена';
+            : ($state['currency'] ? 'Валюта: ' . $state['currency'] : 'Любая цена');
     @endphp
 
     <main class="min-h-screen bg-[#f5f6f2] text-[#17362f]">
@@ -54,7 +54,7 @@
             </div>
         </section>
 
-        <section id="catalog-search" aria-label="Поиск недвижимости" class="relative z-30 mx-auto -mt-16 max-w-[1320px] px-4 sm:px-6 lg:px-8">
+        <section id="catalog-search" aria-label="Поиск недвижимости" class="relative z-[80] mx-auto -mt-16 max-w-[1320px] lg:z-30" px-4 sm:px-6 lg:px-8">
             <button type="button" data-catalog-open class="flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl bg-white px-5 text-sm font-medium text-[#17362f] shadow-[0_12px_40px_rgba(19,46,38,0.1)] lg:hidden">
                 <span class="flex items-center gap-3"><x-tabler-adjustments-horizontal class="size-5" stroke-width="1.6" /> Подобрать недвижимость</span>
                 <x-tabler-arrow-right class="size-5" stroke-width="1.6" />
@@ -89,7 +89,7 @@
                                 <input id="catalog-location" data-location-input type="search" value="{{ $selectedLocation }}" placeholder="Выберите местоположение" autocomplete="off"
                                     class="h-9 w-full min-w-0 bg-transparent text-sm text-[#17362f] outline-none placeholder:text-[#7d8c83]" aria-label="Местоположение" aria-expanded="false" aria-controls="catalog-location-options">
                             </div>
-                            <div id="catalog-location-options" data-location-options class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-[340px] overflow-y-auto rounded-xl bg-white p-2 shadow-[0_18px_55px_rgba(10,37,30,0.2)] lg:min-w-[330px]">
+                            <div id="catalog-location-options" data-location-options class="relative left-0 right-0 top-full z-50 mt-2 hidden max-h-[340px] lg:absolute" overflow-y-auto rounded-xl bg-white p-2 shadow-[0_18px_55px_rgba(10,37,30,0.2)] lg:min-w-[330px]">
                                 <button type="button" data-location-option data-value="" data-search="любое место" class="flex w-full items-center rounded-lg px-3 py-3 text-left text-sm text-[#17362f] hover:bg-[#f1f3ef]">Любое местоположение</button>
                                 @foreach($locations as $place)
                                     <button type="button" data-location-option data-value="{{ $place['value'] }}" data-search="{{ $place['label'] }} {{ $place['context'] }}"
@@ -120,7 +120,7 @@
                                 </span>
                                 <x-tabler-chevron-down class="size-4 shrink-0 text-[#71877d]" stroke-width="1.5" />
                             </button>
-                            <div data-price-panel class="absolute left-0 right-0 top-full z-40 mt-2 hidden rounded-xl bg-white p-4 shadow-[0_18px_55px_rgba(10,37,30,0.18)] lg:min-w-[310px]">
+                            <div data-price-panel class="relative left-0 right-0 top-full z-40 mt-2 hidden rounded-xl lg:absolute" bg-white p-4 shadow-[0_18px_55px_rgba(10,37,30,0.18)] lg:min-w-[310px]">
                                 <label class="block text-xs text-[#6c8277]" for="catalog-currency">Валюта</label>
                                 <select id="catalog-currency" data-field="currency" class="mt-1.5 h-11 w-full rounded-lg bg-[#f1f3ef] px-3 text-sm outline-none">
                                     <option value="">Все валюты</option>
