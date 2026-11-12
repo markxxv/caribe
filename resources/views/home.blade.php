@@ -362,11 +362,10 @@
                             <!-- Tour Image Wrapper -->
                             <div class="relative overflow-hidden aspect-[3/2]">
                                 @if ($cover = $tour->getFirstMedia('tour_cover'))
-                                    <img
-                                        src="{{ $cover->getFullUrl('cover') }}"
-                                        alt="{{ $tour->title }}"
-                                        class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                                    >
+                                    <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="" aria-hidden="true" loading="lazy"
+                                        class="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl">
+                                    <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $tour->title }}" loading="lazy" decoding="async"
+                                        class="relative z-10 h-full w-full object-contain">
                                 @endif
 {{--                                @if($tour->duration_days && $tour->duration_days > 0)--}}
 {{--                                <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full">--}}
@@ -486,11 +485,10 @@
                             <!-- Tour Image Wrapper -->
                             <div class="relative overflow-hidden aspect-[3/2]">
                                 @if ($cover = $blog->getFirstMedia('blog_cover'))
-                                    <img
-                                        src="{{ $cover->getFullUrl('cover') }}"
-                                        alt="{{ $blog->title }}"
-                                        class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                                    >
+                                    <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="" aria-hidden="true" loading="lazy"
+                                        class="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl">
+                                    <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $blog->title }}" loading="lazy" decoding="async"
+                                        class="relative z-10 h-full w-full object-contain">
                                 @endif
 
 
