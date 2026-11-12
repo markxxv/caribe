@@ -133,11 +133,8 @@
                             <!-- Image -->
                             <a href="{{ route('blog.show', $blog->slug) }}" class="block relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-emerald-100 to-blue-100">
                                 @if($cover = $blog->getFirstMedia('blog_cover'))
-                                    {{-- The original framing stays visible; the soft background fills any spare space. --}}
-                                    <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="" aria-hidden="true" loading="lazy"
-                                        class="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl">
                                     <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $blog->title }}" loading="lazy" decoding="async"
-                                        class="relative z-10 h-full w-full object-contain">
+                                        class="h-full w-full object-cover object-top">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center text-emerald-500">
                                         <x-tabler-article class="w-16 h-16 opacity-30" />
