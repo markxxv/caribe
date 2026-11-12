@@ -1,7 +1,7 @@
 @php
     $pageCanonical = route('blog.show', ['slug' => $blog->slug]);
     $pageDescription = $blog->meta_description ?: '«' . $blog->title . '» — статья о путешествиях, истории и культуре Латинской Америки.';
-    $pageImage = $blog->getFirstMediaUrl('blog_cover', 'big') ?: asset('img/main_head_background.webp');
+    $pageImage = $blog->getFirstMedia('blog_cover')?->getAvailableUrl(['big']) ?: asset('img/main_head_background.webp');
 
     $pageSchema = [
         '@context' => 'https://schema.org',
