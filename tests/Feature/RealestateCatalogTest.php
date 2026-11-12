@@ -108,6 +108,37 @@ class RealestateCatalogTest extends TestCase
         $this->get('/realestate/page/3')->assertNotFound();
     }
 
+    public function test_tour_booking_widget_is_excluded_from_all_realestate_pages(): void
+    {
+        $property = $this->property('Widget free residence');
+
+        $this->get('/contact')
+            ->assertOk()
+            ->assertSee('aria-label="Заказать экскурсию в WhatsApp"', false);
+
+        $this->get('/realestate')
+            ->assertOk()
+            ->assertDontSee('Заказать экскурсию в WhatsApp');
+
+        $this->get('/realestate/buy')
+            ->assertOk()
+            ->assertDontSee('Заказать экскурсию в WhatsApp');
+
+        $this->get(route('realestate.show', ['url' => $property->slug]))
+            ->assertOk()
+            ->assertDontSee('Заказать экскурсию в WhatsApp');
+    }
+
+    public function test_mobile_menu_has_no_broken_logo_or_unregistered_about_link(): void
+    {
+        $this->get('/contact')
+            ->assertOk()
+            ->assertSee('id="site-mobile-menu"', false)
+            ->assertSee('text-[32px]', false)
+            ->assertDontSee('src="/img/logo.png"', false)
+            ->assertDontSee('href="/about"', false);
+    }
+
     public function test_search_dropdowns_have_opaque_background_scroll_and_overlay_styles(): void
     {
         $this->get('/realestate')
