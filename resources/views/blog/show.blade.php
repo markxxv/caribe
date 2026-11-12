@@ -67,11 +67,9 @@
         @if($blog->getFirstMediaUrl('blog_cover'))
             <div class="relative -mt-12 z-10 container mx-auto px-4 md:px-8">
                 <div class="max-w-5xl mx-auto">
-                    <div class="relative aspect-[16/9] overflow-hidden rounded-xl bg-[#e8efec] shadow-2xl">
-                        <img src="{{ $blog->getFirstMediaUrl('blog_cover') }}" alt="" aria-hidden="true"
-                            class="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl">
+                    <div class="aspect-[16/9] overflow-hidden rounded-xl shadow-2xl">
                         <img src="{{ $blog->getFirstMediaUrl('blog_cover') }}" alt="{{ $blog->title }}"
-                            class="relative z-10 h-full w-full object-contain">
+                            class="h-full w-full object-cover object-top">
                     </div>
                 </div>
             </div>
