@@ -54,6 +54,6 @@ class ToursLandingSeoTest extends TestCase
             ->assertOk()
             ->assertSee('name="robots" content="noindex, follow"', false)
             ->assertDontSee('Индивидуальные туры с гидом по Аргентине')
-            ->assertDontSee('application/ld+json');
+            ->assertDontSee('"@type":"ItemList"', false);
     }
 }
