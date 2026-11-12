@@ -8,7 +8,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
-use Spatie\Image\Enums\CropPosition;
 
 class Blog extends Model implements HasMedia
 {
@@ -45,13 +44,13 @@ class Blog extends Model implements HasMedia
         // Важно: чтобы конверсии не цеплялись на другие коллекции
         $this->addMediaConversion('thumb')
             ->performOnCollections('blog_cover')
-            ->crop(400, 400, CropPosition::Center)
+            ->width(400)
             ->format('webp')
             ->nonQueued();
 
         $this->addMediaConversion('cover')
             ->performOnCollections('blog_cover')
-            ->crop(800, 600, CropPosition::Center)
+            ->width(1200)
             ->format('webp')
             ->nonQueued();
 
