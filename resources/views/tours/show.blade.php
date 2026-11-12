@@ -1,6 +1,45 @@
-@section('metaTitle', $tour->meta_title ?? $tour->title)
-@section('metaDescription', $tour->meta_description ?? '')
-@section('ogImage', $tour->getFirstMediaUrl('tour_cover', 'social') ?? asset('img/og-default.jpg'))
+@php
+    $pageCanonical = route('tours.show', ['slug' => $tour->slug]);
+    $pageDescription = $tour->meta_description ?: '«' . $tour->title . '» — авторский тур по Латинской Америке с гидом Еленой Вивас.';
+    $pageImage = $tour->getFirstMediaUrl('tour_cover', 'big') ?: asset('img/main_head_background.webp');
+
+    $pageSchema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'TouristTrip',
+                '@id' => $pageCanonical . '#main',
+                'url' => $pageCanonical,
+                'name' => $tour->title,
+                
+                'description' => $pageDescription,
+                'image' => $pageImage,
+                'inLanguage' => 'ru',
+                'provider' => ['@type' => 'Organization', '@id' => route('home') . '#organization'],
+                
+                'mainEntityOfPage' => $pageCanonical,
+            ],
+            [
+                '@type' => 'BreadcrumbList',
+                '@id' => $pageCanonical . '#breadcrumb',
+                'itemListElement' => [
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => route('home')],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Туры', 'item' => route('tours.index')],
+                    ['@type' => 'ListItem', 'position' => 3, 'name' => $tour->title, 'item' => $pageCanonical],
+                ],
+            ],
+        ],
+    ];
+@endphp
+
+@section('metaTitle', $tour->meta_title ?: $tour->title . ' | Visita Caribe')
+@section('metaDescription', $pageDescription)
+@section('canonicalUrl', $pageCanonical)
+@section('ogType', 'website')
+@section('ogImage', $pageImage)
+@section('structuredData')
+    <script type="application/ld+json">{!! json_encode($pageSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+@endsection
 
 <x-layout>
     <article class="relative">
