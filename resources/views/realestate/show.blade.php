@@ -1,8 +1,85 @@
-@section('metaTitle', $realestate->meta_title ?: $realestate->title)
-@section('metaDescription', $realestate->meta_description ?: '')
+@php
+    $propertyCanonical = route('realestate.show', ['url' => $realestate->slug]);
+    $propertyLocation = collect([
+        $realestate->city?->name,
+        $realestate->region?->name,
+        $realestate->country?->name,
+    ])->filter()->unique()->join(', ');
 
-@if($realestate->active)
-    @section('canonicalUrl', route('realestate.show', ['url' => $realestate->slug]))
+    $propertySummary = trim(preg_replace('/\\s+/u', ' ', strip_tags($realestate->description ?? '')));
+    $propertyDescription = $realestate->meta_description ?: ($propertySummary
+        ? \\Illuminate\\Support\\Str::limit(html_entity_decode($propertySummary, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 155)
+        : $realestate->title . ($propertyLocation ? ' — ' . $propertyLocation : '') . '. Характеристики, фотографии и информация об объекте недвижимости.');
+
+    $propertyImage = $realestate->getFirstMediaUrl('cover')
+        ?: $realestate->getFirstMediaUrl('photos')
+        ?: asset('img/main_head_background.webp');
+
+    $listing = [
+        '@type' => 'RealEstateListing',
+        '@id' => $propertyCanonical . '#listing',
+        'url' => $propertyCanonical,
+        'name' => $realestate->title,
+        'description' => $propertyDescription,
+        'image' => $propertyImage,
+        'inLanguage' => 'ru',
+        'datePosted' => ($realestate->published_at ?: $realestate->created_at)?->toAtomString(),
+        'mainEntity' => [
+            '@type' => 'Accommodation',
+            'name' => $realestate->title,
+        ],
+    ];
+    if ($propertyLocation) {
+        $listing['mainEntity']['address'] = [
+            '@type' => 'PostalAddress',
+            'addressLocality' => $realestate->city?->name,
+            'addressRegion' => $realestate->region?->name,
+            'addressCountry' => $realestate->country?->name,
+        ];
+    }
+    if ($realestate->covered_area && (float) $realestate->covered_area > 0) {
+        $listing['mainEntity']['floorSize'] = [
+            '@type' => 'QuantitativeValue',
+            'value' => (float) $realestate->covered_area,
+            'unitCode' => 'MTK',
+        ];
+    }
+    if ($realestate->price && (float) $realestate->price > 0 && $realestate->currency) {
+        $listing['mainEntity']['offers'] = [
+            '@type' => 'Offer',
+            'price' => (float) $realestate->price,
+            'priceCurrency' => $realestate->currency,
+            'availability' => $realestate->sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+            'url' => $propertyCanonical,
+        ];
+    }
+
+    $propertySchema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            $listing,
+            [
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => route('home')],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Недвижимость', 'item' => route('realestate.index')],
+                    ['@type' => 'ListItem', 'position' => 3, 'name' => $realestate->title, 'item' => $propertyCanonical],
+                ],
+            ],
+        ],
+    ];
+@endphp
+
+@section('metaTitle', $realestate->meta_title ?: $realestate->title . ' | Visita Caribe')
+@section('metaDescription', $propertyDescription)
+@section('ogImage', $propertyImage)
+@if ($realestate->active)
+    @section('canonicalUrl', $propertyCanonical)
+    @section('structuredData')
+        <script type="application/ld+json">{!! json_encode($propertySchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    @endsection
+@else
+    @section('robots', 'noindex, nofollow')
 @endif
 
 <x-layout>
