@@ -23,7 +23,7 @@ class BlogsTable
                     ->conversion('thumb')
                     ->imageWidth(96)
                     ->imageHeight(64)
-                    ->extraImgAttributes(['style' => 'object-fit: contain;']),
+                    ->extraImgAttributes(['style' => 'object-fit: cover; object-position: center top;']),
                 TextColumn::make('title')
                     ->label('Заголовок')
                     ->searchable(),
