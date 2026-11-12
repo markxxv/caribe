@@ -1,7 +1,96 @@
-@section('metaTitle', $isArgentina ? 'Туры по Аргентине с русскоязычным гидом | Visita Caribe' : 'Туры с гидом по Латинской Америке | Visita Caribe')
-@section('metaDescription', $isArgentina ? 'Авторские туры и экскурсии по Аргентине с русскоязычным гидом Еленой Вивас. Буэнос-Айрес, Барилоче, Патагония и гастрономические маршруты.' : 'Авторские туры и экскурсии по Латинской Америке с русскоязычным гидом. Выберите маршрут и откройте для себя самые интересные места.')
-@if($isArgentina)
-    @section('canonicalUrl', route('tours.argentina'))
+@php
+    $toursCanonicalUrl = $isArgentina ? route('tours.argentina') : route('tours.index');
+    $hasTourQuery = request()->hasAny(['country', 'category', 'search', 'page']);
+    $isEditorialLanding = ! $isArgentina && ! $hasTourQuery;
+
+    $toursMetaTitle = $isArgentina
+        ? 'Туры по Аргентине с русскоязычным гидом | Visita Caribe'
+        : 'Индивидуальные туры по Аргентине с гидом Еленой Вивас | Visita Caribe';
+    $toursMetaDescription = $isArgentina
+        ? 'Авторские туры по Аргентине с гидом Еленой Вивас: Буэнос-Айрес, север страны, Игуасу, Барилоче и Патагония. Выберите маршрут путешествия.'
+        : 'Индивидуальные туры по Аргентине с русскоязычным гидом Еленой Вивас. Буэнос-Айрес, Сальта, Патагония, Барилоче и Игуасу. Маршруты под ваши даты и интересы.';
+@endphp
+
+@section('pageLang', 'ru')
+@section('metaTitle', $toursMetaTitle)
+@section('metaDescription', $toursMetaDescription)
+@section('ogType', 'website')
+@section('ogImage', asset('img/guide_elena.png'))
+@if (! $hasTourQuery)
+    @section('canonicalUrl', $toursCanonicalUrl)
+@else
+    @section('robots', 'noindex, follow')
+@endif
+
+@if (! $hasTourQuery)
+    @section('structuredData')
+        @php
+            $tourBreadcrumbs = [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => route('home')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Туры', 'item' => route('tours.index')],
+            ];
+
+            if ($isArgentina) {
+                $tourBreadcrumbs[] = ['@type' => 'ListItem', 'position' => 3, 'name' => 'Туры по Аргентине', 'item' => route('tours.argentina')];
+            }
+
+            $tourListItems = $tours->getCollection()->values()->map(function ($tour, $index) use ($tours) {
+                $tourUrl = route('tours.show', ['slug' => $tour->slug]);
+
+                return [
+                    '@type' => 'ListItem',
+                    'position' => $tours->firstItem() + $index,
+                    'url' => $tourUrl,
+                    'item' => [
+                        '@type' => 'TouristTrip',
+                        '@id' => $tourUrl,
+                        'name' => $tour->title,
+                        'url' => $tourUrl,
+                        'provider' => ['@type' => 'Organization', 'name' => 'Visita Caribe'],
+                    ],
+                ];
+            })->all();
+
+            $toursSchema = [
+                '@context' => 'https://schema.org',
+                '@graph' => [
+                    [
+                        '@type' => 'CollectionPage',
+                        '@id' => $toursCanonicalUrl . '#webpage',
+                        'url' => $toursCanonicalUrl,
+                        'name' => $toursMetaTitle,
+                        'description' => $toursMetaDescription,
+                        'inLanguage' => 'ru-RU',
+                        'about' => ['@type' => 'Country', 'name' => 'Аргентина'],
+                        'author' => ['@id' => route('tours.index') . '#elena-vivas'],
+                        'mainEntity' => ['@id' => $toursCanonicalUrl . '#tours-list'],
+                        'breadcrumb' => ['@id' => $toursCanonicalUrl . '#breadcrumb'],
+                    ],
+                    [
+                        '@type' => 'Person',
+                        '@id' => route('tours.index') . '#elena-vivas',
+                        'name' => 'Елена Вивас',
+                        'jobTitle' => 'Гид по Аргентине',
+                        'image' => asset('img/guide_elena.png'),
+                    ],
+                    [
+                        '@type' => 'ItemList',
+                        '@id' => $toursCanonicalUrl . '#tours-list',
+                        'name' => $isArgentina ? 'Туры по Аргентине' : 'Индивидуальные туры по Аргентине',
+                        'numberOfItems' => count($tourListItems),
+                        'itemListOrder' => 'https://schema.org/ItemListOrderDescending',
+                        'itemListElement' => $tourListItems,
+                    ],
+                    [
+                        '@type' => 'BreadcrumbList',
+                        '@id' => $toursCanonicalUrl . '#breadcrumb',
+                        'itemListElement' => $tourBreadcrumbs,
+                    ],
+                ],
+            ];
+        @endphp
+        <script type="application/ld+json">{!! json_encode($toursSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    @endsection
 @endif
 
 <x-layout>
@@ -28,14 +117,14 @@
                         @if($isArgentina)
                             Туры по <span class="text-[#c9d9c6]">Аргентине</span>
                         @else
-                            Туры по <span class="text-[#c9d9c6]">Латинской Америке</span>
+                            Индивидуальные туры по <span class="text-[#c9d9c6]">Аргентине</span>
                         @endif
                     </h1>
                 </div>
 
                 <div class="lg:pb-1">
                     <p class="max-w-[310px] text-sm leading-7 text-white/65">
-                        {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Откройте для себя культуру, традиции и достопримечательности Латинской Америки с профессиональным гидом' }}
+                        {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Путешествия по Буэнос-Айресу, Патагонии, северу Аргентины и Игуасу с гидом Еленой Вивас. Маршруты под ваши даты и интересы.' }}
                     </p>
                     <div class="mt-6 flex items-center gap-3">
                         <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($tours->total(), 0, ',', ' ') }}</span>
@@ -224,6 +313,10 @@
         </div>
     </section>
 
+
+    @if($isEditorialLanding)
+        @include('tours.partials.argentina-editorial')
+    @endif
 
     <style>
         .line-clamp-2 {
