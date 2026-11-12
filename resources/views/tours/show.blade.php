@@ -67,11 +67,11 @@
         @if($tour->getFirstMediaUrl('tour_cover'))
             <div class="relative -mt-12 z-10 container mx-auto px-4 md:px-8">
                 <div class="max-w-5xl mx-auto">
-                    <div class="aspect-[16/9] overflow-hidden rounded-xl shadow-2xl">
-                        <img
-                            src="{{ $tour->getFirstMediaUrl('tour_cover') }}"
-                            alt="{{ $tour->title }}"
-                            class="w-full h-full object-cover">
+                    <div class="relative aspect-[16/9] overflow-hidden rounded-xl bg-[#e8efec] shadow-2xl">
+                        <img src="{{ $tour->getFirstMediaUrl('tour_cover') }}" alt="" aria-hidden="true"
+                            class="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl">
+                        <img src="{{ $tour->getFirstMediaUrl('tour_cover') }}" alt="{{ $tour->title }}"
+                            class="relative z-10 h-full w-full object-contain">
                     </div>
                 </div>
             </div>
