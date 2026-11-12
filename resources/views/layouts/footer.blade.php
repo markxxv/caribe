@@ -72,6 +72,7 @@
     </div>
 </footer>
 
+@if (! request()->is('realestate', 'realestate/*') && ! request()->routeIs('realestate.*'))
 {{-- Floating WhatsApp booking widget, shared by all pages through the layout. --}}
 <a href="https://wa.me/34660024093" target="_blank" rel="noopener noreferrer" aria-label="Заказать экскурсию в WhatsApp" class="group fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] right-3 z-[60] flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#43ad69] md:bottom-5 md:right-5 md:gap-3">
     <span class="rounded-full bg-black px-4 py-2 text-sm font-normal text-white shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition-colors group-hover:bg-[#192b24]">
@@ -81,3 +82,4 @@
         <x-tabler-brand-whatsapp class="size-6 sm:size-7" stroke-width="1.8" />
     </span>
 </a>
+@endif
