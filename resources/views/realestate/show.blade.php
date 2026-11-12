@@ -73,7 +73,7 @@
 @section('metaTitle', $realestate->meta_title ?: $realestate->title . ' | Visita Caribe')
 @section('metaDescription', $propertyDescription)
 @section('ogImage', $propertyImage)
-@if ($realestate->active)
+@if ($realestate->active && ! $realestate->sold)
     @section('canonicalUrl', $propertyCanonical)
     @section('structuredData')
         <script type="application/ld+json">{!! json_encode($propertySchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
