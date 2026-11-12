@@ -1,5 +1,5 @@
 @section('metaTitle', $metaTitle)
-@section('metaDescription', 'Дома, квартиры и участки в Латинской Америке. Подбор недвижимости по местоположению, бюджету и характеристикам.')
+@section('metaDescription', explode(' — Visita Caribe', $metaTitle)[0] . '. Актуальные объекты с фотографиями, ценами и подробными характеристиками.')
 @section('canonicalUrl', $canonicalUrl)
 @section('ogType', 'website')
 @if (! $indexable)
