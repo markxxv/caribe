@@ -1,5 +1,11 @@
-@section('metaTitle', 'Блог о Аргентине - Статьи, советы и путеводители')
-@section('metaDescription', 'Читайте интересные статьи о Аргентине, культуре, традициях и достопримечательностях северной Испании от профессионального гида')
+@section('metaTitle', 'Блог об Аргентине и Латинской Америке | Visita Caribe')
+@section('metaDescription', 'Статьи Елены Вивас об Аргентине и Латинской Америке: путешествия, история, культура, природа и полезная информация о регионах.')
+@section('ogType', 'website')
+@if (! request()->hasAny(['country', 'category', 'search', 'page']))
+    @section('canonicalUrl', route('blog.index'))
+@else
+    @section('robots', 'noindex, follow')
+@endif
 
 <x-layout>
     <!-- Editorial hero -->
