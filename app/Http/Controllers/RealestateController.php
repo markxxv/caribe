@@ -158,7 +158,7 @@ class RealestateController extends Controller
         abort_unless($realestate->active || auth()->check(), 404);
 
         return response()->view('realestate.show', compact('realestate'))
-            ->header('X-Robots-Tag', $realestate->active ? 'index, follow' : 'noindex, nofollow')
+            ->header('X-Robots-Tag', $realestate->active && ! $realestate->sold ? 'index, follow' : 'noindex, nofollow')
             ->header('Cache-Control', $realestate->active ? 'public, max-age=300' : 'private, no-store');
     }
 }
