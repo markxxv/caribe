@@ -1,19 +1,28 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="@yield('pageLang', str_replace('_', '-', app()->getLocale()))">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>@yield('metaTitle')</title>
     <meta name="description" content="@yield('metaDescription')" />
+    @hasSection('robots')
+        <meta name="robots" content="@yield('robots')" />
+    @endif
     @hasSection('canonicalUrl')
         <link rel="canonical" href="@yield('canonicalUrl')" />
     @endif
 
     <meta property="og:site_name" content="Карибские каникулы" />
-    <meta property="og:type" content="article" />
+    <meta property="og:type" content="@yield('ogType', 'article')" />
     <meta property="og:title" content="@yield('metaTitle')" />
     <meta property="og:description" content="@yield('metaDescription')" />
+    @hasSection('canonicalUrl')
+        <meta property="og:url" content="@yield('canonicalUrl')" />
+    @endif
+    @hasSection('ogImage')
+        <meta property="og:image" content="@yield('ogImage')" />
+    @endif
 
     <meta property="article:tag" content="Путешествия" />
 
@@ -23,6 +32,7 @@
     <meta name="MobileOptimized" content="width" />
 
     @yield('og')
+    @yield('structuredData')
 
 {{--    <link rel="icon" href="/favicon.ico" sizes="32x32">--}}
     <link rel="shortcut icon" href="/img/favicon.png" type="image/png" />
