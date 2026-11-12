@@ -21,7 +21,9 @@ class ToursTable
                     ->label('Обложка')
                     ->collection('tour_cover')
                     ->conversion('thumb')
-                    ->size(60),
+                    ->imageWidth(96)
+                    ->imageHeight(64)
+                    ->extraImgAttributes(['style' => 'object-fit: contain;']),
                 TextColumn::make('title')
                     ->label('Заголовок')
                     ->searchable(),
