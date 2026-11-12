@@ -22,7 +22,7 @@ class ToursLandingSeoTest extends TestCase
             ->assertSee('Я подготовлю программу которая подходит именно вам.')
             ->assertSee('img/guide_elena.png')
             ->assertSee('https://wa.me/34660024093')
-            ->assertSee('rel="canonical" href="http://localhost/tours"', false)
+            ->assertSee('rel="canonical" href="' . route('tours.index') . '"', false)
             ->assertSee('"@type":"CollectionPage"', false)
             ->assertSee('"@type":"ItemList"', false)
             ->assertSee('"@type":"Person"', false)
@@ -43,7 +43,7 @@ class ToursLandingSeoTest extends TestCase
     {
         $this->get('/tours/argentina')
             ->assertOk()
-            ->assertSee('rel="canonical" href="http://localhost/tours/argentina"', false)
+            ->assertSee('rel="canonical" href="' . route('tours.argentina') . '"', false)
             ->assertSee('Туры по Аргентине с русскоязычным гидом | Visita Caribe')
             ->assertDontSee('Индивидуальные туры с гидом по Аргентине');
     }
