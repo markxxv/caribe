@@ -1,6 +1,46 @@
 @section('metaTitle', $metaTitle)
 @section('metaDescription', 'Дома, квартиры и участки в Латинской Америке. Подбор недвижимости по местоположению, бюджету и характеристикам.')
 @section('canonicalUrl', $canonicalUrl)
+@section('ogType', 'website')
+@if (! $indexable)
+    @section('robots', 'noindex, follow')
+@else
+    @section('structuredData')
+        @php
+            $propertyItems = $properties->getCollection()->values()->map(function ($property, $index) use ($properties) {
+                $url = route('realestate.show', ['url' => $property->slug]);
+
+                return [
+                    '@type' => 'ListItem',
+                    'position' => $properties->firstItem() + $index,
+                    'url' => $url,
+                    'name' => $property->title,
+                ];
+            })->all();
+
+            $propertyCatalogSchema = [
+                '@context' => 'https://schema.org',
+                '@graph' => [
+                    [
+                        '@type' => 'CollectionPage',
+                        '@id' => $canonicalUrl . '#webpage',
+                        'url' => $canonicalUrl,
+                        'name' => $metaTitle,
+                        'inLanguage' => 'ru',
+                        'mainEntity' => ['@id' => $canonicalUrl . '#properties'],
+                    ],
+                    [
+                        '@type' => 'ItemList',
+                        '@id' => $canonicalUrl . '#properties',
+                        'itemListElement' => $propertyItems,
+                        'numberOfItems' => count($propertyItems),
+                    ],
+                ],
+            ];
+        @endphp
+        <script type="application/ld+json">{!! json_encode($propertyCatalogSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    @endsection
+@endif
 
 <x-layout>
     @php
