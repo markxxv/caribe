@@ -81,6 +81,23 @@ class SeoInfrastructureTest extends TestCase
             ->assertSee('name="robots" content="noindex, follow"', false);
     }
 
+    public function test_sold_properties_are_excluded_from_search_even_when_their_pages_remain_accessible(): void
+    {
+        $sold = Realestate::create([
+            'title' => 'Previously sold house',
+            'active' => true,
+            'sold' => true,
+            'operation' => 'sale',
+            'property_type' => 'house',
+            'currency' => 'USD',
+            'price' => 120000,
+        ]);
+
+        $this->get(route('realestate.show', ['url' => $sold->slug]))
+            ->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+    }
+
     public function test_published_blog_and_tour_pages_have_canonicals_and_entity_schema(): void
     {
         $tour = Tour::create(['title' => 'A journey across Argentina', 'active' => true]);
