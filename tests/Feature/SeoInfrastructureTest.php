@@ -81,6 +81,27 @@ class SeoInfrastructureTest extends TestCase
             ->assertSee('name="robots" content="noindex, follow"', false);
     }
 
+    public function test_published_property_has_description_and_real_estate_listing_schema(): void
+    {
+        $property = Realestate::create([
+            'title' => 'A house in Argentina',
+            'active' => true,
+            'sold' => false,
+            'operation' => 'sale',
+            'property_type' => 'house',
+            'currency' => 'USD',
+            'price' => 175000,
+            'covered_area' => 90,
+        ]);
+
+        $this->get(route('realestate.show', ['url' => $property->slug]))
+            ->assertOk()
+            ->assertSee('rel="canonical" href="' . route('realestate.show', ['url' => $property->slug]) . '"', false)
+            ->assertSee('Характеристики, фотографии и информация об объекте недвижимости.')
+            ->assertSee('"@type":"RealEstateListing"', false)
+            ->assertSee('"priceCurrency":"USD"', false);
+    }
+
     public function test_sold_properties_are_excluded_from_search_even_when_their_pages_remain_accessible(): void
     {
         $sold = Realestate::create([
