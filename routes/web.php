@@ -3,10 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front;
 use App\Http\Controllers\RealestateController;
+use App\Http\Controllers\SitemapController;
 
 //Route::get('/', function () {
 //    return view('home');
 //});
+
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/', [Front::class, 'index'])->name('home');
 Route::get('/blog', [Front::class, 'blogIndex'])->name('blog.index');
