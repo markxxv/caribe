@@ -8,7 +8,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
-use Spatie\Image\Enums\CropPosition;
 
 class Tour extends Model implements HasMedia
 {
@@ -44,13 +43,13 @@ class Tour extends Model implements HasMedia
     {
         $this->addMediaConversion('thumb')
             ->performOnCollections('tour_cover')
-            ->crop(400, 400, CropPosition::Center)
+            ->width(400)
             ->format('webp')
             ->nonQueued();
 
         $this->addMediaConversion('cover')
             ->performOnCollections('tour_cover')
-            ->crop(800, 600, CropPosition::Center)
+            ->width(1200)
             ->format('webp')
             ->nonQueued();
 
