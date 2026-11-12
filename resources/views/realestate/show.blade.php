@@ -8,7 +8,7 @@
 
     $propertySummary = trim(preg_replace('/\\s+/u', ' ', strip_tags($realestate->description ?? '')));
     $propertyDescription = $realestate->meta_description ?: ($propertySummary
-        ? \\Illuminate\\Support\\Str::limit(html_entity_decode($propertySummary, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 155)
+        ? \Illuminate\Support\Str::limit(html_entity_decode($propertySummary, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 155)
         : $realestate->title . ($propertyLocation ? ' — ' . $propertyLocation : '') . '. Характеристики, фотографии и информация об объекте недвижимости.');
 
     $propertyImage = $realestate->getFirstMediaUrl('cover')
