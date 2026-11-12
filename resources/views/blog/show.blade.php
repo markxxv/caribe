@@ -1,6 +1,47 @@
-@section('metaTitle', $blog->meta_title ?? $blog->title)
-@section('metaDescription', $blog->meta_description ?? '')
-@section('ogImage', $blog->getFirstMediaUrl('blog_cover', 'social') ?? asset('img/og-default.jpg'))
+@php
+    $pageCanonical = route('blog.show', ['slug' => $blog->slug]);
+    $pageDescription = $blog->meta_description ?: '«' . $blog->title . '» — статья о путешествиях, истории и культуре Латинской Америки.';
+    $pageImage = $blog->getFirstMediaUrl('blog_cover', 'big') ?: asset('img/main_head_background.webp');
+
+    $pageSchema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'BlogPosting',
+                '@id' => $pageCanonical . '#main',
+                'url' => $pageCanonical,
+                'name' => $blog->title,
+                'headline' => $blog->title,
+                'datePublished' => $blog->created_at?->toAtomString(),
+                'dateModified' => $blog->updated_at?->toAtomString(),
+                'description' => $pageDescription,
+                'image' => $pageImage,
+                'inLanguage' => 'ru',
+                'author' => ['@type' => 'Person', 'name' => 'Елена Вивас'],
+                'publisher' => ['@type' => 'Organization', '@id' => route('home') . '#organization'],
+                'mainEntityOfPage' => $pageCanonical,
+            ],
+            [
+                '@type' => 'BreadcrumbList',
+                '@id' => $pageCanonical . '#breadcrumb',
+                'itemListElement' => [
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Главная', 'item' => route('home')],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => 'Блог', 'item' => route('blog.index')],
+                    ['@type' => 'ListItem', 'position' => 3, 'name' => $blog->title, 'item' => $pageCanonical],
+                ],
+            ],
+        ],
+    ];
+@endphp
+
+@section('metaTitle', $blog->meta_title ?: $blog->title . ' | Visita Caribe')
+@section('metaDescription', $pageDescription)
+@section('canonicalUrl', $pageCanonical)
+@section('ogType', 'article')
+@section('ogImage', $pageImage)
+@section('structuredData')
+    <script type="application/ld+json">{!! json_encode($pageSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+@endsection
 
 <x-layout>
     <article class="relative">
