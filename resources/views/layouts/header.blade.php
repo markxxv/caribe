@@ -74,57 +74,73 @@
                 </div>
             </div>
 
-            <!-- Mobile Menu Button - Only visible on mobile -->
-            <div class="md:hidden absolute right-4">
-                <button data-site-menu-toggle type="button" aria-controls="site-mobile-menu" aria-expanded="false" aria-label="Открыть меню" class="text-white focus:outline-none">
-                    <svg data-site-menu-open-icon class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                    <svg data-site-menu-close-icon class="hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+            <!-- Mobile navigation trigger -->
+            <div class="absolute right-4 z-20 md:hidden">
+                <button data-site-menu-toggle type="button" aria-controls="site-mobile-menu" aria-expanded="false" aria-label="Открыть меню"
+                    class="flex size-11 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eccd31]">
+                    <x-tabler-menu-2 class="size-6" stroke-width="1.5" />
                 </button>
-            </div>
-
-
-        </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div id="site-mobile-menu" data-site-mobile-menu class="fixed inset-0 z-40 hidden bg-black/95 backdrop-blur-md">
-        <div class="relative h-screen flex flex-col justify-center items-center p-8 space-y-8 text-center bg-black/90 backdrop-blur-sm">
-            <button data-site-menu-close type="button" aria-label="Закрыть меню" class="absolute top-6 right-6 text-white focus:outline-none">
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-
-            <div class="">
-                <img src="/img/logo.png" alt="Elena Vivas - Туры в Аргентине" class="w-full h-full object-contain max-w-[180px]">
-            </div>
-
-            <nav class="flex flex-col space-y-6 text-sm uppercase tracking-widest">
-                <a href="/" class="text-white hover:text-gg-gold transition-colors duration-300">Главная</a>
-                <a href="/tours" class="text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
-                <a href="/blog" class="text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
-                <a href="/realestate" class="text-white hover:text-gg-gold transition-colors duration-300">Недвижимость</a>
-                <a href="/about" class="text-white hover:text-gg-gold transition-colors duration-300">Обо мне</a>
-                <a href="/contact" class="text-white hover:text-gg-gold transition-colors duration-300">Контакты</a>
-            </nav>
-
-            <div class="pt-8 mt-8 border-t border-white/10 w-24"></div>
-
-            <div class="flex items-center space-x-6">
-                <a href="https://www.instagram.com/helenkavivas" rel=" nofollow" target="_blank" class="text-white/60 hover:text-white transition-colors duration-300">
-                    <x-tabler-brand-instagram class="w-6 h-6" stroke-width="1.2"  />
-                </a>
-                <a href="https://www.facebook.com/helenkavivas" rel=" nofollow" target="_blank"  class="text-white/60 hover:text-white transition-colors duration-300">
-                    <x-tabler-brand-facebook class="w-6 h-6" stroke-width="1.2" />
-                </a>
-                <a href="https://www.youtube.com/@ElenaVivas" rel=" nofollow" target="_blank" class="text-white/60 hover:text-white transition-colors duration-300">
-                    <x-tabler-brand-youtube class="w-6 h-6" stroke-width="1.2" />
-                </a>
             </div>
         </div>
     </div>
 </header>
+
+<!-- Full-screen mobile navigation lives outside the transformed header, so it fills the viewport. -->
+<div id="site-mobile-menu" data-site-mobile-menu role="dialog" aria-modal="true" aria-label="Меню сайта" aria-hidden="true"
+    class="fixed inset-0 z-[70] hidden overflow-y-auto overscroll-contain bg-[#102a27] text-white md:hidden">
+    <div class="relative flex min-h-[100dvh] flex-col overflow-hidden px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-10">
+        <div aria-hidden="true" class="pointer-events-none absolute -right-32 -top-24 size-[420px] rounded-full bg-[#27624e]/25 blur-[110px]"></div>
+
+        <div class="relative flex shrink-0 items-center justify-between gap-4">
+            <a href="/" class="text-base font-medium tracking-[0.04em] text-white">Visita Caribe</a>
+            <button data-site-menu-close type="button" aria-label="Закрыть меню"
+                class="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eccd31]">
+                <x-tabler-x class="size-6" stroke-width="1.5" />
+            </button>
+        </div>
+
+        <div class="relative flex flex-1 flex-col justify-center py-10">
+            <p class="mb-7 text-xs tracking-[0.08em] text-white/45">Разделы сайта</p>
+            <nav aria-label="Основная навигация" class="flex flex-col gap-2">
+                <a href="/" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->routeIs('home') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">01</span>
+                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Главная</span>
+                </a>
+                <a href="/tours" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('tours', 'tours/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">02</span>
+                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Туры</span>
+                </a>
+                <a href="/realestate" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('realestate', 'realestate/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">03</span>
+                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Недвижимость</span>
+                </a>
+                <a href="/blog" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('blog', 'blog/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">04</span>
+                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Блог</span>
+                </a>
+                <a href="/contact" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->routeIs('contact') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">05</span>
+                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Контакты</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="relative flex shrink-0 items-end justify-between gap-4">
+            <div class="flex items-center gap-1">
+                <a href="https://www.instagram.com/helenkavivas" target="_blank" rel="noopener noreferrer nofollow" aria-label="Instagram"
+                    class="flex size-11 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+                    <x-tabler-brand-instagram class="size-5" stroke-width="1.5" />
+                </a>
+                <a href="https://www.facebook.com/helenkavivas" target="_blank" rel="noopener noreferrer nofollow" aria-label="Facebook"
+                    class="flex size-11 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+                    <x-tabler-brand-facebook class="size-5" stroke-width="1.5" />
+                </a>
+                <a href="https://www.youtube.com/@ElenaVivas" target="_blank" rel="noopener noreferrer nofollow" aria-label="YouTube"
+                    class="flex size-11 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+                    <x-tabler-brand-youtube class="size-5" stroke-width="1.5" />
+                </a>
+            </div>
+            <p class="max-w-[150px] text-right text-[11px] leading-5 text-white/45">Путешествия и недвижимость в Латинской Америке</p>
+        </div>
+    </div>
+</div>
