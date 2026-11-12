@@ -1,5 +1,7 @@
-@section('metaTitle', 'Туры в Аргентине с гидом Елена Вивас')
-@section('metaDescription', 'Ваш незабываемый отдых в самых экзотических местах Латинской Америки от Патагонии до Карибов')
+@section('metaTitle', 'Туры и экскурсии по Аргентине с Еленой Вивас | Visita Caribe')
+@section('metaDescription', 'Индивидуальные туры и экскурсии по Аргентине с русскоязычным гидом Еленой Вивас: Буэнос-Айрес, Патагония, Сальта, Игуасу и Барилоче.')
+@section('canonicalUrl', route('home'))
+@section('ogType', 'website')
 
 <x-layout>
     <section
