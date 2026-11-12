@@ -1,7 +1,7 @@
 @php
     $pageCanonical = route('tours.show', ['slug' => $tour->slug]);
     $pageDescription = $tour->meta_description ?: '«' . $tour->title . '» — авторский тур по Латинской Америке с гидом Еленой Вивас.';
-    $pageImage = $tour->getFirstMediaUrl('tour_cover', 'big') ?: asset('img/main_head_background.webp');
+    $pageImage = $tour->getFirstMedia('tour_cover')?->getAvailableUrl(['big']) ?: asset('img/main_head_background.webp');
 
     $pageSchema = [
         '@context' => 'https://schema.org',
