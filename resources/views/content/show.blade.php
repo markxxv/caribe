@@ -203,12 +203,12 @@
 
                             {{-- Attach Records Block --}}
                             @if($block['type'] === 'attach_record' && isset($block['data']['items']))
-                                <div class="my-12 bg-gray-50 rounded-2xl p-8">
+                                <div class="max-w-3xl mx-auto my-10">
                                     @if(isset($block['data']['title']) && !empty($block['data']['title']))
-                                        <h3 class="text-2xl font-light text-gray-900 mb-6">{{ $block['data']['title'] }}</h3>
+                                        <h3 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 leading-snug">{{ $block['data']['title'] }}</h3>
                                     @endif
 
-                                    <div class="flex flex-col gap-4 max-w-3xl">
+                                    <div class="flex flex-col gap-3">
                                         @foreach($block['data']['items'] as $it)
                                             @if(isset($it['model']) && isset($it['record_id']))
                                                 @php
@@ -216,9 +216,9 @@
                                                 @endphp
 
                                                 @if($record)
-                                                    <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-300">
+                                                    <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-gray-100 hover:bg-gray-200/70 rounded-lg p-3 no-underline transition-colors">
                                                         @if($record->cover_url)
-                                                            <div class="w-32 sm:w-48 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-lg">
+                                                            <div class="w-28 sm:w-44 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-md">
                                                                 <img
                                                                     src="{{ $record->cover_url }}"
                                                                     alt="{{ $record->title }}"
@@ -226,15 +226,7 @@
                                                                 >
                                                             </div>
                                                         @endif
-                                                        <div class="min-w-0 pr-2">
-                                                            <h4 class="font-medium text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
-                                                                {{ $record->title }}
-                                                            </h4>
-                                                            <span class="inline-flex items-center gap-1 mt-2 text-sm text-emerald-600">
-                                                                Читать далее
-                                                                <x-tabler-arrow-right class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                                            </span>
-                                                        </div>
+                                                        <h4 class="min-w-0 pr-2 font-semibold text-gray-900 leading-snug underline underline-offset-4 decoration-gray-300 group-hover:decoration-gray-900 line-clamp-3">{{ $record->title }}</h4>
                                                     </a>
                                                 @endif
                                             @endif
