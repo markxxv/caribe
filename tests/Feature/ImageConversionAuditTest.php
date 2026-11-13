@@ -110,14 +110,20 @@ class ImageConversionAuditTest extends TestCase
         }
     }
 
-    public function test_editorial_galleries_do_not_force_portrait_crops(): void
+    public function test_editorial_galleries_use_the_original_mosaic_and_realestate_photos_are_not_cropped(): void
     {
         foreach (['blog/show', 'content/show', 'tours/show'] as $view) {
             $source = file_get_contents(resource_path('views/' . $view . '.blade.php'));
+            $this->assertStringContainsString('<x-editorial.gallery', $source, $view);
             $this->assertStringNotContainsString('aspect-2/3', $source, $view);
-            $this->assertStringContainsString('object-contain', $source, $view);
-            $this->assertStringContainsString("getAvailableUrl(['builder'])", $source, $view);
         }
+
+        $gallery = file_get_contents(resource_path('views/components/editorial/gallery.blade.php'));
+        $this->assertStringContainsString('sm:aspect-[4/5]', $gallery);
+        $this->assertStringContainsString('sm:aspect-[3/2]', $gallery);
+        $this->assertStringContainsString('sm:col-span-2', $gallery);
+        $this->assertStringContainsString("getAvailableUrl(['builder'])", $gallery);
+        $this->assertStringNotContainsString('object-contain', $gallery);
 
         $realestateSource = file_get_contents(resource_path('views/realestate/show.blade.php'));
         $this->assertStringContainsString("'gallery_thumb' : 'photo_thumb'", $realestateSource);
