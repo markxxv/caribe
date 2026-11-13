@@ -108,6 +108,56 @@ class RealestateCatalogTest extends TestCase
         $this->get('/realestate/page/3')->assertNotFound();
     }
 
+    public function test_featured_property_does_not_steal_a_grid_slot_or_duplicate_across_pages(): void
+    {
+        for ($i = 1; $i <= 25; $i++) {
+            $this->property('Residence ' . $i);
+        }
+
+        $page1 = $this->get('/realestate');
+        $page1->assertOk()
+            ->assertSee('Residence 25')
+            ->assertSee('Residence 13')
+            ->assertDontSee('Residence 12');
+
+        // One editorial feature + a full, independent page of 12 cards.
+        $this->assertSame(1, substr_count($page1->getContent(), 'data-featured-property'));
+        $this->assertSame(12, substr_count($page1->getContent(), 'data-catalog-card'));
+
+        $page2 = $this->get('/realestate/page/2');
+        $page2->assertOk()
+            ->assertSee('Residence 12')
+            ->assertSee('Residence 1')
+            ->assertDontSee('Residence 13')
+            ->assertDontSee('Residence 25');
+
+        $this->assertSame(0, substr_count($page2->getContent(), 'data-featured-property'));
+        $this->assertSame(12, substr_count($page2->getContent(), 'data-catalog-card'));
+
+        // The property total still includes the promoted record.
+        $this->assertSame(25, Realestate::query()->count());
+        $this->get('/realestate/page/3')->assertNotFound();
+
+        // Filtered lists keep ordinary pagination without any special card.
+        $filtered = $this->get('/realestate/buy');
+        $filtered->assertOk();
+        $this->assertSame(0, substr_count($filtered->getContent(), 'data-featured-property'));
+        $this->assertSame(12, substr_count($filtered->getContent(), 'data-catalog-card'));
+    }
+
+    public function test_single_property_does_not_trigger_empty_state_when_featured(): void
+    {
+        $this->property('Only published property');
+
+        $page = $this->get('/realestate');
+        $page->assertOk()
+            ->assertSee('Only published property')
+            ->assertDontSee('По этим условиям пока нет объектов');
+
+        $this->assertSame(1, substr_count($page->getContent(), 'data-featured-property'));
+        $this->assertSame(0, substr_count($page->getContent(), 'data-catalog-card'));
+    }
+
     public function test_tour_booking_widget_is_excluded_from_all_realestate_pages(): void
     {
         $property = $this->property('Widget free residence');
