@@ -3,6 +3,7 @@
 namespace App\Models\Realestate;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Realestate extends BaseModel
@@ -46,6 +47,13 @@ class Realestate extends BaseModel
     public function registerMediaConversions(?Media $media = null): void
     {
         parent::registerMediaConversions($media);
+
+        // Used only by property gallery navigation (116x82), not the square Filament thumbnail.
+        $this->addMediaConversion('gallery_thumb')
+            ->performOnCollections('cover')
+            ->fit(Fit::Crop, 580, 410)
+            ->format('webp')
+            ->nonQueued();
 
         $this->addMediaConversion('photo_thumb')
             ->performOnCollections('photos')
