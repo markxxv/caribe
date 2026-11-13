@@ -661,4 +661,5 @@
         </div>
     </section>
 
-\n</x-layout>
+
+</x-layout>
