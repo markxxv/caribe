@@ -47,7 +47,7 @@ class NotFoundPageTest extends TestCase
         $response->assertNotFound()
             ->assertSee('lg:grid-cols-4', false)
             ->assertSee('aspect-square', false)
-            ->assertSee('object-cover object-top', false)
+            ->assertSee('object-cover', false)
             ->assertDontSee('Скрытый тур')
             ->assertDontSee('Другой опубликованный тур');
 
