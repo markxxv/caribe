@@ -90,6 +90,11 @@ class Recipe extends Model implements HasMedia
             ->nonQueued();
     }
 
+    public function category()
+    {
+        return $this->belongsTo(RecipeCategory::class, 'recipe_category_id');
+    }
+
     public static function pageRouteName(): string
     {
         return 'recipes.show';

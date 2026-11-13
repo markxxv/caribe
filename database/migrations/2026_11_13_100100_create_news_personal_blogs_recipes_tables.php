@@ -42,6 +42,7 @@ return new class extends Migration
         Schema::create('recipes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('craft_id')->nullable()->unique();
+            $table->foreignId('recipe_category_id')->nullable()->constrained('recipe_categories')->nullOnDelete();
             $table->string('title');
             $table->string('slug')->unique();
             $table->boolean('active')->default(true)->index();
