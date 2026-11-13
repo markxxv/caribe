@@ -96,6 +96,11 @@ class Blog extends Model implements HasMedia
         return $this->belongsToMany(Country::class, 'blog_country');
     }
 
+    public function category()
+    {
+        return $this->belongsTo(BlogCategory::class, 'blog_category_id');
+    }
+
     public static function pageRouteName(): string
     {
         return 'blog.show';

@@ -48,6 +48,19 @@ class BlogResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Блог';
 
+    protected static ?string $navigationLabel = 'Статьи';
+
+    protected static ?string $modelLabel = 'Статья';
+
+    protected static ?string $pluralModelLabel = 'Статьи';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): string
+    {
+        return 'Блог';
+    }
+
 
     public static function form(Schema $schema): Schema
     {
@@ -281,6 +294,14 @@ class BlogResource extends Resource
                             ->onIcon('tabler-bolt')
                             ->offIcon('tabler-power')
                             ->default(true),
+
+                        Select::make('blog_category_id')
+                            ->label('Категория')
+                            ->relationship('category', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->prefixIcon('tabler-category'),
 
                         // many-to-many с отдельным pivot blog_country
                         Select::make('countries')

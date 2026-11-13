@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            BlogCategorySeeder::class,
             RecipeCategorySeeder::class,
         ]);
     }
