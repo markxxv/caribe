@@ -36,7 +36,7 @@ class ToursCountryAliasTest extends TestCase
             ->assertSee('Поездка в Барилоче')
             ->assertDontSee('Поездка в Сантьяго')
             ->assertSee('rel="canonical"', false)
-            ->assertSee('value="1" selected', false);
+            ->assertSee('value="argentina" selected', false);
     }
 
     public function test_legacy_argentina_filter_redirects_permanently_to_alias(): void
@@ -58,6 +58,10 @@ class ToursCountryAliasTest extends TestCase
         $chileTour->countries()->attach($chile->id);
 
         $this->get('/tours?country=' . $chile->id)
+            ->assertStatus(301)
+            ->assertRedirect('/tours/country/chile');
+
+        $this->get('/tours/country/chile')
             ->assertOk()
             ->assertSee('Тур по Чили');
     }
