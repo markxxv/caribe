@@ -16,8 +16,8 @@
 
     <form data-listing-filters data-base="{{ $baseUrl }}" data-tours="{{ $tours ? '1' : '0' }}"
         action="{{ $baseUrl }}" method="GET" class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-        <input type="hidden" name="country" value="{{ $filters['country'] ?? 'all' }}" data-country-value>
         @if($countries->isNotEmpty())
+            <input type="hidden" name="country" value="{{ $filters['country'] ?? 'all' }}" data-country-value>
             <label class="inline-flex items-center gap-2 rounded-full bg-gray-50 px-4 py-2 text-sm text-gray-700">
                 <x-tabler-world class="size-4 shrink-0" stroke-width="1.5" />
                 <span class="sr-only">Страна</span>
