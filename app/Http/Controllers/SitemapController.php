@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\BlogCategory;
 use App\Models\News;
 use App\Models\PersonalBlog;
 use App\Models\Recipe;
@@ -56,6 +57,15 @@ class SitemapController extends Controller
                     ]);
                 }
             });
+
+        BlogCategory::query()
+            ->where('active', true)
+            ->whereHas('blogs', fn ($q) => $q->where('active', true))
+            ->orderBy('sort_order')
+            ->pluck('slug')
+            ->each(fn (string $slug) => $entries->push([
+                'url' => route('blog.category', ['category' => $slug]),
+            ]));
 
         // All published editorial categories, including emigration.
         // A category archive is a valid page only when its name is present

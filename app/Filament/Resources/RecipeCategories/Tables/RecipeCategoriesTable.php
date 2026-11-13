@@ -37,6 +37,8 @@ class RecipeCategoriesTable
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->icon('tabler-link')
+                    ->url(fn ($record): string => route('recipes.category', ['category' => $record->slug]))
+                    ->openUrlInNewTab()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 

@@ -1,5 +1,10 @@
-@section('metaTitle', 'Блог об Аргентине и Латинской Америке | Visita Caribe')
-@section('metaDescription', 'Статьи Елены Вивас об Аргентине и Латинской Америке: путешествия, история, культура, природа и полезная информация о регионах.')
+@if($activeCategory)
+    @section('metaTitle', $activeCategory->title . ' — блог о Латинской Америке | Visita Caribe')
+    @section('metaDescription', \Illuminate\Support\Str::limit(trim(strip_tags((string) $activeCategory->body)) ?: ('Статьи Елены Вивас в категории «' . $activeCategory->title . '»: путешествия, история, культура и природа Латинской Америки.'), 180))
+@else
+    @section('metaTitle', 'Блог об Аргентине и Латинской Америке | Visita Caribe')
+    @section('metaDescription', 'Статьи Елены Вивас об Аргентине и Латинской Америке: путешествия, история, культура, природа и полезная информация о регионах.')
+@endif
 @section('ogType', 'website')
 @if (! $listingFilters['search'] && $listingFilters['page'] === 1)
     @section('canonicalUrl', \App\Support\Content\ListingFilters::url($baseUrl, $listingFilters))
@@ -18,13 +23,23 @@
             <nav aria-label="Навигация" class="mb-6 flex items-center gap-2 text-xs text-white/55">
                 <a href="/" class="transition hover:text-white">Главная</a>
                 <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
-                <span class="text-white/90">Блог</span>
+                @if($activeCategory)
+                    <a href="{{ route('blog.index') }}" class="transition hover:text-white">Блог</a>
+                    <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
+                    <span class="text-white/90">{{ $activeCategory->title }}</span>
+                @else
+                    <span class="text-white/90">Блог</span>
+                @endif
             </nav>
 
             <div class="grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
                 <div class="min-w-0">
                     <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
-                        Всё о <span class="text-[#c9d9c6]">Латинской Америке</span>
+                        @if($activeCategory)
+                            {{ $activeCategory->title }}
+                        @else
+                            Всё о <span class="text-[#c9d9c6]">Латинской Америке</span>
+                        @endif
                     </h1>
                 </div>
 
@@ -44,7 +59,7 @@
     <!-- Filters -->
     <section class="sticky top-0 z-40 bg-white shadow-sm">
         <div class="container mx-auto px-4 md:px-8">
-            <x-ui.listing-filters :base-url="$baseUrl" :filters="$listingFilters" :countries="$countries" />
+            <x-ui.listing-filters :base-url="$baseUrl" :filters="$listingFilters" :countries="$countries" :categories="$categoryLinks" />
         </div>
     </section>
 

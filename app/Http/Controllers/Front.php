@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Blog;
+use App\Models\BlogCategory;
 use App\Models\Country;
 use App\Models\News;
 use App\Models\Recipe;
@@ -46,13 +47,27 @@ class Front extends Controller
 
     public function blogIndex(Request $request)
     {
+        $activeCategory = null;
+        if ($slug = $request->route('category')) {
+            $activeCategory = BlogCategory::query()
+                ->where('active', true)
+                ->where('slug', $slug)
+                ->firstOrFail();
+        }
+
         $listingFilters = ListingFilters::parse($request);
-        $baseUrl = route('blog.index');
+        $baseUrl = $activeCategory
+            ? route('blog.category', ['category' => $activeCategory->slug])
+            : route('blog.index');
         if ($redirect = ListingFilters::canonicalRedirect($request, ListingFilters::url($baseUrl, $listingFilters))) {
             return $redirect;
         }
 
         $query = Blog::query()->where('active', true)->with(['countries', 'media']);
+
+        if ($activeCategory) {
+            $query->where('blog_category_id', $activeCategory->id);
+        }
 
         if ($listingFilters['country']) {
             $query->whereHas('countries', fn ($q) => $q->where('countries.slug', $listingFilters['country']));
@@ -71,7 +86,26 @@ class Front extends Controller
             ->whereHas('blogs', fn ($q) => $q->where('active', true))
             ->orderBy('title')->get();
 
-        return view('blog.index', compact('blogs', 'countries', 'listingFilters', 'baseUrl'));
+        // Ссылки на категории для панели фильтров: только с опубликованными статьями.
+        $categoryLinks = collect([[
+            'title' => 'Все',
+            'url' => route('blog.index'),
+            'active' => ! $activeCategory,
+        ]])->concat(
+            BlogCategory::query()
+                ->where('active', true)
+                ->whereHas('blogs', fn ($q) => $q->where('active', true))
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+                ->map(fn (BlogCategory $category) => [
+                    'title' => $category->title,
+                    'url' => route('blog.category', ['category' => $category->slug]),
+                    'active' => $activeCategory?->id === $category->id,
+                ])
+        );
+
+        return view('blog.index', compact('blogs', 'countries', 'listingFilters', 'baseUrl', 'activeCategory', 'categoryLinks'));
     }
 
     public function blogShow(string $slug)

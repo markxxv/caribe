@@ -14,6 +14,11 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/', [Front::class, 'index'])->name('home');
 Route::get('/blog', [Front::class, 'blogIndex'])->name('blog.index');
+Route::get('/blog/category/{category}', [Front::class, 'blogIndex'])
+    ->where('category', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('blog.category');
+Route::get('/blog/category/{category}/{filters}', [Front::class, 'blogIndex'])
+    ->where('category', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->where('filters', '(?:country|search|page)/.+')->name('blog.category.filtered');
 Route::get('/blog/{filters}', [Front::class, 'blogIndex'])
     ->where('filters', '(?:country|search|page)/.+')->name('blog.filtered');
 Route::get('/blog/{slug}', [Front::class, 'blogShow'])->name('blog.show');
