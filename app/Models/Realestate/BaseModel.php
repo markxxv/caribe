@@ -53,13 +53,6 @@ abstract class BaseModel extends Model implements HasMedia
             ->format('webp')
             ->nonQueued();
 
-        // Gallery navigation is 116x82 (roughly 1.41:1), not square.
-        $this->addMediaConversion('gallery_thumb')
-            ->performOnCollections('cover')
-            ->fit(Fit::Crop, 580, 410)
-            ->format('webp')
-            ->nonQueued();
-
         $this->addMediaConversion('big')
             ->performOnCollections('cover')
             ->width(1400)
