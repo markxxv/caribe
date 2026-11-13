@@ -171,12 +171,12 @@
                                     <div class="my-12 max-w-5xl mx-auto">
                                         <div class="grid grid-cols-1 {{ $gridClass }} gap-4">
                                             @foreach($galleryMedia as $image)
-                                                <div class="aspect-2/3 rounded-xl overflow-hidden shadow-md">
+                                                <div class="aspect-[3/2] overflow-hidden rounded-xl bg-[#e8ece6] shadow-md">
                                                     <img
                                                         src="{{ $image->getUrl() }}"
                                                         alt="{{ $item->title }}"
                                                         loading="lazy"
-                                                        class="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                                                        class="h-full w-full object-contain"
                                                     >
                                                 </div>
                                             @endforeach
