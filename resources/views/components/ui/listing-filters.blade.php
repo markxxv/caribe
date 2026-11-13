@@ -48,11 +48,11 @@
                 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-10 after:bg-gradient-to-l after:from-white after:to-transparent">
                 <nav aria-label="Категории" data-listing-categories
                     class="relative overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <ul class="flex w-max items-center gap-2 px-4 pr-12 md:px-0 md:pr-12">
+                    <ul class="flex w-max items-center gap-1.5 px-4 pr-12 md:gap-2 md:px-0 md:pr-12">
                         @foreach($categories as $category)
                             <li>
                                 <a href="{{ $category['url'] }}" @if($category['active']) aria-current="page" @endif
-                                    class="block whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-colors md:py-2 {{ $category['active'] ? 'bg-[#163d32] text-white' : 'bg-gray-50 text-[#102a27]/75 hover:bg-gray-100 hover:text-[#102a27]' }}">
+                                    class="block whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors md:px-4 md:py-2 md:text-sm {{ $category['active'] ? 'bg-[#163d32] text-white' : 'bg-gray-50 text-[#102a27]/75 hover:bg-gray-100 hover:text-[#102a27]' }}">
                                     {{ $category['title'] }}
                                 </a>
                             </li>
