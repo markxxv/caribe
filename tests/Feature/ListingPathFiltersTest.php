@@ -63,6 +63,12 @@ class ListingPathFiltersTest extends TestCase
     public function test_legacy_country_search_and_page_parameters_redirect_to_slugs(): void
     {
         $argentina = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
+        PersonalBlog::create([
+            'title' => 'Эмиграция в Аргентину',
+            'category_slug' => 'emigratsiya',
+            'category_name' => 'Эмиграция',
+            'active' => true,
+        ]);
 
         $this->get('/blog?country=' . $argentina->id . '&search=Buenos&page=2')
             ->assertStatus(301)
