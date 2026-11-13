@@ -102,7 +102,7 @@
                                     <x-tabler-arrow-right class="w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors" stroke-width="1.6"/>
                                 </a>
 
-                                <a href="/blog"
+                                <a href="{{ route('news.index') }}"
                                    class="group inline-flex items-center gap-2.5 px-4 py-3 rounded-full
                   bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20
                   backdrop-blur-sm transition-colors">
@@ -565,5 +565,100 @@
     </section>
 
 
+    {{-- Recipes: generous editorial feature and a concise reading list. --}}
+    <section id="recipes" class="overflow-hidden bg-[#f8f3e9] py-16 md:py-24">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="mb-10 flex flex-col gap-6 md:mb-14 md:flex-row md:items-end md:justify-between">
+                <div class="max-w-2xl">
+                    <p class="mb-3 text-xs font-medium tracking-[0.15em] text-[#867348]">Вкусы и традиции</p>
+                    <h2 class="text-3xl font-medium tracking-tight text-[#26372e] md:text-5xl">Кухня Латинской Америки</h2>
+                    <p class="mt-4 text-base leading-7 text-[#6e7268]">Любимые блюда, семейные рецепты и гастрономические открытия.</p>
+                </div>
+                <a href="{{ route('recipes.index') }}" class="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-[#243c31] px-6 py-3 text-sm text-white transition-colors hover:bg-[#38634c] md:self-auto">
+                    Все рецепты <x-tabler-arrow-up-right class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" stroke-width="1.5" />
+                </a>
+            </div>
 
-</x-layout>
+            @if($featuredRecipe = $recipes->first())
+                <div class="grid gap-8 lg:grid-cols-12 lg:gap-12">
+                    <a href="{{ $featuredRecipe->url }}" class="group relative block min-h-[380px] overflow-hidden rounded-2xl bg-[#d6d8c7] lg:col-span-7 lg:min-h-[520px]">
+                        @if($cover = $featuredRecipe->getFirstMedia('recipe_cover'))
+                            <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $featuredRecipe->title }}" loading="lazy" decoding="async" class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        @endif
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#101c16]/90 via-[#101c16]/15 to-transparent"></div>
+                        <div class="absolute inset-x-0 bottom-0 p-7 text-white md:p-10">
+                            <span class="mb-4 inline-block rounded-full bg-white/15 px-3 py-1.5 text-xs backdrop-blur-sm">Выбор редакции</span>
+                            <h3 class="max-w-xl text-2xl font-medium tracking-tight md:text-4xl">{{ $featuredRecipe->title }}</h3>
+                            @if($featuredRecipe->excerpt)
+                                <p class="mt-3 line-clamp-2 max-w-xl text-sm leading-6 text-white/80">{{ $featuredRecipe->excerpt }}</p>
+                            @endif
+                            <span class="mt-6 inline-flex items-center gap-2 text-sm">Смотреть рецепт <x-tabler-arrow-right class="size-4" stroke-width="1.5" /></span>
+                        </div>
+                    </a>
+                    <div class="flex flex-col justify-center lg:col-span-5">
+                        @foreach($recipes->skip(1)->take(4) as $recipe)
+                            <a href="{{ $recipe->url }}" class="group flex items-center gap-5 border-b border-[#d9d5c8] py-4 first:pt-0 last:border-b-0">
+                                <div class="size-20 shrink-0 overflow-hidden rounded-xl bg-[#e0dfd2] sm:size-24">
+                                    @if($cover = $recipe->getFirstMedia('recipe_cover'))
+                                        <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $recipe->title }}" loading="lazy" decoding="async" class="size-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="mb-2 text-xs text-[#958568]">Кулинария</p>
+                                    <h3 class="line-clamp-2 text-lg font-medium tracking-tight text-[#26372e] transition-colors group-hover:text-[#61806a] md:text-xl">{{ $recipe->title }}</h3>
+                                </div>
+                                <x-tabler-arrow-up-right class="size-5 shrink-0 text-[#8a927c] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" stroke-width="1.5" />
+                            </a>
+                        @endforeach
+                        @if($recipes->count() === 1)
+                            <p class="text-sm leading-7 text-[#77786d]">Больше рецептов — в нашей коллекции блюд Латинской Америки.</p>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <p class="rounded-2xl bg-white/65 px-6 py-10 text-sm text-[#6e7268]">Новые рецепты готовятся к публикации.</p>
+            @endif
+        </div>
+    </section>
+
+    {{-- News: a separate, restrained editorial rhythm. --}}
+    <section id="news" class="overflow-hidden bg-[#13392f] py-16 text-white md:py-24">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="mb-10 flex flex-col gap-6 md:mb-14 md:flex-row md:items-end md:justify-between">
+                <div class="max-w-2xl">
+                    <p class="mb-3 text-xs font-medium tracking-[0.15em] text-[#e6cd83]">События континента</p>
+                    <h2 class="text-3xl font-medium tracking-tight md:text-5xl">Новости Латинской Америки</h2>
+                    <p class="mt-4 text-base leading-7 text-white/60">Главное о событиях, открытиях и переменах в регионе.</p>
+                </div>
+                <a href="{{ route('news.index') }}" class="group inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-sm text-[#13392f] transition-colors hover:bg-[#e5e8db] md:self-auto">
+                    Все новости <x-tabler-arrow-up-right class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" stroke-width="1.5" />
+                </a>
+            </div>
+            @if($news->isNotEmpty())
+                <div class="grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-4">
+                    @foreach($news as $item)
+                        <article class="group">
+                            <a href="{{ $item->url }}" class="block">
+                                <div class="aspect-[4/3] overflow-hidden rounded-xl bg-[#235347]">
+                                    @if($cover = $item->getFirstMedia('news_cover'))
+                                        <img src="{{ $cover->getAvailableUrl(['big']) }}" alt="{{ $item->title }}" loading="lazy" decoding="async" class="size-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    @else
+                                        <div class="flex size-full items-center justify-center"><x-tabler-news class="size-12 text-white/25" stroke-width="1" /></div>
+                                    @endif
+                                </div>
+                                <div class="mt-5 flex items-center justify-between text-xs text-white/45">
+                                    <time datetime="{{ $item->display_date->toDateString() }}">{{ $item->display_date->translatedFormat('d M Y') }}</time>
+                                    <x-tabler-arrow-up-right class="size-4 text-[#e6cd83] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" stroke-width="1.5" />
+                                </div>
+                                <h3 class="mt-3 text-lg font-medium tracking-tight text-white transition-colors group-hover:text-[#e6cd83]">{{ $item->title }}</h3>
+                            </a>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <p class="rounded-2xl bg-white/10 px-6 py-10 text-sm text-white/65">Новые материалы готовятся к публикации.</p>
+            @endif
+        </div>
+    </section>
+
+\n</x-layout>
