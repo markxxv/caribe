@@ -64,6 +64,18 @@ class Tour extends Model implements HasMedia
             ->format('webp')
             ->nonQueued();
 
+        // Dedicated 1:1 card: generate from the ORIGINAL, never from 'cover'.
+        // Defaults are slightly above/left of centre; adjust individual pictures
+        // using media custom_properties.square_focal_x / square_focal_y (0-100).
+        $focalX = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_x', 45) ?? 45)));
+        $focalY = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_y', 40) ?? 40)));
+
+        $this->addMediaConversion('square')
+            ->performOnCollections('tour_cover')
+            ->focalCrop(720, 720, $focalX, $focalY)
+            ->format('webp')
+            ->nonQueued();
+
         $this->addMediaConversion('big')
             ->performOnCollections('tour_cover')
             ->width(1400)
