@@ -97,7 +97,7 @@ class ListingPathFiltersTest extends TestCase
             ->assertOk()
             ->assertSee('Экономика Чили')
             ->assertSee('value="chile" selected', false)
-            ->assertSee('/news/search/Экономика', false);
+            ->assertSee('/news/search/' . rawurlencode('Экономика'), false);
 
         $this->get('/news/country/chile/search/Ничего/page/2')
             ->assertOk()
