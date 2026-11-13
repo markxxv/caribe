@@ -88,10 +88,15 @@ class Front extends Controller
 
     public function toursArgentina(Request $request)
     {
-        return $this->toursIndex($request, 'argentina');
+        return $this->toursListing($request, 'argentina');
     }
 
-    public function toursIndex(Request $request, ?string $forcedCountrySlug = null)
+    public function toursIndex(Request $request)
+    {
+        return $this->toursListing($request);
+    }
+
+    private function toursListing(Request $request, ?string $forcedCountrySlug = null)
     {
         $listingFilters = ListingFilters::parse($request, true, $forcedCountrySlug);
         $baseUrl = route('tours.index');
