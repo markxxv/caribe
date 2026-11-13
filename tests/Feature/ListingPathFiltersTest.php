@@ -15,6 +15,38 @@ class ListingPathFiltersTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_venezuela_tour_filter_uses_route_path_instead_of_forced_country(): void
+    {
+        $venezuela = Country::create(['title' => 'Венесуэла', 'slug' => 'venezuela']);
+        $argentina = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
+
+        $venezuelaTour = Tour::create(['title' => 'Путешествие по Венесуэле', 'active' => true]);
+        $venezuelaTour->countries()->attach($venezuela);
+
+        $argentinaTour = Tour::create(['title' => 'Путешествие по Аргентине', 'active' => true]);
+        $argentinaTour->countries()->attach($argentina);
+
+        $this->get('/tours/country/venezuela')
+            ->assertOk()
+            ->assertSee('Путешествие по Венесуэле')
+            ->assertDontSee('Путешествие по Аргентине');
+
+        $this->get('/tours/country/venezuela/search/' . rawurlencode('Путешествие'))
+            ->assertOk()
+            ->assertSee('Путешествие по Венесуэле')
+            ->assertDontSee('Путешествие по Аргентине');
+
+        $this->get('/tours/search/' . rawurlencode('Венесуэле'))
+            ->assertOk()
+            ->assertSee('Путешествие по Венесуэле')
+            ->assertDontSee('Путешествие по Аргентине');
+
+        $this->get('/tours/argentina')
+            ->assertOk()
+            ->assertSee('Путешествие по Аргентине')
+            ->assertDontSee('Путешествие по Венесуэле');
+    }
+
     public function test_country_slugs_filter_tours_blog_news_and_emigration_articles(): void
     {
         $argentina = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
