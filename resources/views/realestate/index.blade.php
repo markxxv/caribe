@@ -7,16 +7,27 @@
 @else
     @section('structuredData')
         @php
-            $propertyItems = $properties->getCollection()->values()->map(function ($property, $index) use ($properties) {
+            $propertyItems = $properties->getCollection()->values()->map(function ($property, $index) use ($properties, $featuredOffset) {
                 $url = route('realestate.show', ['url' => $property->slug]);
 
                 return [
                     '@type' => 'ListItem',
-                    'position' => $properties->firstItem() + $index,
+                    'position' => $properties->firstItem() + $index + $featuredOffset,
                     'url' => $url,
                     'name' => $property->title,
                 ];
-            })->all();
+            });
+
+            if ($featured) {
+                $propertyItems->prepend([
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'url' => route('realestate.show', ['url' => $featured->slug]),
+                    'name' => $featured->title,
+                ]);
+            }
+
+            $propertyItems = $propertyItems->all();
 
             $propertyCatalogSchema = [
                 '@context' => 'https://schema.org',
@@ -44,8 +55,6 @@
 
 <x-layout>
     @php
-        $featured = !$hasFilters && $properties->currentPage() === 1 ? $properties->first() : null;
-        $cards = $featured ? $properties->getCollection()->skip(1) : $properties->getCollection();
         $locationValue = $state['location_type'] ? $state['location_type'] . '/' . implode('/', $state['location_slugs']) : '';
         $priceLabel = $state['price_min'] !== null || $state['price_max'] !== null
             ? ($state['price_min'] ? 'от ' . number_format($state['price_min'], 0, ',', ' ') : '')
@@ -86,7 +95,7 @@
                             Дома, квартиры и пространства для новой главы жизни. Исследуйте предложения в Латинской Америке.
                         </p>
                         <div class="mt-4 flex items-center gap-3">
-                            <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($properties->total(), 0, ',', ' ') }}</span>
+                            <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($catalogTotal, 0, ',', ' ') }}</span>
                             <span class="text-xs leading-5 text-white/50">объектов<br>по вашему запросу</span>
                         </div>
                     </div>
@@ -268,7 +277,7 @@
                 </label>
             </div>
 
-            @if($properties->isEmpty())
+            @if($properties->isEmpty() && ! $featured)
                 <div class="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] bg-white px-6 py-14 text-center">
                     <x-tabler-home-search class="size-10 text-[#96aa9a]" stroke-width="1.1" />
                     <h3 class="mt-6 text-2xl font-normal tracking-tight">По этим условиям пока нет объектов</h3>
@@ -283,7 +292,7 @@
                         $leadImage = $leadMedia ? ($leadMedia->hasGeneratedConversion($leadConversion) ? $leadMedia->getUrl($leadConversion) : $leadMedia->getUrl()) : null;
                         $leadLocation = $featured->city?->name ?? $featured->region?->name ?? $featured->country?->name;
                     @endphp
-                    <a href="{{ route('realestate.show', ['url' => $featured->slug]) }}"
+                    <a data-featured-property href="{{ route('realestate.show', ['url' => $featured->slug]) }}"
                         class="group mb-7 grid min-h-[340px] overflow-hidden rounded-[23px] bg-[#e3eae2] lg:grid-cols-[1.35fr_1fr]">
                         <div class="relative min-h-[270px] overflow-hidden bg-[#aabbb0] lg:min-h-[390px]">
                             @if($leadImage)
@@ -332,14 +341,14 @@
                 @endif
 
                 <div class="grid gap-x-6 gap-y-9 sm:grid-cols-2 xl:grid-cols-3">
-                    @foreach($cards as $property)
+                    @foreach($properties as $property)
                         @php
                             $media = $property->getFirstMedia('photos') ?: $property->getFirstMedia('cover');
                             $conversion = $media?->collection_name === 'cover' ? 'cover' : 'photo_thumb';
                             $image = $media ? ($media->hasGeneratedConversion($conversion) ? $media->getUrl($conversion) : $media->getUrl()) : null;
                             $placeName = $property->city?->name ?? $property->region?->name ?? $property->country?->name;
                         @endphp
-                        <article class="group min-w-0">
+                        <article data-catalog-card class="group min-w-0">
                             <a href="{{ route('realestate.show', ['url' => $property->slug]) }}" class="block">
                                 <div class="relative aspect-[1.3] overflow-hidden rounded-[18px] bg-[#dce7dd]">
                                     @if($image)
