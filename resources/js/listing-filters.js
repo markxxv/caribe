@@ -2,19 +2,20 @@ export function initListingFilters() {
     document.querySelectorAll('[data-listing-filters]').forEach((form) => {
         const countryInput = form.querySelector('[data-country-value]');
         const countrySelect = form.querySelector('[data-country-select]');
-        const countryWrap = form.querySelector('[data-listing-country]');
+        const defaultView = form.querySelector('[data-listing-default]');
         const searchPanel = form.querySelector('[data-listing-search]');
         const searchInput = form.querySelector('[name="search"]');
         const openButton = form.querySelector('[data-listing-open-search]');
         const closeButton = form.querySelector('[data-listing-close-search]');
         let searchOpen = false;
 
+        // Поиск свёрнут по умолчанию на любых экранах и заменяет основной вид (страна/категории).
         const setSearchOpen = (open, focus = true) => {
-            if (!openButton || !searchPanel || !countryWrap || !closeButton) return;
+            if (!openButton || !searchPanel || !defaultView || !closeButton) return;
             searchOpen = open;
 
-            countryWrap.classList.toggle('hidden', open);
-            countryWrap.classList.toggle('flex', !open);
+            defaultView.classList.toggle('hidden', open);
+            defaultView.classList.toggle('flex', !open);
 
             searchPanel.classList.toggle('hidden', !open);
             searchPanel.classList.toggle('flex', open);
@@ -31,8 +32,18 @@ export function initListingFilters() {
                 // Discard unsent edits when closing; switching country keeps the applied search.
                 searchInput.value = searchInput.defaultValue;
                 if (focus) openButton.focus();
+                centerActiveCategory();
             }
         };
+
+        // Выбранная категория должна быть видна в горизонтальной ленте.
+        const centerActiveCategory = () => {
+            const nav = form.querySelector('[data-listing-categories]');
+            const active = nav?.querySelector('[aria-current="page"]');
+            if (!nav || !active) return;
+            nav.scrollLeft = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+        };
+        centerActiveCategory();
 
         openButton?.addEventListener('click', () => setSearchOpen(true));
         closeButton?.addEventListener('click', () => setSearchOpen(false));
@@ -42,10 +53,6 @@ export function initListingFilters() {
                 event.preventDefault();
                 setSearchOpen(false);
             }
-        });
-
-        window.addEventListener('resize', () => {
-            if (searchOpen && window.innerWidth >= 768) setSearchOpen(false, false);
         });
 
         const navigate = () => {

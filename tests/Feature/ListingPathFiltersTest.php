@@ -57,7 +57,7 @@ class ListingPathFiltersTest extends TestCase
             ->assertOk()
             ->assertSee('data-listing-open-search', false)
             ->assertSee('data-listing-close-search', false)
-            ->assertSee('hidden md:flex', false)
+            ->assertSee('data-listing-default', false)
             ->assertDontSee('Visita Caribe · Путешествия');
 
         $this->get('/blog')->assertOk()->assertDontSee('Visita Caribe · Истории');

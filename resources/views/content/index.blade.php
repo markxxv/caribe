@@ -49,7 +49,17 @@
     <!-- Filters -->
     <section class="sticky top-0 z-40 bg-white shadow-sm">
         <div class="container mx-auto px-4 md:px-8">
-            <x-ui.listing-filters :base-url="$indexUrl" :filters="$listingFilters" :countries="$countries" />
+            @php
+                $categoryLinks = $type === 'recipes'
+                    ? collect([['title' => 'Все', 'url' => route('recipes.index'), 'active' => ! $activeCategory]])
+                        ->concat($recipeCategories->map(fn ($c) => [
+                            'title' => $c->title,
+                            'url' => route('recipes.category', ['category' => $c->slug]),
+                            'active' => $activeCategory?->slug === $c->slug,
+                        ]))
+                    : collect();
+            @endphp
+            <x-ui.listing-filters :base-url="$indexUrl" :filters="$listingFilters" :countries="$countries" :categories="$categoryLinks" />
         </div>
     </section>
 
