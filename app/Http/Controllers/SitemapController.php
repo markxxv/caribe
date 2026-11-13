@@ -21,9 +21,10 @@ class SitemapController extends Controller
             ['url' => route('tours.argentina')],
             ['url' => route('blog.index')],
             ['url' => route('news.index')],
-            ['url' => route('article.index', ['category' => 'emigratsiya'])],
+            ['url' => route('article.index')],
             ['url' => route('recipes.index')],
             ['url' => route('realestate.index')],
+            ['url' => route('services')],
             ['url' => route('contact')],
         ]);
 
@@ -53,6 +54,24 @@ class SitemapController extends Controller
                         'lastmod' => $blog->updated_at?->toAtomString(),
                     ]);
                 }
+            });
+
+        // All published editorial categories, including emigration.
+        // A category archive is a valid page only when its name is present
+        // and it has at least one published article.
+        PersonalBlog::query()
+            ->where('active', true)
+            ->whereNotNull('category_slug')
+            ->where('category_slug', '<>', '')
+            ->whereNotNull('category_name')
+            ->where('category_name', '<>', '')
+            ->distinct()
+            ->orderBy('category_slug')
+            ->pluck('category_slug')
+            ->each(function (string $slug) use ($entries) {
+                $entries->push([
+                    'url' => route('article.index', ['category' => $slug]),
+                ]);
             });
 
         foreach ([News::class, PersonalBlog::class, Recipe::class] as $model) {
