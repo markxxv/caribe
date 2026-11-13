@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\News;
 use App\Models\Recipe;
 use App\Models\Tour;
+use App\Support\Content\ListingFilters;
 class Front extends Controller
 {
     public function index()
@@ -45,46 +46,33 @@ class Front extends Controller
 
     public function blogIndex(Request $request)
     {
-        $query = Blog::query()
-            ->where('active', true)
-            ->with(['countries', 'media']);
-
-        // Filter by country
-        if ($request->has('country') && $request->country !== 'all') {
-            $query->whereHas('countries', function($q) use ($request) {
-                $q->where('countries.id', $request->country);
-            });
+        $listingFilters = ListingFilters::parse($request);
+        $baseUrl = route('blog.index');
+        if ($redirect = ListingFilters::canonicalRedirect($request, ListingFilters::url($baseUrl, $listingFilters))) {
+            return $redirect;
         }
 
-        // Filter by category (prepared for future)
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->whereHas('categories', function($q) use ($request) {
-                $q->where('categories.id', $request->category);
-            });
+        $query = Blog::query()->where('active', true)->with(['countries', 'media']);
+
+        if ($listingFilters['country']) {
+            $query->whereHas('countries', fn ($q) => $q->where('countries.slug', $listingFilters['country']));
+        }
+        if ($listingFilters['search']) {
+            $term = $listingFilters['search'];
+            $query->where(fn ($q) => $q
+                ->where('title', 'like', "%{$term}%")
+                ->orWhere('meta_description', 'like', "%{$term}%"));
         }
 
-        // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('meta_description', 'like', "%{$search}%");
-            });
-        }
+        $blogs = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->paginate(12, ['*'], 'page', $listingFilters['page']);
 
-        $blogs = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->paginate(12);
+        $countries = Country::query()
+            ->whereHas('blogs', fn ($q) => $q->where('active', true))
+            ->orderBy('title')->get();
 
-        // Get all countries for filter
-        $countries = \App\Models\Country::query()
-            ->whereHas('blogs', function($q) {
-                $q->where('active', true);
-            })
-            ->orderBy('title')
-            ->get();
-
-        return view('blog.index', compact('blogs', 'countries'));
+        return view('blog.index', compact('blogs', 'countries', 'listingFilters', 'baseUrl'));
     }
-
 
     public function blogShow(string $slug)
     {
@@ -100,66 +88,48 @@ class Front extends Controller
 
     public function toursArgentina(Request $request)
     {
-        // Legacy country=1 corresponds to Argentina.
-        return $this->toursIndex($request, 1);
+        return $this->toursIndex($request, 'argentina');
     }
 
-    public function toursIndex(Request $request, ?int $forcedCountryId = null)
+    public function toursIndex(Request $request, ?string $forcedCountrySlug = null)
     {
-        // Keep a single indexable URL for the Argentina category.
-        if ($forcedCountryId === null && $request->query('country') === '1') {
-            $parameters = array_filter(
-                $request->except('country'),
-                static fn ($value) => $value !== '' && $value !== null
-            );
-
-            return redirect()->route('tours.argentina', $parameters, 301);
+        $listingFilters = ListingFilters::parse($request, true, $forcedCountrySlug);
+        $baseUrl = route('tours.index');
+        if ($redirect = ListingFilters::canonicalRedirect(
+            $request,
+            ListingFilters::url($baseUrl, $listingFilters, null, true)
+        )) {
+            return $redirect;
         }
 
-        $isArgentina = $forcedCountryId === 1;
-        $queryCountry = $request->query('country', 'all');
-        $selectedCountryId = $isArgentina
-            ? '1'
-            : (is_string($queryCountry) && ctype_digit($queryCountry) ? $queryCountry : 'all');
+        $isArgentina = $listingFilters['country'] === 'argentina';
+        $selectedCountry = $listingFilters['country']
+            ? Country::query()->where('slug', $listingFilters['country'])->first()
+            : null;
+        $selectedCountryId = $selectedCountry?->id ? (string) $selectedCountry->id : 'all';
 
-        $query = Tour::query()
-            ->where('active', true)
-            ->with(['countries', 'media']);
-
-        if ($selectedCountryId !== 'all') {
-            $query->whereHas('countries', function ($q) use ($selectedCountryId) {
-                $q->where('countries.id', (int) $selectedCountryId);
-            });
+        $query = Tour::query()->where('active', true)->with(['countries', 'media']);
+        if ($listingFilters['country']) {
+            $query->whereHas('countries', fn ($q) => $q->where('countries.slug', $listingFilters['country']));
+        }
+        if ($listingFilters['search']) {
+            $term = $listingFilters['search'];
+            $query->where(fn ($q) => $q
+                ->where('title', 'like', "%{$term}%")
+                ->orWhere('meta_description', 'like', "%{$term}%"));
         }
 
-        // Filter by category (prepared for future).
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->whereHas('categories', function ($q) use ($request) {
-                $q->where('categories.id', $request->category);
-            });
-        }
+        $tours = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->paginate(12, ['*'], 'page', $listingFilters['page']);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('meta_description', 'like', "%{$search}%");
-            });
-        }
-
-        $tours = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->paginate(12);
-
-        // Country options should be based on published tours, not blog articles.
         $countries = Country::query()
-            ->whereHas('tours', function ($q) {
-                $q->where('active', true);
-            })
-            ->orderBy('title')
-            ->get();
+            ->whereHas('tours', fn ($q) => $q->where('active', true))
+            ->orderBy('title')->get();
 
-        return view('tours.index', compact('tours', 'countries', 'selectedCountryId', 'isArgentina'));
+        return view('tours.index', compact(
+            'tours', 'countries', 'selectedCountryId', 'selectedCountry', 'isArgentina', 'listingFilters', 'baseUrl'
+        ));
     }
-
 
     public function toursShow(string $slug)
     {
