@@ -95,7 +95,7 @@ class Tour extends Model implements HasMedia
             ->nonQueued();
 
         $this->addMediaConversion('builder')
-            ->performOnCollections('tour_builder')
+            ->performOnCollections('tour_builder', 'tour_builder_image', 'tour_builder_gallery')
             ->width(1200)
             ->format('webp')
             ->nonQueued();
