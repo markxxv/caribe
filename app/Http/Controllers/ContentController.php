@@ -56,8 +56,11 @@ class ContentController extends Controller
         ],
     ];
 
-    public function index(Request $request, string $type, ?string $category = null)
+    public function index(Request $request)
     {
+        // Параметры маршрута читаем по имени: Laravel передаёт их в метод позиционно.
+        $type = (string) $request->route('type');
+        $category = $request->route('category');
         $cfg = $this->config($type);
         $model = $cfg['model'];
 
@@ -97,8 +100,10 @@ class ContentController extends Controller
         return view('content.index', compact('items', 'countries', 'type', 'cfg', 'indexUrl', 'heading'));
     }
 
-    public function show(string $type, string $slug)
+    public function show(Request $request)
     {
+        $type = (string) $request->route('type');
+        $slug = (string) $request->route('slug');
         $cfg = $this->config($type);
         $model = $cfg['model'];
 
