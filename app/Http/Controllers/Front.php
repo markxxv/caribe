@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use App\Models\Country;
+use App\Models\News;
+use App\Models\Recipe;
 use App\Models\Tour;
 class Front extends Controller
 {
@@ -24,7 +26,21 @@ class Front extends Controller
             ->take(6)
             ->get();
 
-        return view ('home', compact('blogs', 'tours'));
+        $recipes = Recipe::query()
+            ->where('active', true)
+            ->with('media')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->limit(5)
+            ->get();
+
+        $news = News::query()
+            ->where('active', true)
+            ->with(['countries', 'media'])
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->limit(4)
+            ->get();
+
+        return view('home', compact('blogs', 'tours', 'recipes', 'news'));
     }
 
     public function blogIndex(Request $request)
