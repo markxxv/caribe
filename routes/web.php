@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\RealestateController;
 use App\Http\Controllers\SitemapController;
 
@@ -17,6 +18,14 @@ Route::get('/blog/{slug}', [Front::class, 'blogShow'])->name('blog.show');
 Route::get('/tours', [Front::class, 'toursIndex'])->name('tours.index');
 Route::get('/tours/argentina', [Front::class, 'toursArgentina'])->name('tours.argentina');
 Route::get('/tours/{slug}', [Front::class, 'toursShow'])->name('tours.show');
+
+// Контент, перенесённый из Craft: URL совпадают со старым сайтом.
+Route::get('/news', [ContentController::class, 'index'])->defaults('type', 'news')->name('news.index');
+Route::get('/news/{slug}', [ContentController::class, 'show'])->defaults('type', 'news')->name('news.show');
+Route::get('/articles/{category?}', [ContentController::class, 'index'])->defaults('type', 'article')->name('article.index');
+Route::get('/article/{slug}', [ContentController::class, 'show'])->defaults('type', 'article')->name('article.show');
+Route::get('/recipes', [ContentController::class, 'index'])->defaults('type', 'recipes')->name('recipes.index');
+Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('type', 'recipes')->name('recipes.show');
 
 Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
 // The constrained catch-all allows readable filter paths without hijacking property slugs.

@@ -13,6 +13,7 @@ class Recipe extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasSlug;
+    use \App\Models\Concerns\HasPublicPage;
 
     protected $guarded = ['id'];
 
@@ -70,5 +71,13 @@ class Recipe extends Model implements HasMedia
             ->nonQueued();
     }
 
+    public static function pageRouteName(): string
+    {
+        return 'recipes.show';
+    }
 
+    public static function mediaPrefix(): string
+    {
+        return 'recipe';
+    }
 }

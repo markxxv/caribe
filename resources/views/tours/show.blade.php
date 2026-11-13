@@ -70,9 +70,9 @@
 
                     <!-- Meta info -->
                     <div class="flex flex-wrap items-center gap-4 text-white/60 mb-6">
-                        <time datetime="{{ $tour->created_at->format('Y-m-d') }}" class="flex items-center gap-2">
+                        <time datetime="{{ $tour->display_date->format('Y-m-d') }}" class="flex items-center gap-2">
                             <x-tabler-calendar class="w-4 h-4" />
-                            {{ $tour->created_at->translatedFormat('d F Y') }}
+                            {{ $tour->display_date->translatedFormat('d F Y') }}
                         </time>
 
                         @if($tour->countries && $tour->countries->count() > 0)
@@ -208,11 +208,11 @@
                                                 @endphp
 
                                                 @if($record)
-                                                    <a href="{{ $record->url ?? '#' }}" class="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                                                        @if(method_exists($record, 'getFirstMediaUrl') && $record->getFirstMediaUrl())
+                                                    <a href="{{ $record->url }}" class="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                                                        @if($record->cover_url)
                                                             <div class="aspect-[16/9] overflow-hidden">
                                                                 <img
-                                                                    src="{{ $record->getFirstMediaUrl() }}"
+                                                                    src="{{ $record->cover_url }}"
                                                                     alt="{{ $record->title }}"
                                                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                                 >

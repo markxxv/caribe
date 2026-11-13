@@ -245,9 +245,9 @@
                             <div class="p-6">
                                 <!-- Meta Information -->
                                 <div class="flex flex-wrap items-center gap-3 mb-4 text-xs text-gray-500">
-                                    <time datetime="{{ $tour->created_at->format('Y-m-d') }}" class="flex items-center gap-1">
+                                    <time datetime="{{ $tour->display_date->format('Y-m-d') }}" class="flex items-center gap-1">
                                         <x-tabler-calendar class="w-3 h-3" />
-                                        {{ $tour->created_at->translatedFormat('d M Y') }}
+                                        {{ $tour->display_date->translatedFormat('d M Y') }}
                                     </time>
 
                                     @if($tour->countries && $tour->countries->count() > 0)

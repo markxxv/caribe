@@ -13,14 +13,14 @@ class Front extends Controller
         $blogs = Blog::query()
             ->where('active', true)
             ->with(['countries', 'media'])
-            ->orderByDesc('created_at')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->take(6)
             ->get();
 
         $tours = Tour::query()
             ->where('active', true)
             ->with(['countries', 'media'])
-            ->orderByDesc('created_at')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->take(6)
             ->get();
 
@@ -56,7 +56,7 @@ class Front extends Controller
             });
         }
 
-        $blogs = $query->orderByDesc('created_at')->paginate(12);
+        $blogs = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->paginate(12);
 
         // Get all countries for filter
         $countries = \App\Models\Country::query()
@@ -131,7 +131,7 @@ class Front extends Controller
             });
         }
 
-        $tours = $query->orderByDesc('created_at')->paginate(12);
+        $tours = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->paginate(12);
 
         // Country options should be based on published tours, not blog articles.
         $countries = Country::query()

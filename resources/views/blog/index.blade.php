@@ -155,9 +155,9 @@
                             <div class="p-6">
                                 <!-- Meta Information -->
                                 <div class="flex flex-wrap items-center gap-3 mb-4 text-xs text-gray-500">
-                                    <time datetime="{{ $blog->created_at->format('Y-m-d') }}" class="flex items-center gap-1">
+                                    <time datetime="{{ $blog->display_date->format('Y-m-d') }}" class="flex items-center gap-1">
                                         <x-tabler-calendar class="w-3 h-3" />
-                                        {{ $blog->created_at->translatedFormat('d M Y') }}
+                                        {{ $blog->display_date->translatedFormat('d M Y') }}
                                     </time>
 
                                     @if($blog->countries && $blog->countries->count() > 0)

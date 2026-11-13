@@ -13,6 +13,7 @@ class Blog extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasSlug;
+    use \App\Models\Concerns\HasPublicPage;
 
     protected $guarded = ['id'];
 
@@ -76,4 +77,13 @@ class Blog extends Model implements HasMedia
         return $this->belongsToMany(Country::class, 'blog_country');
     }
 
+    public static function pageRouteName(): string
+    {
+        return 'blog.show';
+    }
+
+    public static function mediaPrefix(): string
+    {
+        return 'blog';
+    }
 }

@@ -13,6 +13,7 @@ class News extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasSlug;
+    use \App\Models\Concerns\HasPublicPage;
 
     protected $guarded = ['id'];
 
@@ -74,4 +75,13 @@ class News extends Model implements HasMedia
         return $this->belongsToMany(Country::class, 'country_news');
     }
 
+    public static function pageRouteName(): string
+    {
+        return 'news.show';
+    }
+
+    public static function mediaPrefix(): string
+    {
+        return 'news';
+    }
 }

@@ -13,6 +13,7 @@ class Tour extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasSlug;
+    use \App\Models\Concerns\HasPublicPage;
 
     protected $guarded = ['id'];
 
@@ -72,5 +73,15 @@ class Tour extends Model implements HasMedia
     public function countries()
     {
         return $this->belongsToMany(Country::class, 'country_tour');
+    }
+
+    public static function pageRouteName(): string
+    {
+        return 'tours.show';
+    }
+
+    public static function mediaPrefix(): string
+    {
+        return 'tour';
     }
 }

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\News;
+use App\Models\PersonalBlog;
+use App\Models\Recipe;
 use App\Models\Tour;
 use App\Models\Realestate\Realestate;
 use Illuminate\Http\Response;
@@ -17,6 +20,9 @@ class SitemapController extends Controller
             ['url' => route('tours.index')],
             ['url' => route('tours.argentina')],
             ['url' => route('blog.index')],
+            ['url' => route('news.index')],
+            ['url' => route('article.index', ['category' => 'emigratsiya'])],
+            ['url' => route('recipes.index')],
             ['url' => route('realestate.index')],
             ['url' => route('contact')],
         ]);
@@ -48,6 +54,22 @@ class SitemapController extends Controller
                     ]);
                 }
             });
+
+        foreach ([News::class, PersonalBlog::class, Recipe::class] as $model) {
+            $model::query()
+                ->where('active', true)
+                ->whereNotNull('slug')
+                ->select(['id', 'slug', 'updated_at'])
+                ->orderBy('id')
+                ->chunkById(200, function ($records) use ($entries) {
+                    foreach ($records as $record) {
+                        $entries->push([
+                            'url' => $record->url,
+                            'lastmod' => $record->updated_at?->toAtomString(),
+                        ]);
+                    }
+                });
+        }
 
         Realestate::query()
             ->where('active', true)
