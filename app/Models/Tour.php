@@ -19,6 +19,7 @@ class Tour extends Model implements HasMedia
     protected $casts = [
         'active' => 'boolean',
         'content' => 'array',
+        'published_at' => 'datetime',
     ];
 
     public function getSlugOptions() : SlugOptions
@@ -37,6 +38,8 @@ class Tour extends Model implements HasMedia
             ->singleFile(); // одна обложка
 
         $this->addMediaCollection('tour_builder');
+        $this->addMediaCollection('tour_builder_image');
+        $this->addMediaCollection('tour_builder_gallery');
     }
 
     public function registerMediaConversions(?Media $media = null): void

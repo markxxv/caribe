@@ -172,7 +172,9 @@ class BlogResource extends Resource
                                                     ->options([
                                                         \App\Models\Blog::class => 'Статья',
                                                         \App\Models\Tour::class => 'Тур',
-                                                        // \App\Models\Recipe::class => 'Рецепт',
+                                                        \App\Models\News::class => 'Новость',
+                                                        \App\Models\PersonalBlog::class => 'Личный блог',
+                                                        \App\Models\Recipe::class => 'Рецепт',
                                                     ])
                                                     ->native(false)
                                                     ->searchable()
@@ -186,8 +188,10 @@ class BlogResource extends Resource
                                                     ->searchable()
                                                     ->options(fn (Get $get) => match ($get('model')) {
                                                         \App\Models\Blog::class => \App\Models\Blog::query()->orderByDesc('id')->pluck('title', 'id')->all(),
-                                                        // \App\Models\Tour::class => \App\Models\Tour::query()->orderByDesc('id')->pluck('title', 'id')->all(),
-                                                        // \App\Models\Recipe::class => \App\Models\Recipe::query()->orderByDesc('id')->pluck('title', 'id')->all(),
+                                                        \App\Models\Tour::class => \App\Models\Tour::query()->orderByDesc('id')->pluck('title', 'id')->all(),
+                                                        \App\Models\News::class => \App\Models\News::query()->orderByDesc('id')->pluck('title', 'id')->all(),
+                                                        \App\Models\PersonalBlog::class => \App\Models\PersonalBlog::query()->orderByDesc('id')->pluck('title', 'id')->all(),
+                                                        \App\Models\Recipe::class => \App\Models\Recipe::query()->orderByDesc('id')->pluck('title', 'id')->all(),
                                                         default => [],
                                                     })
                                                     ->required(),

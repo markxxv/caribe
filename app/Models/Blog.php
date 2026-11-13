@@ -19,6 +19,8 @@ class Blog extends Model implements HasMedia
     protected $casts = [
         'active' => 'boolean',
         'content' => 'array',
+        'published_at' => 'datetime',
+        'tags' => 'array',
     ];
 
     public function getSlugOptions() : SlugOptions
@@ -37,6 +39,8 @@ class Blog extends Model implements HasMedia
             ->singleFile(); // одна обложка
 
         $this->addMediaCollection('blog_builder');
+        $this->addMediaCollection('blog_builder_image');
+        $this->addMediaCollection('blog_builder_gallery');
     }
 
     public function registerMediaConversions(?Media $media = null): void
