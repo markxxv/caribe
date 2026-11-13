@@ -195,36 +195,7 @@
 
                             {{-- Attach Records Block --}}
                             @if($block['type'] === 'attach_record' && isset($block['data']['items']))
-                                <div class="max-w-3xl mx-auto my-10">
-                                    @if(isset($block['data']['title']) && !empty($block['data']['title']))
-                                        <h3 class="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 leading-snug">{{ $block['data']['title'] }}</h3>
-                                    @endif
-
-                                    <div class="flex flex-col gap-3">
-                                        @foreach($block['data']['items'] as $item)
-                                            @if(isset($item['model']) && isset($item['record_id']))
-                                                @php
-                                                    $record = $item['model']::find($item['record_id']);
-                                                @endphp
-
-                                                @if($record)
-                                                    <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-gray-100 hover:bg-gray-200/70 rounded-lg p-3 no-underline transition-colors">
-                                                        @if($record->card_url)
-                                                            <div class="w-28 sm:w-44 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-md">
-                                                                <img
-                                                                    src="{{ $record->card_url }}"
-                                                                    alt="{{ $record->title }}"
-                                                                    class="w-full h-full object-cover "
-                                                                >
-                                                            </div>
-                                                        @endif
-                                                        <h4 class="min-w-0 pr-2 font-semibold text-gray-900 leading-snug underline underline-offset-4 decoration-gray-300 group-hover:decoration-gray-900 line-clamp-3">{{ $record->title }}</h4>
-                                                    </a>
-                                                @endif
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
+                                <x-editorial.related-records :block="$block" />
                             @endif
 
                             {{-- List Block --}}
