@@ -64,15 +64,27 @@ class Tour extends Model implements HasMedia
             ->format('webp')
             ->nonQueued();
 
-        // Dedicated 1:1 card: generate from the ORIGINAL, never from 'cover'.
-        // Defaults are slightly above/left of centre; adjust individual pictures
-        // using media custom_properties.square_focal_x / square_focal_y (0-100).
-        $focalX = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_x', 45) ?? 45)));
-        $focalY = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_y', 40) ?? 40)));
+        // Keep the largest possible square of the ORIGINAL, then resize to 720px.
+        // focalCrop() alone cuts only 720 source pixels and can lose the subject.
+        // These four editorial images have manually chosen composition anchors.
+        $squareFocalPoints = [
+            'istoricheskiy-siti-tur-po-buenos-ayresu' => [50, 57],
+            'tur-v-bariloche-s-reyndzherom-4kh4' => [40, 52],
+            'tur-po-severu-argentiny-khukhuy-tukuman-salta-katamarka' => [50, 50],
+            'tur-po-argentine-tropicheskaya-selva-vodopady-iguasu-i-iezuitskie-missii' => [76, 50],
+        ];
 
-        $this->addMediaConversion('square')
+        $slug = $media?->collection_name === 'tour_cover' ? $media->model?->slug : null;
+        [$defaultX, $defaultY] = $squareFocalPoints[$slug] ?? [50, 50];
+
+        // Optional per-photo adjustments take priority over the editorial defaults.
+        $focalX = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_x', $defaultX) ?? $defaultX)));
+        $focalY = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_y', $defaultY) ?? $defaultY)));
+
+        // New conversion name deliberately bypasses stale cached /square.webp URLs.
+        $this->addMediaConversion('square_card')
             ->performOnCollections('tour_cover')
-            ->focalCrop(720, 720, $focalX, $focalY)
+            ->focalCropAndResize(720, 720, $focalX, $focalY)
             ->format('webp')
             ->nonQueued();
 
