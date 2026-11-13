@@ -209,10 +209,10 @@
                                     @endif
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        @foreach($block['data']['items'] as $item)
-                                            @if(isset($item['model']) && isset($item['record_id']))
+                                        @foreach($block['data']['items'] as $it)
+                                            @if(isset($it['model']) && isset($it['record_id']))
                                                 @php
-                                                    $record = $item['model']::find($item['record_id']);
+                                                    $record = $it['model']::find($it['record_id']);
                                                 @endphp
 
                                                 @if($record)
@@ -251,25 +251,25 @@
                                     @endif
 
                                     <div class="space-y-6">
-                                        @foreach($block['data']['items'] as $item)
+                                        @foreach($block['data']['items'] as $it)
                                             <div class="flex gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-emerald-200 transition-colors duration-300">
-                                                @if(isset($item['photo']) && !empty($item['photo']))
+                                                @if(isset($it['photo']) && !empty($it['photo']))
                                                     <div class="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden">
                                                         <img
-                                                            src="{{ Storage::url($item['photo']) }}"
-                                                            alt="{{ $item['heading'] ?? '' }}"
+                                                            src="{{ Storage::url($it['photo']) }}"
+                                                            alt="{{ $it['heading'] ?? '' }}"
                                                             class="w-full h-full object-cover"
                                                         >
                                                     </div>
                                                 @endif
 
                                                 <div class="flex-1">
-                                                    @if(isset($item['heading']) && !empty($item['heading']))
-                                                        <h4 class="font-medium text-gray-900 mb-2">{{ $item['heading'] }}</h4>
+                                                    @if(isset($it['heading']) && !empty($it['heading']))
+                                                        <h4 class="font-medium text-gray-900 mb-2">{{ $it['heading'] }}</h4>
                                                     @endif
 
-                                                    @if(isset($item['text']) && !empty($item['text']))
-                                                        <p class="text-gray-600 text-sm leading-relaxed">{{ $item['text'] }}</p>
+                                                    @if(isset($it['text']) && !empty($it['text']))
+                                                        <p class="text-gray-600 text-sm leading-relaxed">{{ $it['text'] }}</p>
                                                     @endif
                                                 </div>
                                             </div>
