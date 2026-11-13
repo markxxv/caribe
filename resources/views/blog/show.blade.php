@@ -202,7 +202,7 @@
                                         <h3 class="text-2xl font-light text-gray-900 mb-6">{{ $block['data']['title'] }}</h3>
                                     @endif
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="flex flex-col gap-4">
                                         @foreach($block['data']['items'] as $item)
                                             @if(isset($item['model']) && isset($item['record_id']))
                                                 @php
@@ -210,21 +210,21 @@
                                                 @endphp
 
                                                 @if($record)
-                                                    <a href="{{ $record->url }}" class="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                                                    <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-300">
                                                         @if($record->cover_url)
-                                                            <div class="aspect-[16/9] overflow-hidden">
+                                                            <div class="w-32 sm:w-44 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-lg">
                                                                 <img
                                                                     src="{{ $record->cover_url }}"
                                                                     alt="{{ $record->title }}"
-                                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                    class="w-full h-full object-cover "
                                                                 >
                                                             </div>
                                                         @endif
-                                                        <div class="p-5">
+                                                        <div class="min-w-0 pr-2">
                                                             <h4 class="font-medium text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2">
                                                                 {{ $record->title }}
                                                             </h4>
-                                                            <span class="inline-flex items-center gap-1 mt-3 text-sm text-emerald-600">
+                                                            <span class="inline-flex items-center gap-1 mt-2 text-sm text-emerald-600">
                                                                 Читать далее
                                                                 <x-tabler-arrow-right class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                                             </span>
