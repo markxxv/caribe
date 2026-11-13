@@ -208,7 +208,7 @@
                                         <h3 class="text-2xl font-light text-gray-900 mb-6">{{ $block['data']['title'] }}</h3>
                                     @endif
 
-                                    <div class="flex flex-col gap-4">
+                                    <div class="flex flex-col gap-4 max-w-3xl">
                                         @foreach($block['data']['items'] as $it)
                                             @if(isset($it['model']) && isset($it['record_id']))
                                                 @php
@@ -218,7 +218,7 @@
                                                 @if($record)
                                                     <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-300">
                                                         @if($record->cover_url)
-                                                            <div class="w-32 sm:w-44 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-lg">
+                                                            <div class="w-32 sm:w-48 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-lg">
                                                                 <img
                                                                     src="{{ $record->cover_url }}"
                                                                     alt="{{ $record->title }}"
