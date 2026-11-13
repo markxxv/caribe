@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Blog;
+use App\Models\News;
+use App\Models\PersonalBlog;
+use App\Models\Recipe;
 use App\Models\Tour;
 use App\Models\Realestate\Realestate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +54,54 @@ class SeoInfrastructureTest extends TestCase
             ->assertDontSee(route('tours.show', ['slug' => $draftTour->slug]), false)
             ->assertDontSee(route('blog.show', ['slug' => $draftBlog->slug]), false)
             ->assertDontSee(route('realestate.show', ['url' => $sold->slug]), false);
+    }
+
+    public function test_sitemap_indexes_new_models_and_only_valid_published_article_categories(): void
+    {
+        $news = News::create(['title' => 'Published Latin America news', 'active' => true]);
+        $recipe = Recipe::create(['title' => 'Published traditional recipe', 'active' => true]);
+        $article = PersonalBlog::create([
+            'title' => 'Living in Argentina',
+            'category_slug' => 'emigratsiya',
+            'category_name' => 'Эмиграция',
+            'active' => true,
+        ]);
+        PersonalBlog::create([
+            'title' => 'Second article in the same category',
+            'category_slug' => 'emigratsiya',
+            'category_name' => 'Эмиграция',
+            'active' => true,
+        ]);
+
+        $draftNews = News::create(['title' => 'Draft Latin America news', 'active' => false]);
+        $draftRecipe = Recipe::create(['title' => 'Draft traditional recipe', 'active' => false]);
+        $draftArticle = PersonalBlog::create([
+            'title' => 'Draft emigration article',
+            'category_slug' => 'hidden-category',
+            'category_name' => 'Скрытая категория',
+            'active' => false,
+        ]);
+
+        $response = $this->get('/sitemap.xml');
+        $response->assertOk()
+            ->assertSee('<loc>' . route('news.index') . '</loc>', false)
+            ->assertSee('<loc>' . route('recipes.index') . '</loc>', false)
+            ->assertSee('<loc>' . route('article.index') . '</loc>', false)
+            ->assertSee('<loc>' . route('services') . '</loc>', false)
+            ->assertSee('<loc>' . $news->url . '</loc>', false)
+            ->assertSee('<loc>' . $recipe->url . '</loc>', false)
+            ->assertSee('<loc>' . $article->url . '</loc>', false)
+            ->assertDontSee($draftNews->url, false)
+            ->assertDontSee($draftRecipe->url, false)
+            ->assertDontSee($draftArticle->url, false)
+            ->assertDontSee(route('article.index', ['category' => 'hidden-category']), false);
+
+        $categoryUrl = route('article.index', ['category' => 'emigratsiya']);
+        $this->assertSame(
+            1,
+            substr_count($response->getContent(), '<loc>' . $categoryUrl . '</loc>'),
+            'Every published category archive should appear exactly once.'
+        );
     }
 
     public function test_home_and_blog_have_distinct_canonical_and_relevant_meta_descriptions(): void
