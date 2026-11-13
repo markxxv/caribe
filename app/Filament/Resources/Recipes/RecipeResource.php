@@ -48,6 +48,19 @@ class RecipeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Рецепты';
 
+    protected static ?string $navigationLabel = 'Рецепты';
+
+    protected static ?string $modelLabel = 'Рецепт';
+
+    protected static ?string $pluralModelLabel = 'Рецепты';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function getNavigationGroup(): string
+    {
+        return 'Рецепты';
+    }
+
 
     public static function form(Schema $schema): Schema
     {
@@ -281,6 +294,14 @@ class RecipeResource extends Resource
                             ->onIcon('tabler-bolt')
                             ->offIcon('tabler-power')
                             ->default(true),
+
+                        Select::make('recipe_category_id')
+                            ->label('Категория')
+                            ->relationship('category', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->prefixIcon('tabler-category'),
 
                         SpatieMediaLibraryFileUpload::make('recipe_cover')
                             ->label('Обложка')
