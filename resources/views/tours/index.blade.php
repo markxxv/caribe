@@ -146,11 +146,11 @@
     </section>
 
         <!-- Blog Posts Grid -->
-    <section class="py-12 md:py-16">
+    <section class="py-8 md:py-14">
         <div class="container mx-auto px-4 md:px-8">
             @if($tours->count() > 0)
                 <!-- Results Count -->
-                <div class="mb-8">
+                <div class="mb-6 md:mb-8">
                     <p class="text-gray-600">
                         Найдено туров: <span class="font-medium text-gray-900">{{ $tours->total() }}</span>
                     </p>
