@@ -95,8 +95,22 @@ class RealestateController extends Controller
             $query->orderByDesc('published_at')->orderByDesc('id');
         }
 
+        // The first unfiltered result is highlighted separately on page 1.
+        // Exclude it from the paginated grid on EVERY page so each grid has
+        // 12 distinct entries and pagination never repeats or skips a property.
+        $hasFilters = CatalogFilters::path(array_replace($state, ['page' => 1])) !== '';
+        $featuredRecord = ! $hasFilters ? (clone $query)->first() : null;
+
+        if ($featuredRecord) {
+            $query->whereKeyNot($featuredRecord->getKey());
+        }
+
         $properties = $query->paginate(12, ['*'], 'page', $state['page']);
         abort_if($state['page'] > $properties->lastPage(), 404);
+
+        $featured = $state['page'] === 1 ? $featuredRecord : null;
+        $featuredOffset = $featuredRecord ? 1 : 0;
+        $catalogTotal = $properties->total() + $featuredOffset;
 
         // Present only geography that exists in the current database.
         $locations = [];
@@ -133,7 +147,6 @@ class RealestateController extends Controller
         }
 
         $metaTitle .= ' — Visita Caribe';
-        $hasFilters = CatalogFilters::path(array_replace($state, ['page' => 1])) !== '';
         $indexable = $state['price_min'] === null && $state['price_max'] === null
             && $state['area_min'] === null && $state['area_max'] === null
             && $state['beds'] === null && $state['baths'] === null
@@ -142,7 +155,8 @@ class RealestateController extends Controller
 
         return response()->view('realestate.index', compact(
             'properties', 'state', 'locations', 'types', 'currencies',
-            'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle'
+            'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle',
+            'featured', 'featuredOffset', 'catalogTotal'
         ))->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
     }
