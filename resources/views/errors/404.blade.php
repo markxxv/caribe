@@ -114,7 +114,7 @@
                            class="group min-w-0" aria-label="Открыть тур: {{ $tour->title }}">
                             <div class="relative aspect-square overflow-hidden rounded-xl bg-[#dbe5d8] sm:rounded-2xl">
                                 @if($cover = $tour->getFirstMedia('tour_cover'))
-                                    <img src="{{ $cover->getAvailableUrl(['square']) }}"
+                                    <img src="{{ $cover->getAvailableUrl(['square_card']) }}"
                                          alt="{{ $tour->title }}" loading="lazy" decoding="async"
                                          class="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.055]">
                                 @else
