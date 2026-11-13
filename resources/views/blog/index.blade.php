@@ -1,8 +1,8 @@
 @section('metaTitle', 'Блог об Аргентине и Латинской Америке | Visita Caribe')
 @section('metaDescription', 'Статьи Елены Вивас об Аргентине и Латинской Америке: путешествия, история, культура, природа и полезная информация о регионах.')
 @section('ogType', 'website')
-@if (! request()->hasAny(['country', 'category', 'search', 'page']))
-    @section('canonicalUrl', route('blog.index'))
+@if (! $listingFilters['search'] && $listingFilters['page'] === 1)
+    @section('canonicalUrl', \App\Support\Content\ListingFilters::url($baseUrl, $listingFilters))
 @else
     @section('robots', 'noindex, follow')
 @endif
@@ -45,83 +45,14 @@
         </div>
     </section>
 
-    <!-- Filters Section -->
-    <section class="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+    <!-- Filters -->
+    <section class="sticky top-0 z-40 bg-white shadow-sm">
         <div class="container mx-auto px-4 md:px-8">
-            <div class="flex items-center gap-4 py-4 overflow-x-auto">
-                <span class="text-sm font-medium text-gray-700 whitespace-nowrap flex items-center gap-2">
-                    <x-tabler-filter class="w-4 h-4" />
-                    Фильтры:
-                </span>
-
-                <!-- Country Filter -->
-                <form method="GET" action="{{ route('blog.index') }}" id="filterForm" class="flex items-center gap-3">
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    {{-- <input type="hidden" name="category" value="{{ request('category', 'all') }}"> --}}
-
-                    <div class="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2">
-                        <x-tabler-world class="w-4 h-4 text-gray-600" />
-                        <select
-                            name="country"
-                            onchange="document.getElementById('filterForm').submit()"
-                            class="bg-transparent border-none text-sm focus:ring-0 cursor-pointer"
-                        >
-                            <option value="all">Все страны</option>
-                            @foreach($countries as $country)
-                                <option value="{{ $country->id }}" {{ request('country') == $country->id ? 'selected' : '' }}>
-                                    {{ $country->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Prepared for future categories
-                    <div class="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2">
-                        <x-tabler-category class="w-4 h-4 text-gray-600" />
-                        <select
-                            name="category"
-                            onchange="document.getElementById('filterForm').submit()"
-                            class="bg-transparent border-none text-sm focus:ring-0 cursor-pointer"
-                        >
-                            <option value="all">Все категории</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    --}}
-                </form>
-
-                <!-- Active Filters Display -->
-                @if(request('country') && request('country') !== 'all')
-                    <a href="{{ route('blog.index', array_filter(request()->except('country'))) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
-                        {{ $countries->firstWhere('id', request('country'))->title ?? '' }}
-                        <x-tabler-x class="w-3 h-3" />
-                    </a>
-                @endif
-
-                @if(request('search'))
-                    <a href="{{ route('blog.index', array_filter(request()->except('search'))) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
-                        "{{ request('search') }}"
-                        <x-tabler-x class="w-3 h-3" />
-                    </a>
-                @endif
-
-                @if(request()->hasAny(['country', 'search']))
-                    <a href="{{ route('blog.index') }}"
-                       class="text-sm text-gray-600 hover:text-emerald-600 transition-colors whitespace-nowrap">
-                        Сбросить всё
-                    </a>
-                @endif
-            </div>
+            <x-ui.listing-filters :base-url="$baseUrl" :filters="$listingFilters" :countries="$countries" />
         </div>
     </section>
 
-    <!-- Blog Posts Grid -->
+        <!-- Blog Posts Grid -->
     <section class="py-12 md:py-16">
         <div class="container mx-auto px-4 md:px-8">
             @if($blogs->count() > 0)
@@ -195,7 +126,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-12">
-                    {{ $blogs->withQueryString()->links() }}
+                    {{ $blogs->links('components.ui.path-pagination', ['baseUrl' => $baseUrl, 'listingFilters' => $listingFilters]) }}
                 </div>
             @else
                 <!-- Empty State -->
@@ -205,13 +136,13 @@
                     </div>
                     <h3 class="text-2xl font-light text-gray-900 mb-2">Статей не найдено</h3>
                     <p class="text-gray-600 mb-6">
-                        @if(request()->hasAny(['country', 'search']))
+                        @if(($listingFilters['country'] || $listingFilters['search']))
                             Попробуйте изменить параметры поиска
                         @else
                             В данный момент нет опубликованных статей
                         @endif
                     </p>
-                    @if(request()->hasAny(['country', 'search']))
+                    @if(($listingFilters['country'] || $listingFilters['search']))
                         <a href="{{ route('blog.index') }}"
                            class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors">
                             Показать все статьи
