@@ -73,7 +73,7 @@ class Blog extends Model implements HasMedia
             ->nonQueued();
 
         $this->addMediaConversion('builder')
-            ->performOnCollections('blog_builder')
+            ->performOnCollections('blog_builder', 'blog_builder_image', 'blog_builder_gallery')
             ->width(1200)
             ->format('webp')
             ->nonQueued();
