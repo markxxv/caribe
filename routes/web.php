@@ -14,17 +14,31 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/', [Front::class, 'index'])->name('home');
 Route::get('/blog', [Front::class, 'blogIndex'])->name('blog.index');
+Route::get('/blog/{filters}', [Front::class, 'blogIndex'])
+    ->where('filters', '(?:country|search|page)(?:/.*)?')->name('blog.filtered');
 Route::get('/blog/{slug}', [Front::class, 'blogShow'])->name('blog.show');
 Route::get('/tours', [Front::class, 'toursIndex'])->name('tours.index');
 Route::get('/tours/argentina', [Front::class, 'toursArgentina'])->name('tours.argentina');
+Route::get('/tours/argentina/{filters}', [Front::class, 'toursArgentina'])
+    ->where('filters', '(?:search|page)(?:/.*)?')->name('tours.argentina.filtered');
+Route::get('/tours/{filters}', [Front::class, 'toursIndex'])
+    ->where('filters', '(?:country|search|page)(?:/.*)?')->name('tours.filtered');
 Route::get('/tours/{slug}', [Front::class, 'toursShow'])->name('tours.show');
 
 // Контент, перенесённый из Craft: URL совпадают со старым сайтом.
 Route::get('/news', [ContentController::class, 'index'])->defaults('type', 'news')->name('news.index');
+Route::get('/news/{filters}', [ContentController::class, 'index'])
+    ->where('filters', '(?:country|search|page)(?:/.*)?')->defaults('type', 'news')->name('news.filtered');
 Route::get('/news/{slug}', [ContentController::class, 'show'])->defaults('type', 'news')->name('news.show');
+Route::get('/articles/{category}/{filters}', [ContentController::class, 'index'])
+    ->where('filters', '(?:country|search|page)(?:/.*)?')->defaults('type', 'article')->name('article.category.filtered');
+Route::get('/articles/{filters}', [ContentController::class, 'index'])
+    ->where('filters', '(?:country|search|page)(?:/.*)?')->defaults('type', 'article')->name('article.filtered');
 Route::get('/articles/{category?}', [ContentController::class, 'index'])->defaults('type', 'article')->name('article.index');
 Route::get('/article/{slug}', [ContentController::class, 'show'])->defaults('type', 'article')->name('article.show');
 Route::get('/recipes', [ContentController::class, 'index'])->defaults('type', 'recipes')->name('recipes.index');
+Route::get('/recipes/{filters}', [ContentController::class, 'index'])
+    ->where('filters', '(?:search|page)(?:/.*)?')->defaults('type', 'recipes')->name('recipes.filtered');
 Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('type', 'recipes')->name('recipes.show');
 
 Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
