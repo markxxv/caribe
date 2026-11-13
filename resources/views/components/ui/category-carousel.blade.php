@@ -20,7 +20,7 @@
                                         class="size-full object-cover transition duration-300 group-hover:scale-105">
                                 @endif
                             </span>
-                            <span class="mt-2.5 line-clamp-3 block text-[11px] leading-tight transition md:line-clamp-3 md:text-[12px] {{ $isActive ? 'font-medium text-[#102a27]' : 'text-[#102a27]/70 group-hover:text-[#102a27]' }}">
+                            <span class="mt-2.5 line-clamp-3 block text-[11px] leading-tight transition md:line-clamp-3 md:text-[12px] font-medium {{ $isActive ? 'text-[#102a27]' : 'text-[#102a27]/70 group-hover:text-[#102a27]' }}">
                                 {{ $category->title }}
                             </span>
                         </a>
