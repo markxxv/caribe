@@ -116,7 +116,7 @@
                                 @if($cover = $tour->getFirstMedia('tour_cover'))
                                     <img src="{{ $cover->getAvailableUrl(['cover']) }}"
                                          alt="{{ $tour->title }}" loading="lazy" decoding="async"
-                                         class="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.055]">
+                                         class="size-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.055]">
                                 @else
                                     <div class="flex size-full items-center justify-center bg-gradient-to-br from-[#cadccc] to-[#90b3a0]">
                                         <x-tabler-map-2 class="size-12 text-[#426d58]/60" stroke-width="1.15" />
