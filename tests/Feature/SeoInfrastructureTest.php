@@ -72,6 +72,10 @@ class SeoInfrastructureTest extends TestCase
     public function test_filtered_blog_and_real_estate_are_not_indexable(): void
     {
         $this->get('/blog?search=sample')
+            ->assertStatus(301)
+            ->assertRedirect('/blog/search/sample');
+
+        $this->get('/blog/search/sample')
             ->assertOk()
             ->assertSee('name="robots" content="noindex, follow"', false);
 
