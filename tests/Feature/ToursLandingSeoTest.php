@@ -50,7 +50,7 @@ class ToursLandingSeoTest extends TestCase
 
     public function test_filtered_tour_results_are_not_indexed_as_duplicate_landings(): void
     {
-        $this->get('/tours?country=all')
+        $this->get('/tours/search/sample')
             ->assertOk()
             ->assertSee('name="robots" content="noindex, follow"', false)
             ->assertDontSee('Индивидуальные туры с гидом по Аргентине')
