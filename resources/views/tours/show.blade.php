@@ -148,33 +148,7 @@
 
                             {{-- Gallery Block --}}
                             @if($block['type'] === 'gallery' && isset($block['data']['images']))
-                                @php
-                                    $imageUuids = is_array($block['data']['images']) ? $block['data']['images'] : [];
-                                    $galleryMedia = $tour->getMedia('tour_builder_gallery')->whereIn('id', $imageUuids);
-                                    $columns = $block['data']['columns'] ?? 'columns-2';
-                                    $gridClass = match($columns) {
-                                        'columns-3' => 'md:grid-cols-3',
-                                        'columns-4' => 'md:grid-cols-4',
-                                        default => 'md:grid-cols-2',
-                                    };
-                                @endphp
-
-                                @if($galleryMedia->count() > 0)
-                                    <div class="my-12 max-w-5xl mx-auto">
-                                        <div class="grid grid-cols-1 {{ $gridClass }} gap-4">
-                                            @foreach($galleryMedia as $image)
-                                                <div class="aspect-[3/2] overflow-hidden rounded-xl bg-[#e8ece6] shadow-md">
-                                                    <img
-                                                        src="{{ $image->getAvailableUrl(['builder']) }}"
-                                                        alt="{{ $tour->title }}"
-                                                        loading="lazy"
-                                                        class="h-full w-full object-contain"
-                                                    >
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
+                                <x-editorial.gallery :record="$tour" :block="$block" />
                             @endif
 
                             {{-- Quote Block --}}
