@@ -166,7 +166,7 @@
                                             <figure class="min-w-0 flex-[0_0_100%]" @if($isDuplicate) aria-hidden="true" @endif>
                                                 <img src="{{ $imageUrl }}"
                                                     alt="{{ $isDuplicate ? '' : $realestate->title . ' — фото ' . $photoNumber }}"
-                                                    class="aspect-[4/3] w-full object-cover sm:aspect-[16/10]"
+                                                    class="aspect-[4/3] w-full bg-[#e8ece6] object-contain sm:aspect-[16/10]"
                                                     width="1600" height="1000"
                                                     @if($loop->first) fetchpriority="high" @else loading="lazy" @endif
                                                     decoding="async">
@@ -197,7 +197,7 @@
                                     role="group" aria-label="Выбрать фотографию">
                                     @foreach($galleryImages as $photo)
                                         @php
-                                            $thumbConversion = $photo->collection_name === 'cover' ? 'thumb' : 'photo_thumb';
+                                            $thumbConversion = $photo->collection_name === 'cover' ? 'gallery_thumb' : 'photo_thumb';
                                             $thumbUrl = $photo->hasGeneratedConversion($thumbConversion)
                                                 ? $photo->getUrl($thumbConversion)
                                                 : $photo->getUrl();
@@ -207,7 +207,7 @@
                                             aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
                                             class="shrink-0 overflow-hidden rounded-xl transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#102a27] {{ $loop->first ? 'opacity-100' : 'opacity-50' }}">
                                             <img src="{{ $thumbUrl }}" alt="" loading="lazy" decoding="async"
-                                                class="h-[68px] w-[96px] object-cover sm:h-[82px] sm:w-[116px]"
+                                                class="h-[68px] w-[96px] bg-[#e8ece6] object-contain sm:h-[82px] sm:w-[116px]"
                                                 width="116" height="82">
                                         </button>
                                     @endforeach
