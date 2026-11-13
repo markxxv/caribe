@@ -2,37 +2,25 @@ export function initListingFilters() {
     document.querySelectorAll('[data-listing-filters]').forEach((form) => {
         const countryInput = form.querySelector('[data-country-value]');
         const countrySelect = form.querySelector('[data-country-select]');
-        const defaultView = form.querySelector('[data-listing-default]');
-        const searchPanel = form.querySelector('[data-listing-search]');
         const searchInput = form.querySelector('[name="search"]');
         const openButton = form.querySelector('[data-listing-open-search]');
         const closeButton = form.querySelector('[data-listing-close-search]');
         let searchOpen = false;
 
-        // Поиск свёрнут по умолчанию на любых экранах и заменяет основной вид (страна/категории).
+        // Поиск свёрнут по умолчанию на любых экранах. Видимость элементов задаёт CSS
+        // по атрибуту form[data-search-open], здесь только переключаем его и фокус.
         const setSearchOpen = (open, focus = true) => {
-            if (!openButton || !searchPanel || !defaultView || !closeButton) return;
+            if (!openButton || !closeButton || !searchInput) return;
             searchOpen = open;
-
-            defaultView.classList.toggle('hidden', open);
-            defaultView.classList.toggle('flex', !open);
-
-            searchPanel.classList.toggle('hidden', !open);
-            searchPanel.classList.toggle('flex', open);
-
-            openButton.classList.toggle('hidden', open);
-            openButton.classList.toggle('inline-flex', !open);
+            form.dataset.searchOpen = String(open);
             openButton.setAttribute('aria-expanded', String(open));
 
-            closeButton.classList.toggle('hidden', !open);
-            closeButton.classList.toggle('inline-flex', open);
-
-            if (open && focus) searchInput?.focus({ preventScroll: true });
+            if (open && focus) searchInput.focus({ preventScroll: true });
             if (!open) {
                 // Discard unsent edits when closing; switching country keeps the applied search.
                 searchInput.value = searchInput.defaultValue;
-                if (focus) openButton.focus();
                 centerActiveCategory();
+                if (focus) openButton.focus();
             }
         };
 

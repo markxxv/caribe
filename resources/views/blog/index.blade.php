@@ -57,7 +57,7 @@
     </section>
 
     <!-- Filters -->
-    <section class="sticky top-0 z-40 bg-white shadow-sm">
+    <section class="z-40 bg-white shadow-sm md:sticky md:top-0">
         <div class="container mx-auto px-4 md:px-8">
             <x-ui.listing-filters :base-url="$baseUrl" :filters="$listingFilters" :countries="$countries" :categories="$categoryLinks" />
         </div>
