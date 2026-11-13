@@ -69,7 +69,7 @@
 
                 <div class="grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
                     <div>
-                    <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
+                        <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
                             @if($selectedLocation)
                                 Недвижимость в <span class="text-[#c9d9c6]">{{ $selectedLocation }}</span>
                             @elseif($state['deal'] === 'buy')
