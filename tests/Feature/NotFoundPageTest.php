@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Tour;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -56,6 +58,28 @@ class NotFoundPageTest extends TestCase
         foreach ($prioritySlugs as $slug) {
             $response->assertSee('href="' . route('tours.show', ['slug' => $slug]) . '"', false);
         }
+    }
+
+    public function test_square_conversion_is_regenerated_as_real_720_by_720_webp(): void
+    {
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('The GD extension is required to generate an image fixture.');
+        }
+
+        Storage::fake(config('media-library.disk_name', 'public'));
+
+        $tour = Tour::create(['title' => 'Wide tour image', 'active' => true]);
+        $media = $tour->addMedia(UploadedFile::fake()->image('wide-tour.jpg', 1600, 900))
+            ->toMediaCollection('tour_cover');
+
+        $this->assertTrue($media->hasGeneratedConversion('square'));
+
+        $imagePath = $media->getPath('square');
+        $this->assertFileExists($imagePath);
+
+        [$width, $height] = getimagesize($imagePath);
+        $this->assertSame([720, 720], [$width, $height]);
+        $this->assertSame('image/webp', mime_content_type($imagePath));
     }
 
     public function test_404_remains_helpful_without_published_tours(): void
