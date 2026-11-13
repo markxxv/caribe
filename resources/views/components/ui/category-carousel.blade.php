@@ -3,7 +3,7 @@
 @if($categories->isNotEmpty())
     <div data-category-carousel role="region" aria-roledescription="carousel" aria-label="Категории рецептов"
         class="relative mb-8 md:mb-12">
-        <div data-carousel-viewport class="overflow-hidden md:mx-12">
+        <div data-carousel-viewport class="-my-2 overflow-hidden py-2 md:mx-12">
             <ul class="flex">
                 @foreach($categories as $category)
                     @php($isActive = $active === $category->slug)
