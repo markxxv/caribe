@@ -24,7 +24,8 @@
     <div data-editorial-gallery class="not-prose mx-auto my-12 max-w-5xl">
         <div class="grid grid-cols-1 gap-3 {{ $gridClass }}">
             @foreach($images as $image)
-                <figure class="m-0 min-w-0 overflow-hidden {{ $wideLast && $loop->last ? 'sm:col-span-2' : '' }}">
+                <figure data-editorial-gallery-item data-gallery-span="{{ $wideLast && $loop->last ? 'wide' : 'normal' }}"
+                    class="m-0 min-w-0 overflow-hidden {{ $wideLast && $loop->last ? 'sm:col-span-2' : '' }}">
                     <img src="{{ $image->getAvailableUrl(['builder']) }}"
                          alt="{{ $record->title }} — фото {{ $loop->iteration }}"
                          loading="lazy" decoding="async"
