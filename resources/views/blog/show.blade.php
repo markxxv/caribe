@@ -140,7 +140,7 @@
                                 @if($media)
                                     <figure class="my-12 max-w-5xl mx-auto">
                                         <img
-                                            src="{{ $media->getUrl() }}"
+                                            src="{{ $media->getAvailableUrl(['builder']) }}"
                                             alt="{{ $blog->title }}"
                                             class="w-full rounded-xl shadow-md"
                                         >
@@ -167,7 +167,7 @@
                                             @foreach($galleryMedia as $image)
                                                 <div class="aspect-[3/2] overflow-hidden rounded-xl bg-[#e8ece6] shadow-md">
                                                     <img
-                                                        src="{{ $image->getUrl() }}"
+                                                        src="{{ $image->getAvailableUrl(['builder']) }}"
                                                         alt="{{ $blog->title }}"
                                                         loading="lazy"
                                                         class="h-full w-full object-contain"
