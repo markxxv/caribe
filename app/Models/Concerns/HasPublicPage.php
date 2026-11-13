@@ -27,6 +27,14 @@ trait HasPublicPage
         return $media ? ($media->getAvailableUrl(['cover']) ?: $media->getUrl()) : null;
     }
 
+    /** Миниатюра для карточек (конверсия card, кроп 3:2). */
+    public function getCardUrlAttribute(): ?string
+    {
+        $media = $this->getFirstMedia(static::mediaPrefix() . '_cover');
+
+        return $media ? ($media->getAvailableUrl(['card']) ?: $media->getUrl()) : null;
+    }
+
     /** Дата публикации из Craft, а если её нет — дата создания записи. */
     public function getDisplayDateAttribute()
     {

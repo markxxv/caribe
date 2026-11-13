@@ -209,10 +209,10 @@
 
                                                 @if($record)
                                                     <a href="{{ $record->url }}" class="group flex items-center gap-5 bg-gray-100 hover:bg-gray-200/70 rounded-lg p-3 no-underline transition-colors">
-                                                        @if($record->cover_url)
+                                                        @if($record->card_url)
                                                             <div class="w-28 sm:w-44 flex-shrink-0 aspect-[3/2] overflow-hidden rounded-md">
                                                                 <img
-                                                                    src="{{ $record->cover_url }}"
+                                                                    src="{{ $record->card_url }}"
                                                                     alt="{{ $record->title }}"
                                                                     class="w-full h-full object-cover "
                                                                 >

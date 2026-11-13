@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -50,6 +51,12 @@ class Blog extends Model implements HasMedia
         $this->addMediaConversion('thumb')
             ->performOnCollections('blog_cover')
             ->width(400)
+            ->format('webp')
+            ->nonQueued();
+
+        $this->addMediaConversion('card')
+            ->performOnCollections('blog_cover')
+            ->fit(Fit::Crop, 600, 400)
             ->format('webp')
             ->nonQueued();
 

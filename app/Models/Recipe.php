@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -49,6 +50,12 @@ class Recipe extends Model implements HasMedia
         $this->addMediaConversion('thumb')
             ->performOnCollections('recipe_cover')
             ->width(400)
+            ->format('webp')
+            ->nonQueued();
+
+        $this->addMediaConversion('card')
+            ->performOnCollections('recipe_cover')
+            ->fit(Fit::Crop, 600, 400)
             ->format('webp')
             ->nonQueued();
 
