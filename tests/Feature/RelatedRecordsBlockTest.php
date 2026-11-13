@@ -53,7 +53,9 @@ class RelatedRecordsBlockTest extends TestCase
             $response->assertOk()
                 ->assertSee('Посетить Барилоче')
                 ->assertSee('data-related-records', false)
-                ->assertSee('md:grid-cols-2', false)
+                ->assertSee('max-w-3xl', false)
+                ->assertSee('flex flex-col gap-3', false)
+                ->assertDontSee('md:grid-cols-2', false)
                 ->assertSee('size-24', false)
                 ->assertSee('Тур в Барилоче с рейнджером')
                 ->assertSee('href="' . $relatedTour->url . '"', false)
@@ -92,6 +94,9 @@ class RelatedRecordsBlockTest extends TestCase
         $this->assertStringContainsString("getAvailableUrl(['square_card', 'cover'])", $component);
         $this->assertStringNotContainsString('bg-gray-100', $component);
         $this->assertStringNotContainsString('border-b', $component);
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.prose [data-related-records] a[data-related-record-item]', $css);
+        $this->assertStringContainsString('border-bottom: 0;', $css);
 
         foreach (['blog/show', 'tours/show', 'content/show'] as $page) {
             $blade = file_get_contents(resource_path('views/' . $page . '.blade.php'));
