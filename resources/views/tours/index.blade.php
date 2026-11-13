@@ -1,11 +1,14 @@
 @php
     $toursCanonicalUrl = $isArgentina ? route('tours.argentina') : route('tours.index');
-    $hasTourQuery = request()->hasAny(['country', 'category', 'search', 'page']);
-    $isEditorialLanding = ! $isArgentina && ! $hasTourQuery;
+    $hasTourQuery = ($listingFilters['country'] && ! $isArgentina)
+        || $listingFilters['search'] || $listingFilters['page'] > 1;
+    $isEditorialLanding = ! $listingFilters['country'] && ! $hasTourQuery;
 
     $toursMetaTitle = $isArgentina
         ? 'Туры по Аргентине с русскоязычным гидом | Visita Caribe'
-        : 'Индивидуальные туры по Аргентине с гидом Еленой Вивас | Visita Caribe';
+        : ($selectedCountry
+            ? 'Туры — ' . $selectedCountry->title . ' | Visita Caribe'
+            : 'Индивидуальные туры по Аргентине с гидом Еленой Вивас | Visita Caribe');
     $toursMetaDescription = $isArgentina
         ? 'Авторские туры по Аргентине с гидом Еленой Вивас: Буэнос-Айрес, север страны, Игуасу, Барилоче и Патагония. Выберите маршрут путешествия.'
         : 'Индивидуальные туры по Аргентине с русскоязычным гидом Еленой Вивас. Буэнос-Айрес, Сальта, Патагония, Барилоче и Игуасу. Маршруты под ваши даты и интересы.';
@@ -116,6 +119,8 @@
                     <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
                         @if($isArgentina)
                             Туры по <span class="text-[#c9d9c6]">Аргентине</span>
+                        @elseif($selectedCountry)
+                            Туры — <span class="text-[#c9d9c6]">{{ $selectedCountry->title }}</span>
                         @else
                             Индивидуальные туры по <span class="text-[#c9d9c6]">Аргентине</span>
                         @endif
@@ -124,7 +129,7 @@
 
                 <div class="lg:pb-1">
                     <p class="max-w-[310px] text-sm leading-7 text-white/65">
-                        {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : 'Путешествия по Буэнос-Айресу, Патагонии, северу Аргентины и Игуасу с гидом Еленой Вивас. Маршруты под ваши даты и интересы.' }}
+                        {{ $isArgentina ? 'Авторские экскурсии по Буэнос-Айресу, Барилоче и другим уголкам Аргентины с русскоязычным гидом.' : ($selectedCountry ? 'Авторские маршруты и экскурсии. Подберите путешествие по своим датам и интересам.' : 'Путешествия по Буэнос-Айресу, Патагонии, северу Аргентины и Игуасу с гидом Еленой Вивас. Маршруты под ваши даты и интересы.') }}
                     </p>
                     <div class="mt-6 flex items-center gap-3">
                         <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($tours->total(), 0, ',', ' ') }}</span>
@@ -135,83 +140,14 @@
         </div>
     </section>
 
-    <!-- Filters Section -->
-    <section class="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+    <!-- Filters -->
+    <section class="sticky top-0 z-40 bg-white shadow-sm">
         <div class="container mx-auto px-4 md:px-8">
-            <div class="flex items-center gap-4 py-4 overflow-x-auto">
-                <span class="text-sm font-medium text-gray-700 whitespace-nowrap flex items-center gap-2">
-                    <x-tabler-filter class="w-4 h-4" />
-                    Фильтры:
-                </span>
-
-                <!-- Country Filter -->
-                <form method="GET" action="{{ route('tours.index') }}" id="filterForm" class="flex items-center gap-3">
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    {{-- <input type="hidden" name="category" value="{{ request('category', 'all') }}"> --}}
-
-                    <div class="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2">
-                        <x-tabler-world class="w-4 h-4 text-gray-600" />
-                        <select
-                            name="country"
-                            onchange="document.getElementById('filterForm').submit()"
-                            class="bg-transparent border-none text-sm focus:ring-0 cursor-pointer"
-                        >
-                            <option value="all">Все страны</option>
-                            @foreach($countries as $country)
-                                <option value="{{ $country->id }}" {{ (string) $selectedCountryId === (string) $country->id ? 'selected' : '' }}>
-                                    {{ $country->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Prepared for future categories
-                    <div class="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2">
-                        <x-tabler-category class="w-4 h-4 text-gray-600" />
-                        <select
-                            name="category"
-                            onchange="document.getElementById('filterForm').submit()"
-                            class="bg-transparent border-none text-sm focus:ring-0 cursor-pointer"
-                        >
-                            <option value="all">Все категории</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->title }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    --}}
-                </form>
-
-                <!-- Active Filters Display -->
-                @if($selectedCountryId !== 'all')
-                    <a href="{{ route('tours.index', array_filter(request()->except('country', 'page'))) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
-                        {{ $countries->firstWhere('id', $selectedCountryId)->title ?? ($isArgentina ? 'Аргентина' : '') }}
-                        <x-tabler-x class="w-3 h-3" />
-                    </a>
-                @endif
-
-                @if(request('search'))
-                    <a href="{{ route($isArgentina ? 'tours.argentina' : 'tours.index', array_filter(request()->except('search', 'country', 'page'))) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm hover:bg-emerald-200 transition-colors">
-                        "{{ request('search') }}"
-                        <x-tabler-x class="w-3 h-3" />
-                    </a>
-                @endif
-
-                @if($selectedCountryId !== 'all' || request()->filled('search'))
-                    <a href="{{ route('tours.index') }}"
-                       class="text-sm text-gray-600 hover:text-emerald-600 transition-colors whitespace-nowrap">
-                        Сбросить всё
-                    </a>
-                @endif
-            </div>
+            <x-ui.listing-filters :base-url="$baseUrl" :filters="$listingFilters" :countries="$countries" :tours="true" />
         </div>
     </section>
 
-    <!-- Blog Posts Grid -->
+        <!-- Blog Posts Grid -->
     <section class="py-12 md:py-16">
         <div class="container mx-auto px-4 md:px-8">
             @if($tours->count() > 0)
@@ -285,7 +221,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-12">
-                    {{ $tours->withQueryString()->links() }}
+                    {{ $tours->links('components.ui.path-pagination', ['baseUrl' => $baseUrl, 'listingFilters' => $listingFilters, 'isTours' => true]) }}
                 </div>
             @else
                 <!-- Empty State -->
@@ -295,13 +231,13 @@
                     </div>
                     <h3 class="text-2xl font-light text-gray-900 mb-2">Туров не найдено</h3>
                     <p class="text-gray-600 mb-6">
-                        @if($selectedCountryId !== 'all' || request()->filled('search'))
+                        @if(($listingFilters['country'] || $listingFilters['search']))
                             Попробуйте изменить параметры поиска
                         @else
                             В данный момент нет опубликованных туров в этой категории
                         @endif
                     </p>
-                    @if($selectedCountryId !== 'all' || request()->filled('search'))
+                    @if(($listingFilters['country'] || $listingFilters['search']))
                         <a href="{{ route('tours.index') }}"
                            class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors">
                             Показать все туры
