@@ -71,7 +71,7 @@ class News extends Model implements HasMedia
 
     public function countries()
     {
-        return $this->belongsToMany(Country::class, 'news_country');
+        return $this->belongsToMany(Country::class, 'country_news');
     }
 
 }

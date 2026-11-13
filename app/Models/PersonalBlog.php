@@ -71,7 +71,7 @@ class PersonalBlog extends Model implements HasMedia
 
     public function countries()
     {
-        return $this->belongsToMany(Country::class, 'personal_blog_country');
+        return $this->belongsToMany(Country::class, 'country_personal_blog');
     }
 
 }
