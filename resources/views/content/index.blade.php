@@ -1,5 +1,10 @@
-@section('metaTitle', $cfg['metaTitle'])
-@section('metaDescription', $cfg['metaDescription'])
+@if($activeCategory)
+    @section('metaTitle', $activeCategory->title . ' — рецепты Латинской Америки | Visita Caribe')
+    @section('metaDescription', \Illuminate\Support\Str::limit(trim(strip_tags((string) $activeCategory->body)) ?: ('Рецепты категории «' . $activeCategory->title . '» от Елены Вивас: пошаговые описания и фотографии.'), 180))
+@else
+    @section('metaTitle', $cfg['metaTitle'])
+    @section('metaDescription', $cfg['metaDescription'])
+@endif
 @section('ogType', 'website')
 @if (! $listingFilters['search'] && $listingFilters['page'] === 1)
     @section('canonicalUrl', \App\Support\Content\ListingFilters::url($indexUrl, $listingFilters))
@@ -51,6 +56,10 @@
         <!-- Blog Posts Grid -->
     <section class="py-8 md:py-14">
         <div class="container mx-auto px-4 md:px-8">
+            @if($type === 'recipes')
+                <x-ui.category-carousel :categories="$recipeCategories" :active="$activeCategory?->slug" />
+            @endif
+
             @if($items->count() > 0)
                 <!-- Results Count -->
                 <div class="mb-6 md:mb-8">

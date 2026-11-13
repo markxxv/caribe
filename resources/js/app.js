@@ -11,6 +11,10 @@ if (document.querySelector('[data-realestate-gallery]')) {
     });
 }
 
+if (document.querySelector('[data-category-carousel]')) {
+    import('./category-carousel.js').then(({ initCategoryCarousels }) => initCategoryCarousels());
+}
+
 if (document.querySelector('[data-catalog-search]')) {
     import('./realestate-catalog.js').then(({ initRealestateCatalog }) => {
         initRealestateCatalog();

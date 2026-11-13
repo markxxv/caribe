@@ -6,6 +6,7 @@ use App\Models\Country;
 use App\Models\News;
 use App\Models\PersonalBlog;
 use App\Models\Recipe;
+use App\Models\RecipeCategory;
 use Illuminate\Http\Request;
 use App\Support\Content\ListingFilters;
 
@@ -65,7 +66,14 @@ class ContentController extends Controller
         $model = $cfg['model'];
 
         $categoryTitle = null;
-        if ($category !== null) {
+        $activeCategory = null;
+        if ($category !== null && $type === 'recipes') {
+            $activeCategory = RecipeCategory::query()
+                ->where('active', true)
+                ->where('slug', $category)
+                ->firstOrFail();
+            $categoryTitle = $activeCategory->title;
+        } elseif ($category !== null) {
             abort_unless($type === 'article', 404);
             $categoryTitle = PersonalBlog::query()
                 ->where('category_slug', $category)
@@ -85,7 +93,9 @@ class ContentController extends Controller
         if ($cfg['countryRelation']) {
             $query->with('countries');
         }
-        if ($category !== null) {
+        if ($activeCategory) {
+            $query->where('recipe_category_id', $activeCategory->id);
+        } elseif ($category !== null) {
             $query->where('category_slug', $category);
         }
 
@@ -113,9 +123,11 @@ class ContentController extends Controller
             : collect();
 
         $heading = $categoryTitle ?: $cfg['heading'];
+        $recipeCategories = $type === 'recipes' ? $this->recipeCategories() : collect();
 
         return view('content.index', compact(
-            'items', 'countries', 'type', 'cfg', 'indexUrl', 'heading', 'listingFilters'
+            'items', 'countries', 'type', 'cfg', 'indexUrl', 'heading', 'listingFilters',
+            'recipeCategories', 'activeCategory'
         ));
     }
 
@@ -156,8 +168,49 @@ class ContentController extends Controller
         return self::TYPES[$type];
     }
 
+    /**
+     * Опубликованные категории рецептов, у которых есть хотя бы один опубликованный рецепт.
+     * Обложка категории — обложка самого свежего рецепта, у которого она есть.
+     */
+    private function recipeCategories()
+    {
+        $categories = RecipeCategory::query()
+            ->where('active', true)
+            ->whereHas('recipes', fn ($q) => $q->where('active', true))
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $recipes = Recipe::query()
+            ->where('active', true)
+            ->whereIn('recipe_category_id', $categories->modelKeys())
+            ->select(['id', 'recipe_category_id', 'published_at', 'created_at'])
+            ->with('media')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->get()
+            ->groupBy('recipe_category_id');
+
+        foreach ($categories as $category) {
+            $cover = $recipes->get($category->id, collect())
+                ->map(fn (Recipe $recipe) => $recipe->getFirstMedia(Recipe::mediaPrefix() . '_cover'))
+                ->filter()
+                ->first();
+
+            $category->setAttribute(
+                'cover_url',
+                $cover ? ($cover->getAvailableUrl(['square_card', 'card']) ?: $cover->getUrl()) : null
+            );
+        }
+
+        return $categories;
+    }
+
     private function indexUrl(string $type, ?string $category): string
     {
+        if ($type === 'recipes' && $category) {
+            return route('recipes.category', ['category' => $category]);
+        }
+
         return $category
             ? route("{$type}.index", ['category' => $category])
             : route("{$type}.index");

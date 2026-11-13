@@ -37,6 +37,11 @@ Route::get('/articles/{filters}', [ContentController::class, 'index'])
 Route::get('/articles/{category?}', [ContentController::class, 'index'])->defaults('type', 'article')->name('article.index');
 Route::get('/article/{slug}', [ContentController::class, 'show'])->defaults('type', 'article')->name('article.show');
 Route::get('/recipes', [ContentController::class, 'index'])->defaults('type', 'recipes')->name('recipes.index');
+Route::get('/recipes/category/{category}', [ContentController::class, 'index'])
+    ->where('category', '[a-z0-9]+(?:-[a-z0-9]+)*')->defaults('type', 'recipes')->name('recipes.category');
+Route::get('/recipes/category/{category}/{filters}', [ContentController::class, 'index'])
+    ->where('category', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->where('filters', '(?:search|page)/.+')->defaults('type', 'recipes')->name('recipes.category.filtered');
 Route::get('/recipes/{filters}', [ContentController::class, 'index'])
     ->where('filters', '(?:search|page)/.+')->defaults('type', 'recipes')->name('recipes.filtered');
 Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('type', 'recipes')->name('recipes.show');

@@ -6,6 +6,7 @@ use App\Models\Blog;
 use App\Models\News;
 use App\Models\PersonalBlog;
 use App\Models\Recipe;
+use App\Models\RecipeCategory;
 use App\Models\Tour;
 use App\Models\Realestate\Realestate;
 use Illuminate\Http\Response;
@@ -73,6 +74,15 @@ class SitemapController extends Controller
                     'url' => route('article.index', ['category' => $slug]),
                 ]);
             });
+
+        RecipeCategory::query()
+            ->where('active', true)
+            ->whereHas('recipes', fn ($q) => $q->where('active', true))
+            ->orderBy('sort_order')
+            ->pluck('slug')
+            ->each(fn (string $slug) => $entries->push([
+                'url' => route('recipes.category', ['category' => $slug]),
+            ]));
 
         foreach ([News::class, PersonalBlog::class, Recipe::class] as $model) {
             $model::query()
