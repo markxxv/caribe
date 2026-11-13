@@ -17,7 +17,8 @@
                                 @if($category->cover_url)
                                     <img src="{{ $category->cover_url }}" alt="" width="100" height="100"
                                         loading="lazy" decoding="async" draggable="false"
-                                        class="size-full object-cover transition duration-300 group-hover:scale-105">
+                                        style="transition: scale 500ms cubic-bezier(0.22, 1, 0.36, 1), transform 500ms cubic-bezier(0.22, 1, 0.36, 1);"
+                                        class="size-full object-cover group-hover:scale-105">
                                 @endif
                             </span>
                             <span class="mt-2.5 line-clamp-3 block text-[11px] leading-tight transition md:line-clamp-3 md:text-[12px] font-medium {{ $isActive ? 'text-[#102a27]' : 'text-[#102a27]/70 group-hover:text-[#102a27]' }}">
