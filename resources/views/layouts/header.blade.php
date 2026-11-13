@@ -52,10 +52,10 @@
         <div class="flex items-center justify-between py-6">
             <!-- Left Side -->
             <div class="w-1/3">
-                <div class="md:flex hidden justify-start items-center space-x-8 text-xs uppercase tracking-widest relative z-10">
+                <div class="lg:flex hidden justify-start items-center space-x-5 text-[11px] uppercase tracking-[0.12em] relative z-10">
                     <a href="/tours" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                     <a href="/blog" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
-                    <a href="/realestate" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Недвижимость</a>
+                    <a href="{{ route('recipes.index') }}" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Рецепты</a>
                 </div>
             </div>
 
@@ -68,14 +68,16 @@
 
             <!-- Right Side -->
             <div class="w-1/3">
-                <div class="md:flex hidden justify-end items-center space-x-8 text-xs uppercase tracking-widest  relative z-10">
+                <div class="lg:flex hidden justify-end items-center space-x-5 text-[11px] uppercase tracking-[0.12em]  relative z-10">
+                    <a href="{{ route('article.index', ['category' => 'emigratsiya']) }}" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Эмиграция</a>
+                    <a href="{{ route('realestate.index') }}" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Недвижимость</a>
                     <a href="/contact" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Контакты</a>
 
                 </div>
             </div>
 
             <!-- Mobile navigation trigger -->
-            <div class="absolute right-4 z-20 md:hidden">
+            <div class="absolute right-4 z-20 lg:hidden">
                 <button data-site-menu-toggle type="button" aria-controls="site-mobile-menu" aria-expanded="false" aria-label="Открыть меню"
                     class="flex size-11 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-black/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eccd31]">
                     <x-tabler-menu-2 class="size-6" stroke-width="1.5" />
@@ -87,7 +89,7 @@
 
 <!-- Full-screen mobile navigation lives outside the transformed header, so it fills the viewport. -->
 <div id="site-mobile-menu" data-site-mobile-menu role="dialog" aria-modal="true" aria-label="Меню сайта" aria-hidden="true"
-    class="fixed inset-0 z-[70] hidden overflow-y-auto overscroll-contain bg-[#102a27] text-white md:hidden">
+    class="fixed inset-0 z-[70] hidden overflow-y-auto overscroll-contain bg-[#102a27] text-white lg:hidden">
     <div class="relative flex min-h-[100dvh] flex-col overflow-hidden px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-10">
         <div aria-hidden="true" class="pointer-events-none absolute -right-32 -top-24 size-[420px] rounded-full bg-[#27624e]/25 blur-[110px]"></div>
 
@@ -102,25 +104,37 @@
         <div class="relative flex flex-1 flex-col justify-center py-10">
             <p class="mb-7 text-xs tracking-[0.08em] text-white/45">Разделы сайта</p>
             <nav aria-label="Основная навигация" class="flex flex-col gap-2">
-                <a href="/" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->routeIs('home') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="/" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->routeIs('home') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">01</span>
-                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Главная</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Главная</span>
                 </a>
-                <a href="/tours" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('tours', 'tours/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="/tours" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('tours', 'tours/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">02</span>
-                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Туры</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Туры</span>
                 </a>
-                <a href="/realestate" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('realestate', 'realestate/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="/blog" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('blog', 'blog/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">03</span>
-                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Недвижимость</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Блог</span>
                 </a>
-                <a href="/blog" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->is('blog', 'blog/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="/recipes" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('recipes', 'recipes/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">04</span>
-                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Блог</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Рецепты</span>
                 </a>
-                <a href="/contact" class="group flex items-baseline gap-5 py-2.5 transition-colors {{ request()->routeIs('contact') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="/news" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('news', 'news/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">05</span>
-                    <span class="text-[32px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[38px]">Контакты</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Новости</span>
+                </a>
+                <a href="{{ route('article.index', ['category' => 'emigratsiya']) }}" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('articles/emigratsiya', 'article/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">06</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Эмиграция</span>
+                </a>
+                <a href="/realestate" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('realestate', 'realestate/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">07</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Недвижимость</span>
+                </a>
+                <a href="/contact" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->routeIs('contact') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">08</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Контакты</span>
                 </a>
             </nav>
         </div>
