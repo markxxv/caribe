@@ -47,6 +47,25 @@ class ListingPathFiltersTest extends TestCase
             ->assertDontSee('Путешествие по Венесуэле');
     }
 
+    public function test_mobile_filters_stay_in_one_row_and_catalogue_hero_labels_are_removed(): void
+    {
+        $country = Country::create(['title' => 'Венесуэла', 'slug' => 'venezuela']);
+        $tour = Tour::create(['title' => 'Поездка в Венесуэлу', 'active' => true]);
+        $tour->countries()->attach($country);
+
+        $this->get('/tours/country/venezuela')
+            ->assertOk()
+            ->assertSee('data-listing-open-search', false)
+            ->assertSee('data-listing-close-search', false)
+            ->assertSee('hidden md:flex', false)
+            ->assertDontSee('Visita Caribe · Путешествия');
+
+        $this->get('/blog')->assertOk()->assertDontSee('Visita Caribe · Истории');
+        $this->get('/news')->assertOk()->assertDontSee('Visita Caribe · Истории');
+        $this->get('/recipes')->assertOk()->assertDontSee('Visita Caribe · Истории');
+        $this->get('/realestate')->assertOk()->assertDontSee('Visita Caribe · Real estate');
+    }
+
     public function test_country_slugs_filter_tours_blog_news_and_emigration_articles(): void
     {
         $argentina = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
