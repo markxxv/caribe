@@ -29,7 +29,7 @@
                     <img src="{{ $image->getAvailableUrl(['builder']) }}"
                          alt="{{ $record->title }} — фото {{ $loop->iteration }}"
                          loading="lazy" decoding="async"
-                         class="block h-auto w-full {{ $wideLast && $loop->last ? 'sm:aspect-[3/2]' : 'sm:aspect-[4/5]' }} sm:h-full sm:object-cover">
+                         class="block h-auto w-full {{ $wideLast && $loop->last ? 'sm:aspect-[3/2]' : 'sm:aspect-[4/5]' }} sm:h-auto sm:object-cover">
                 </figure>
             @endforeach
         </div>
