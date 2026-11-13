@@ -81,12 +81,42 @@ class ImageConversionAuditTest extends TestCase
         imagedestroy($image);
     }
 
+    public function test_blog_and_tour_builder_media_generate_proportional_webp(): void
+    {
+        if (! extension_loaded('gd') || ! function_exists('imagewebp')) {
+            $this->markTestSkipped('GD with WebP support is required.');
+        }
+
+        Storage::fake(config('media-library.disk_name', 'public'));
+
+        foreach ([
+            [Blog::class, 'blog_builder_image'],
+            [Blog::class, 'blog_builder_gallery'],
+            [Tour::class, 'tour_builder_image'],
+            [Tour::class, 'tour_builder_gallery'],
+        ] as [$modelClass, $collection]) {
+            $record = $modelClass::create([
+                'title' => 'Content with ' . $collection,
+                'active' => true,
+            ]);
+
+            $media = $record->addMedia(UploadedFile::fake()->image('original.jpg', 1500, 900))
+                ->toMediaCollection($collection);
+
+            $this->assertTrue($media->hasGeneratedConversion('builder'), $collection);
+            [$width, $height] = getimagesize($media->getPath('builder'));
+            $this->assertSame(1200, $width, $collection);
+            $this->assertSame(720, $height, $collection);
+        }
+    }
+
     public function test_editorial_galleries_do_not_force_portrait_crops(): void
     {
         foreach (['blog/show', 'content/show', 'tours/show'] as $view) {
             $source = file_get_contents(resource_path('views/' . $view . '.blade.php'));
             $this->assertStringNotContainsString('aspect-2/3', $source, $view);
             $this->assertStringContainsString('object-contain', $source, $view);
+            $this->assertStringContainsString("getAvailableUrl(['builder'])", $source, $view);
         }
 
         $realestateSource = file_get_contents(resource_path('views/realestate/show.blade.php'));
