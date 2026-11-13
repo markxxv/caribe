@@ -8,7 +8,7 @@
                 @foreach($categories as $category)
                     @php($isActive = $active === $category->slug)
                     <li data-carousel-slide @if($isActive) data-active @endif
-                        class="min-w-0 shrink-0 grow-0 basis-[22%] px-1.5 md:basis-1/6 md:px-2">
+                        class="min-w-0 shrink-0 grow-0 basis-[22%] px-1.5 md:basis-[116px] md:px-2">
                         {{-- Повторный клик по выбранной категории снимает фильтр. --}}
                         <a href="{{ $isActive ? route('recipes.index') : route('recipes.category', ['category' => $category->slug]) }}"
                             @if($isActive) aria-current="page" @endif
@@ -20,7 +20,7 @@
                                         class="size-full object-cover transition duration-300 group-hover:scale-105">
                                 @endif
                             </span>
-                            <span class="mt-2.5 line-clamp-3 block text-[11px] leading-tight transition md:line-clamp-2 md:text-[13px] {{ $isActive ? 'font-medium text-[#102a27]' : 'text-[#102a27]/70 group-hover:text-[#102a27]' }}">
+                            <span class="mt-2.5 line-clamp-3 block text-[11px] leading-tight transition md:line-clamp-3 md:text-[12px] {{ $isActive ? 'font-medium text-[#102a27]' : 'text-[#102a27]/70 group-hover:text-[#102a27]' }}">
                                 {{ $category->title }}
                             </span>
                         </a>
