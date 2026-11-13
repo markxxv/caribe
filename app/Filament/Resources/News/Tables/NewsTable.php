@@ -39,6 +39,8 @@ class NewsTable
                     ->limitList(3),
                 TextColumn::make('slug')
                     ->icon('tabler-link')
+                    ->url(fn ($record): string => $record->url)
+                    ->openUrlInNewTab()
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

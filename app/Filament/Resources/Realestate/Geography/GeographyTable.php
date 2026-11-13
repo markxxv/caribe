@@ -6,6 +6,7 @@ use App\Models\Realestate\City;
 use App\Models\Realestate\Country;
 use App\Models\Realestate\District;
 use App\Models\Realestate\Region;
+use App\Support\Realestate\CatalogFilters;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -76,6 +77,9 @@ class GeographyTable
 
                 TextColumn::make('slug')
                     ->label('Slug')
+                    ->icon('tabler-link')
+                    ->url(fn (Model $record): string => self::frontUrl($record, $level))
+                    ->openUrlInNewTab()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -119,5 +123,26 @@ class GeographyTable
                         ->requiresConfirmation(),
                 ]),
             ]);
+    }
+
+    /** Адрес каталога недвижимости, отфильтрованного по этой локации. */
+    private static function frontUrl(Model $record, string $level): string
+    {
+        $slugs = match ($level) {
+            'country' => [$record->slug],
+            'region' => [$record->country?->slug, $record->slug],
+            'city' => [$record->region?->country?->slug, $record->region?->slug, $record->slug],
+            'district' => [
+                $record->city?->region?->country?->slug,
+                $record->city?->region?->slug,
+                $record->city?->slug,
+                $record->slug,
+            ],
+        };
+
+        return CatalogFilters::url(array_replace(CatalogFilters::defaults(), [
+            'location_type' => $level,
+            'location_slugs' => $slugs,
+        ]));
     }
 }

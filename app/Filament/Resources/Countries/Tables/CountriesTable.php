@@ -18,6 +18,9 @@ class CountriesTable
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->icon('tabler-link')
+                    ->url(fn ($record): string => route('blog.filtered', ['filters' => 'country/' . $record->slug]))
+                    ->openUrlInNewTab()
                     ->searchable(),
                 IconColumn::make('active')
                     ->boolean(),
