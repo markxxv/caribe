@@ -45,7 +45,7 @@ final class ListingFilters
         if ($request->query->has('search')) {
             $legacy = $request->query('search');
             abort_unless(is_string($legacy), 404);
-            $filters['search'] = $legacy === '' ? null : self::searchTerm($legacy);
+            $filters['search'] = trim($legacy) === '' ? null : self::searchTerm($legacy);
         }
 
         if ($request->query->has('page')) {
