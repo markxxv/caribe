@@ -7,6 +7,7 @@ use App\Models\News;
 use App\Models\PersonalBlog;
 use App\Models\Recipe;
 use Illuminate\Http\Request;
+use App\Support\Content\ListingFilters;
 
 /**
  * Публичные страницы новостей, личных статей (эмиграция) и рецептов.
@@ -58,34 +59,51 @@ class ContentController extends Controller
 
     public function index(Request $request)
     {
-        // Параметры маршрута читаем по имени: Laravel передаёт их в метод позиционно.
         $type = (string) $request->route('type');
         $category = $request->route('category');
         $cfg = $this->config($type);
         $model = $cfg['model'];
 
+        $categoryTitle = null;
+        if ($category !== null) {
+            abort_unless($type === 'article', 404);
+            $categoryTitle = PersonalBlog::query()
+                ->where('category_slug', $category)
+                ->value('category_name');
+            abort_unless($categoryTitle, 404);
+        }
+
+        $indexUrl = $this->indexUrl($type, $category);
+        $listingFilters = ListingFilters::parse($request, (bool) $cfg['countryRelation']);
+        if ($redirect = ListingFilters::canonicalRedirect(
+            $request, ListingFilters::url($indexUrl, $listingFilters)
+        )) {
+            return $redirect;
+        }
+
         $query = $model::query()->where('active', true)->with('media');
         if ($cfg['countryRelation']) {
             $query->with('countries');
         }
-
-        $categoryTitle = null;
         if ($category !== null) {
-            $categoryTitle = PersonalBlog::query()->where('category_slug', $category)->value('category_name');
-            abort_if($type !== 'article' || ! $categoryTitle, 404);
             $query->where('category_slug', $category);
         }
 
-        if ($cfg['countryRelation'] && $request->filled('country') && $request->country !== 'all') {
-            $query->whereHas('countries', fn ($q) => $q->where('countries.id', (int) $request->country));
+        if ($listingFilters['country']) {
+            $query->whereHas('countries', fn ($q) =>
+                $q->where('countries.slug', $listingFilters['country'])
+            );
+        }
+        if ($listingFilters['search']) {
+            $term = $listingFilters['search'];
+            $query->where(fn ($q) =>
+                $q->where('title', 'like', "%{$term}%")
+                    ->orWhere('meta_description', 'like', "%{$term}%")
+            );
         }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('title', 'like', "%{$search}%");
-        }
-
-        $items = $query->orderByRaw('COALESCE(published_at, created_at) DESC')->paginate(12);
+        $items = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->paginate(12, ['*'], 'page', $listingFilters['page']);
 
         $countries = $cfg['countryRelation']
             ? Country::query()
@@ -94,10 +112,11 @@ class ContentController extends Controller
                 ->get()
             : collect();
 
-        $indexUrl = $this->indexUrl($type, $category);
-        $heading = $categoryTitle ? $categoryTitle : $cfg['heading'];
+        $heading = $categoryTitle ?: $cfg['heading'];
 
-        return view('content.index', compact('items', 'countries', 'type', 'cfg', 'indexUrl', 'heading'));
+        return view('content.index', compact(
+            'items', 'countries', 'type', 'cfg', 'indexUrl', 'heading', 'listingFilters'
+        ));
     }
 
     public function show(Request $request)
