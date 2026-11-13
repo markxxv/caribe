@@ -3,7 +3,7 @@
 namespace App\Models\Realestate;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Image\Enums\CropPosition;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -37,15 +37,26 @@ abstract class BaseModel extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
+        // Fit::Crop first scales the entire original, then trims to the target
+        // aspect ratio. crop() cuts a fixed pixel rectangle from the original.
+        // Filament uses this thumbnail in a square image column.
         $this->addMediaConversion('thumb')
             ->performOnCollections('cover')
-            ->crop(400, 400, CropPosition::Center)
+            ->fit(Fit::Crop, 400, 400)
             ->format('webp')
             ->nonQueued();
 
+        // Property catalog cards are 1.3:1; match that ratio exactly.
         $this->addMediaConversion('cover')
             ->performOnCollections('cover')
-            ->crop(800, 600, CropPosition::Center)
+            ->fit(Fit::Crop, 780, 600)
+            ->format('webp')
+            ->nonQueued();
+
+        // Gallery navigation is 116x82 (roughly 1.41:1), not square.
+        $this->addMediaConversion('gallery_thumb')
+            ->performOnCollections('cover')
+            ->fit(Fit::Crop, 580, 410)
             ->format('webp')
             ->nonQueued();
 
