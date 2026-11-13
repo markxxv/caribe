@@ -9,24 +9,20 @@
 
 <x-layout>
     <!-- Editorial hero -->
-    <section class="relative overflow-hidden bg-[#153b35] pb-14 pt-32 text-white sm:pb-16 sm:pt-36 lg:pb-20 lg:pt-40">
+    <section class="relative overflow-hidden bg-[#153b35] pb-12 pt-28 text-white sm:pb-14 sm:pt-32 lg:pb-16 lg:pt-36">
         <div aria-hidden="true" class="pointer-events-none absolute -right-24 -top-40 size-[500px] rounded-full bg-[#7b9c8d]/15 blur-3xl lg:right-[5%]"></div>
         <div aria-hidden="true" class="pointer-events-none absolute bottom-0 right-0 hidden h-[300px] w-[38%] opacity-20 lg:block"
             style="background: repeating-radial-gradient(circle at 100% 100%, transparent 0 44px, #b6cbbd 45px 46px, transparent 47px 90px)"></div>
 
         <div class="relative mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Навигация" class="mb-9 flex items-center gap-2 text-xs text-white/55">
+            <nav aria-label="Навигация" class="mb-6 flex items-center gap-2 text-xs text-white/55">
                 <a href="/" class="transition hover:text-white">Главная</a>
                 <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
                 <span class="text-white/90">{{ $cfg['title'] }}</span>
             </nav>
 
-            <div class="grid items-end gap-7 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
+            <div class="grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_290px] lg:gap-12">
                 <div class="min-w-0">
-                    <p class="mb-5 flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#c9d9c6]">
-                        <span class="h-px w-9 bg-[#d6c796]"></span>
-                        Visita Caribe · Истории
-                    </p>
                     <h1 class="max-w-[830px] text-[37px] font-normal tracking-[-0.045em] sm:text-5xl lg:text-[62px] lg:leading-[1.1]">
                         {{ $heading }}
                     </h1>
@@ -36,7 +32,7 @@
                     <p class="max-w-[310px] text-sm leading-7 text-white/65">
                         {{ $cfg['lead'] }}
                     </p>
-                    <div class="mt-6 flex items-center gap-3">
+                    <div class="mt-4 flex items-center gap-3">
                         <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($items->total(), 0, ',', ' ') }}</span>
                         <span class="text-xs leading-5 text-white/50">{{ $cfg['unit'] }}<br>по вашему запросу</span>
                     </div>
