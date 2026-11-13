@@ -107,7 +107,7 @@ final class ListingFilters
 
     private static function searchTerm(string $value): string
     {
-        $value = trim(preg_replace('/\s+/u', ' ', str_replace(['/', '\\'], ' ', rawurldecode($value))));
+        $value = trim(preg_replace('/\s+/u', ' ', str_replace(['/', '\\'], ' ', $value)));
         abort_unless($value !== '' && mb_strlen($value) <= 120, 404);
         return $value;
     }
