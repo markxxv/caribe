@@ -58,6 +58,18 @@ class PersonalBlog extends Model implements HasMedia
             ->format('webp')
             ->nonQueued();
 
+        // Square editorial thumbnail: crop the largest possible area from the
+        // original, then resize. Never use focalCrop() on raw source pixels.
+        // A media item's optional focus properties override the centre.
+        $focalX = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_x', 50) ?? 50)));
+        $focalY = max(0, min(100, (int) ($media?->getCustomProperty('square_focal_y', 50) ?? 50)));
+
+        $this->addMediaConversion('square_card')
+            ->performOnCollections('personal_blog_cover')
+            ->focalCropAndResize(720, 720, $focalX, $focalY)
+            ->format('webp')
+            ->nonQueued();
+
         $this->addMediaConversion('cover')
             ->performOnCollections('personal_blog_cover')
             ->width(1200)
