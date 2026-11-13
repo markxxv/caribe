@@ -38,14 +38,14 @@
 @endphp
 
 @if($related->isNotEmpty())
-    <section data-related-records class="not-prose mx-auto my-12 max-w-5xl sm:my-16" aria-label="{{ $block['data']['title'] ?? 'Материалы по теме' }}">
+    <section data-related-records class="not-prose mx-auto my-12 max-w-3xl sm:my-16" aria-label="{{ $block['data']['title'] ?? 'Материалы по теме' }}">
         @if(filled($block['data']['title'] ?? null))
             <h3 class="mb-5 max-w-3xl text-xl font-medium leading-snug tracking-[-0.025em] text-[#193b30] sm:mb-7 sm:text-[27px]">
                 {{ $block['data']['title'] }}
             </h3>
         @endif
 
-        <div class="grid gap-x-5 gap-y-3 md:grid-cols-2 md:gap-y-4">
+        <div class="flex flex-col gap-3 sm:gap-4">
             @foreach($related as $item)
                 <a data-related-record-item href="{{ $item['url'] }}"
                     class="group flex min-w-0 items-center gap-4 rounded-2xl p-2 no-underline transition-colors duration-200 hover:bg-[#f3f6f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24664e] sm:gap-5 sm:p-3">
