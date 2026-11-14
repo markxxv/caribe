@@ -52,16 +52,12 @@ class RealestateCityController extends Controller
 
         $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
 
-        $nearbyCities = $place->region->cities()
+        // Show every other city: current region first, then all remaining regions.
+        $nearbyCities = City::query()
             ->whereKeyNot($place->id)
-            ->where(function ($query) {
-                $query->whereNotNull('description')->where('description', '<>', '')
-                    ->orWhereHas('realestates', fn ($properties) => $properties
-                        ->where('active', true)->where('sold', false));
-            })
             ->with(['region.country', 'media'])
+            ->orderByRaw('CASE WHEN region_id = ? THEN 0 ELSE 1 END', [$place->region_id])
             ->orderBy('name')
-            ->limit(4)
             ->get();
 
         $types = CatalogFilters::TYPES;
