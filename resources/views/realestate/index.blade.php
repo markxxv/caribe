@@ -382,8 +382,7 @@
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach($cityHighlights as $city)
                         @php
-                            $cityCover = $city->getFirstMedia('cover');
-                            $cityPhoto = $cityCover ? ($cityCover->hasGeneratedConversion('cover') ? $cityCover->getUrl('cover') : $cityCover->getUrl()) : null;
+                            $cityPhoto = $city->publicCoverUrl();
                         @endphp
                         <a href="{{ $city->publicUrl() }}" class="group relative flex min-h-[240px] flex-col justify-end overflow-hidden rounded-[22px] bg-[#1a4a40] p-6 text-white sm:min-h-[280px]">
                             @if($cityPhoto)
