@@ -28,6 +28,7 @@ class RealestateController extends Controller
             ->with(['country', 'region', 'city', 'district', 'media']);
 
         $selectedLocation = null;
+        $selectedCity = null;
 
         if ($state['location_type'] !== null) {
             $slugs = $state['location_slugs'];
@@ -48,6 +49,9 @@ class RealestateController extends Controller
 
             $query->where($state['location_type'] . '_id', $place->id);
             $selectedLocation = $place->name;
+            if ($state['location_type'] === 'city') {
+                $selectedCity = $place;
+            }
         }
 
         if ($state['deal']) {
@@ -171,7 +175,7 @@ class RealestateController extends Controller
 
         return response()->view('realestate.index', compact(
             'properties', 'state', 'locations', 'types', 'currencies',
-            'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle',
+            'selectedLocation', 'selectedCity', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle',
             'featured', 'featuredOffset', 'catalogTotal', 'cityHighlights'
         ))->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
