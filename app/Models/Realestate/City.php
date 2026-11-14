@@ -18,6 +18,19 @@ class City extends BaseModel
         ]);
     }
 
+    public function publicCoverUrl(): ?string
+    {
+        if (! $this->getFirstMedia('cover')) {
+            return null;
+        }
+
+        return route('realestate.city.cover', [
+            'country' => $this->region->country->slug,
+            'region' => $this->region->slug,
+            'city' => $this->slug,
+        ]);
+    }
+
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
