@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\RealestateController;
+use App\Http\Controllers\RealestateCityController;
 use App\Http\Controllers\SitemapController;
 
 //Route::get('/', function () {
@@ -52,6 +53,14 @@ Route::get('/recipes/{filters}', [ContentController::class, 'index'])
 Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('type', 'recipes')->name('recipes.show');
 
 Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
+
+// Editorial city pages live outside the faceted search URLs.
+Route::get('/realestate/city/{country}/{region}/{city}', [RealestateCityController::class, 'show'])
+    ->where(['country' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'region' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'city' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('realestate.city');
+Route::get('/realestate/city/{country}/{region}/{city}/page/{page}', [RealestateCityController::class, 'show'])
+    ->where(['country' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'region' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'city' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'page' => '(?:[2-9]|[1-9][0-9]+)'])
+    ->name('realestate.city.page');
 // The constrained catch-all allows readable filter paths without hijacking property slugs.
 Route::get('/realestate/{filters}', [RealestateController::class, 'index'])
     ->where('filters', '(?:buy|rent|in|type|currency|price|area|beds|baths|ref|newbuild|resale|sort|page)(?:/.*)?')
