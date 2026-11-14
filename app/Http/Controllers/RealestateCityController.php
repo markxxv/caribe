@@ -5,20 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Realestate\City;
 use App\Models\Realestate\Realestate;
 use App\Support\Realestate\CatalogFilters;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
 
 class RealestateCityController extends Controller
 {
     public function show(string $country, string $region, string $city, int $page = 1): Response
     {
-        $place = City::query()
-            ->with(['region.country', 'media'])
-            ->where('slug', $city)
-            ->whereHas('region', fn ($query) => $query
-                ->where('slug', $region)
-                ->whereHas('country', fn ($countries) => $countries->where('slug', $country)))
-            ->firstOrFail();
+        $place = $this->findCity($country, $region, $city);
 
         $properties = Realestate::query()
             ->where('city_id', $place->id)
@@ -44,21 +41,15 @@ class RealestateCityController extends Controller
         $metaDescription = $place->meta_description
             ?: ($description !== ''
                 ? Str::limit($description, 160)
-                : 'Продажа и аренда недвижимости: ' . $place->name . '. Каталог объектов с фотографиями, ценами и характеристиками.');
+                : 'Недвижимость в городе ' . $place->name . '. Дома и квартиры на продажу с фотографиями, ценами и характеристиками.');
 
         if ($page > 1) {
             $metaTitle = $metaTitle . ' · Страница ' . $page;
         }
 
-        $cover = $place->getFirstMedia('cover');
-        $coverUrl = $cover
-            ? ($cover->hasGeneratedConversion('big') ? $cover->getUrl('big') : $cover->getUrl())
-            : null;
+        $coverUrl = $place->publicCoverUrl();
 
-        $baseQuery = $place->realestates()->where('active', true)->where('sold', false);
-        $saleCount = (clone $baseQuery)->where('operation', 'sale')->count();
-        $rentCount = (clone $baseQuery)->where('operation', 'rent')->count();
-        $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
+         $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
 
         $nearbyCities = $place->region->cities()
             ->whereKeyNot($place->id)
@@ -77,10 +68,52 @@ class RealestateCityController extends Controller
 
         return response()->view('realestate.city', compact(
             'place', 'properties', 'canonicalUrl', 'metaTitle', 'metaDescription',
-            'coverUrl', 'saleCount', 'rentCount', 'indexable', 'nearbyCities',
+            'coverUrl', 'indexable', 'nearbyCities',
             'types', 'locationPath', 'description'
         ))
             ->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
+    }
+
+    /**
+     * Images already uploaded to Filament's private local disk must still
+     * be readable on public city pages. Serve only the city's cover image,
+     * never arbitrary media paths or private uploads.
+     */
+    public function cover(Request $request, string $country, string $region, string $city): StreamedResponse
+    {
+        $place = $this->findCity($country, $region, $city);
+        $media = $place->getFirstMedia('cover');
+
+        abort_unless($media && in_array($media->mime_type, [
+            'image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif',
+        ], true), 404);
+
+        $conversion = $media->hasGeneratedConversion('big') ? 'big' : '';
+        $disk = $conversion !== '' ? ($media->conversions_disk ?: $media->disk) : $media->disk;
+
+        // A stale generated-conversion flag must not make the cover disappear.
+        if ($conversion !== '' && ! Storage::disk($disk)->exists($media->getPathRelativeToRoot($conversion))) {
+            $conversion = '';
+            $disk = $media->disk;
+        }
+
+        abort_unless(Storage::disk($disk)->exists($media->getPathRelativeToRoot($conversion)), 404);
+
+        $response = $media->toInlineResponse($request, $conversion);
+        $response->headers->set('Cache-Control', 'public, max-age=86400');
+
+        return $response;
+    }
+
+    private function findCity(string $country, string $region, string $city): City
+    {
+        return City::query()
+            ->with(['region.country', 'media'])
+            ->where('slug', $city)
+            ->whereHas('region', fn ($query) => $query
+                ->where('slug', $region)
+                ->whereHas('country', fn ($countries) => $countries->where('slug', $country)))
+            ->firstOrFail();
     }
 }
