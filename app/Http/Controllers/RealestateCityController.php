@@ -21,6 +21,7 @@ class RealestateCityController extends Controller
             ->where('city_id', $place->id)
             ->where('active', true)
             ->where('sold', false)
+            ->where('operation', 'sale')
             ->with(['city', 'media'])
             ->orderByDesc('published_at')
             ->orderByDesc('id')
@@ -49,7 +50,7 @@ class RealestateCityController extends Controller
 
         $coverUrl = $place->publicCoverUrl();
 
-         $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
+        $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
 
         $nearbyCities = $place->region->cities()
             ->whereKeyNot($place->id)
@@ -64,12 +65,20 @@ class RealestateCityController extends Controller
             ->get();
 
         $types = CatalogFilters::TYPES;
-        $locationPath = implode('/', [$country, $region, $city]);
+        $locationSlugs = [$country, $region, $city];
+        $locationPath = implode('/', $locationSlugs);
+        $cityFilters = array_replace(CatalogFilters::defaults(), [
+            'deal' => 'buy',
+            'location_type' => 'city',
+            'location_slugs' => $locationSlugs,
+        ]);
+        $housesUrl = CatalogFilters::url(array_replace($cityFilters, ['type' => 'house']));
+        $apartmentsUrl = CatalogFilters::url(array_replace($cityFilters, ['type' => 'apartment']));
 
         return response()->view('realestate.city', compact(
             'place', 'properties', 'canonicalUrl', 'metaTitle', 'metaDescription',
             'coverUrl', 'indexable', 'nearbyCities',
-            'types', 'locationPath', 'description'
+            'types', 'locationPath', 'housesUrl', 'apartmentsUrl', 'description'
         ))
             ->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
