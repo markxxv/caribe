@@ -83,6 +83,8 @@ class GeographyForm
                                     SpatieMediaLibraryFileUpload::make('cover')
                                         ->label('Главное изображение')
                                         ->collection('cover')
+                                        ->disk('public')
+                                        ->visibility('public')
                                         ->image()
                                         ->imageEditor()
                                         ->imagePreviewHeight('220')
