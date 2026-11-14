@@ -49,6 +49,7 @@ class RealestateCityPageTest extends TestCase
 
         $this->property($city, 'Светлая вилла');
         $this->property($city, 'Проданная вилла', ['sold' => true]);
+        $this->property($city, 'Арендная вилла', ['operation' => 'rent']);
         $this->property($city, 'Черновик виллы', ['active' => false]);
 
         $this->assertSame('/realestate/city/argentina/buenos-aires/pinamar', parse_url($city->publicUrl(), PHP_URL_PATH));
@@ -60,9 +61,61 @@ class RealestateCityPageTest extends TestCase
             ->assertSee('Пинамар: недвижимость и жизнь')
             ->assertSee('Описание Пинамара для поисковых систем.')
             ->assertSee('Светлая вилла')
+            ->assertSee('Дома и виллы')
+            ->assertSee('Квартиры')
+            ->assertSee('/realestate/buy/in/city/argentina/buenos-aires/pinamar/type/house', false)
+            ->assertSee('/realestate/buy/in/city/argentina/buenos-aires/pinamar/type/apartment', false)
+            ->assertSee('Пинамар: недвижимость и жизнь')
+            ->assertSee('relative isolate overflow-hidden', false)
+            ->assertDontSee('aria-label="Навигация"', false)
+            ->assertDontSee('Арендовать')
+            ->assertDontSee('Арендная вилла')
             ->assertDontSee('Проданная вилла')
             ->assertDontSee('Черновик виллы')
             ->assertHeader('X-Robots-Tag', 'index, follow');
+    }
+
+    public function test_meta_title_subtitle_is_hidden_when_city_has_no_meta_title(): void
+    {
+        $city = $this->city(['description' => '<p>Город у океана.</p>']);
+
+        $response = $this->get($city->publicUrl());
+
+        $response->assertOk()
+            ->assertSee('Город у океана.')
+            ->assertDontSee('class="mt-4 max-w-[750px] text-sm leading-7 text-white/85 sm:text-base"', false);
+    }
+
+    public function test_private_city_cover_is_served_inline_without_exposing_disk_path(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+
+        $city = $this->city();
+        $media = $city->media()->create([
+            'collection_name' => 'cover',
+            'name' => 'city',
+            'file_name' => 'city.png',
+            'mime_type' => 'image/png',
+            'disk' => 'local',
+            'conversions_disk' => 'local',
+            'size' => 68,
+            'manipulations' => [],
+            'custom_properties' => [],
+            'generated_conversions' => [],
+            'responsive_images' => [],
+        ]);
+        \Illuminate\Support\Facades\Storage::disk('local')->put($media->getPathRelativeToRoot(), base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO2Qj3sAAAAASUVORK5CYII='
+        ));
+
+        $this->get($city->publicUrl())
+            ->assertOk()
+            ->assertSee($city->publicCoverUrl(), false)
+            ->assertDontSee('/storage/' . $media->getKey(), false);
+
+        $this->get($city->publicCoverUrl())
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png');
     }
 
     public function test_city_url_requires_matching_parent_country_and_region(): void
