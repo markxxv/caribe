@@ -9,6 +9,15 @@ class City extends BaseModel
 {
     protected $table = 'property_cities';
 
+    public function publicUrl(): string
+    {
+        return route('realestate.city', [
+            'country' => $this->region->country->slug,
+            'region' => $this->region->slug,
+            'city' => $this->slug,
+        ]);
+    }
+
     public function region(): BelongsTo
     {
         return $this->belongsTo(Region::class);
