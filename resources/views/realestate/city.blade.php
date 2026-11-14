@@ -151,8 +151,8 @@
 
         @if($nearbyCities->isNotEmpty())
             <section class="mx-auto max-w-[1320px] px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-                <p class="mb-3 text-xs text-[#7a9182]">Рядом с {{ $place->name }}</p>
-                <h2 class="mb-8 text-3xl font-normal tracking-tight sm:text-4xl">Другие города региона</h2>
+                <p class="mb-3 text-xs text-[#7a9182]">Сначала {{ $region->name }}, затем остальные регионы</p>
+                <h2 class="mb-8 text-3xl font-normal tracking-tight sm:text-4xl">Другие города</h2>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach($nearbyCities as $nearby)
                         @php
@@ -163,9 +163,12 @@
                                 <img src="{{ $nearbyUrl }}" alt="" loading="lazy" decoding="async" width="780" height="600" class="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105">
                             @endif
                             <div class="absolute inset-0 bg-gradient-to-t from-[#08251d]/90 to-transparent"></div>
-                            <div class="relative flex w-full items-center justify-between gap-3">
-                                <span class="text-lg font-medium">{{ $nearby->name }}</span>
-                                <x-tabler-arrow-up-right class="size-4" stroke-width="1.5" />
+                            <div class="relative w-full">
+                                <p class="mb-2 text-xs text-white/70">{{ $nearby->region->name }} · {{ $nearby->region->country->name }}</p>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-lg font-medium">{{ $nearby->name }}</span>
+                                    <x-tabler-arrow-up-right class="size-4 shrink-0" stroke-width="1.5" />
+                                </div>
                             </div>
                         </a>
                     @endforeach
