@@ -66,7 +66,6 @@ class RealestateCityController extends Controller
 
         $types = CatalogFilters::TYPES;
         $locationSlugs = [$country, $region, $city];
-        $locationPath = implode('/', $locationSlugs);
         $cityFilters = array_replace(CatalogFilters::defaults(), [
             'deal' => 'buy',
             'location_type' => 'city',
@@ -78,7 +77,7 @@ class RealestateCityController extends Controller
         return response()->view('realestate.city', compact(
             'place', 'properties', 'canonicalUrl', 'metaTitle', 'metaDescription',
             'coverUrl', 'indexable', 'nearbyCities',
-            'types', 'locationPath', 'housesUrl', 'apartmentsUrl', 'description'
+            'types', 'housesUrl', 'apartmentsUrl', 'description'
         ))
             ->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
