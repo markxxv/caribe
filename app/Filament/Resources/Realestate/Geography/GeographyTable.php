@@ -50,6 +50,8 @@ class GeographyTable
                     ->searchable()
                     ->sortable()
                     ->weight('medium')
+                    ->url(fn (Model $record): string => self::frontUrl($record, $level))
+                    ->openUrlInNewTab()
                     ->description(fn (Model $record): ?string => match ($level) {
                         'country' => null,
                         'region' => $record->country?->name,
@@ -76,12 +78,13 @@ class GeographyTable
                 ] : []),
 
                 TextColumn::make('slug')
-                    ->label('Slug')
-                    ->icon('tabler-link')
+                    ->label($level === 'city' ? 'Страница на сайте' : 'Slug')
+                    ->icon('tabler-external-link')
+                    ->formatStateUsing(fn (string $state): string => $level === 'city' ? 'Открыть страницу' : $state)
                     ->url(fn (Model $record): string => self::frontUrl($record, $level))
                     ->openUrlInNewTab()
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: $level !== 'city'),
 
                 TextColumn::make('updated_at')
                     ->label('Изменено')
@@ -128,6 +131,10 @@ class GeographyTable
     /** Адрес каталога недвижимости, отфильтрованного по этой локации. */
     private static function frontUrl(Model $record, string $level): string
     {
+        if ($level === 'city') {
+            return $record->publicUrl();
+        }
+
         $slugs = match ($level) {
             'country' => [$record->slug],
             'region' => [$record->country?->slug, $record->slug],
