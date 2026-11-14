@@ -94,6 +94,12 @@
                         <p class="max-w-[310px] text-sm leading-7 text-white/65">
                             Дома, квартиры и пространства для новой главы жизни. Исследуйте предложения в Латинской Америке.
                         </p>
+                        @if($selectedCity)
+                            <a href="{{ $selectedCity->publicUrl() }}" class="mt-4 inline-flex items-center gap-2 text-sm text-[#d4dcae] transition hover:text-white">
+                                Узнать больше о городе
+                                <x-tabler-arrow-up-right class="size-4" stroke-width="1.5" />
+                            </a>
+                        @endif
                         <div class="mt-4 flex items-center gap-3">
                             <span class="text-3xl font-normal tabular-nums text-white">{{ number_format($catalogTotal, 0, ',', ' ') }}</span>
                             <span class="text-xs leading-5 text-white/50">объектов<br>по вашему запросу</span>
