@@ -116,7 +116,7 @@ class SitemapController extends Controller
                 $query->where(function ($descriptions) {
                     $descriptions->whereNotNull('description')->where('description', '<>', '');
                 })->orWhereHas('realestates', fn ($properties) => $properties
-                    ->where('active', true)->where('sold', false));
+                    ->where('active', true)->where('sold', false)->where('operation', 'sale'));
             })
             ->with('region.country')
             ->orderBy('id')
