@@ -57,7 +57,7 @@ class RealestateCityController extends Controller
         $baseQuery = $place->realestates()->where('active', true)->where('sold', false);
         $saleCount = (clone $baseQuery)->where('operation', 'sale')->count();
         $rentCount = (clone $baseQuery)->where('operation', 'rent')->count();
-        $indexable = $description !== '' || $properties->total() > 0;
+        $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
 
         $nearbyCities = $place->region->cities()
             ->whereKeyNot($place->id)
