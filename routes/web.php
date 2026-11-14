@@ -58,6 +58,9 @@ Route::get('/realestate', [RealestateController::class, 'index'])->name('realest
 Route::get('/realestate/city/{country}/{region}/{city}', [RealestateCityController::class, 'show'])
     ->where(['country' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'region' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'city' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
     ->name('realestate.city');
+Route::get('/realestate/city/{country}/{region}/{city}/cover', [RealestateCityController::class, 'cover'])
+    ->where(['country' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'region' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'city' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('realestate.city.cover');
 Route::get('/realestate/city/{country}/{region}/{city}/page/{page}', [RealestateCityController::class, 'show'])
     ->where(['country' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'region' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'city' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'page' => '(?:[2-9]|[1-9][0-9]+)'])
     ->name('realestate.city.page');
