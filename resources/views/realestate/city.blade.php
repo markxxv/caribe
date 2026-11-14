@@ -172,8 +172,7 @@
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach($nearbyCities as $nearby)
                         @php
-                            $nearbyCover = $nearby->getFirstMedia('cover');
-                            $nearbyUrl = $nearbyCover ? ($nearbyCover->hasGeneratedConversion('cover') ? $nearbyCover->getUrl('cover') : $nearbyCover->getUrl()) : null;
+                            $nearbyUrl = $nearby->publicCoverUrl();
                         @endphp
                         <a href="{{ $nearby->publicUrl() }}" class="group relative flex min-h-48 items-end overflow-hidden rounded-[20px] bg-[#2e6353] p-5 text-white">
                             @if($nearbyUrl)
