@@ -2,7 +2,7 @@
     $country = $place->region->country;
     $region = $place->region;
     $propertyCount = $properties->total();
-    $descriptionText = \Illuminate\Support\Str::squish(strip_tags($place->description ?? ''));
+    $descriptionText = $description;
     $cityUrl = $place->publicUrl();
     $paginationUrl = fn (int $number) => $number === 1
         ? $cityUrl
