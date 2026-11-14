@@ -118,6 +118,23 @@ class RealestateCityPageTest extends TestCase
             ->assertHeader('Content-Type', 'image/png');
     }
 
+    public function test_city_description_section_is_hidden_for_empty_rich_text(): void
+    {
+        $city = $this->city(['description' => '<p><br></p>']);
+
+        $this->get($city->publicUrl())
+            ->assertOk()
+            ->assertDontSee('id="city-description"', false)
+            ->assertDontSee('id="city-description-heading"', false);
+
+        $city->update(['description' => '<p>Описание города.</p>']);
+
+        $this->get($city->publicUrl())
+            ->assertOk()
+            ->assertSee('id="city-description"', false)
+            ->assertSee('Описание города.');
+    }
+
     public function test_city_url_requires_matching_parent_country_and_region(): void
     {
         $city = $this->city(['description' => '<p>О Пинамаре</p>']);
