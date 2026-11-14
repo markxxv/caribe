@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Realestate\Country;
+use App\Models\Realestate\City;
 use App\Models\Realestate\Realestate;
 use App\Support\Realestate\CatalogFilters;
 use Illuminate\Http\RedirectResponse;
@@ -151,12 +152,27 @@ class RealestateController extends Controller
             && $state['area_min'] === null && $state['area_max'] === null
             && $state['beds'] === null && $state['baths'] === null
             && $state['ref'] === null && $state['sort'] === 'recent'
-            && $state['page'] === 1;
+            && $state['page'] === 1
+            && $state['location_type'] !== 'city';
+
+        $cityHighlights = collect();
+        if (! $hasFilters && $state['page'] === 1) {
+            $cityHighlights = City::query()
+                ->where(function ($query) {
+                    $query->whereNotNull('description')->where('description', '<>', '')
+                        ->orWhereHas('realestates', fn ($properties) => $properties
+                            ->where('active', true)->where('sold', false));
+                })
+                ->with(['region.country', 'media'])
+                ->orderBy('name')
+                ->limit(6)
+                ->get();
+        }
 
         return response()->view('realestate.index', compact(
             'properties', 'state', 'locations', 'types', 'currencies',
             'selectedLocation', 'canonicalUrl', 'hasFilters', 'indexable', 'metaTitle',
-            'featured', 'featuredOffset', 'catalogTotal'
+            'featured', 'featuredOffset', 'catalogTotal', 'cityHighlights'
         ))->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
     }
