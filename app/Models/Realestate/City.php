@@ -20,7 +20,9 @@ class City extends BaseModel
 
     public function publicCoverUrl(): ?string
     {
-        if (! $this->getFirstMedia('cover')) {
+        $cover = $this->getFirstMedia('cover');
+
+        if (! $cover) {
             return null;
         }
 
@@ -28,6 +30,7 @@ class City extends BaseModel
             'country' => $this->region->country->slug,
             'region' => $this->region->slug,
             'city' => $this->slug,
+            'v' => $cover->getKey(),
         ]);
     }
 
