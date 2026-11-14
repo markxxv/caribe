@@ -38,11 +38,12 @@ class RealestateCityController extends Controller
                 'country' => $country, 'region' => $region, 'city' => $city, 'page' => $page,
             ]);
 
-        $description = Str::squish(strip_tags($place->description ?? ''));
+        $descriptionHtml = preg_replace('~</(?:p|div|h[1-6]|li)>~i', ' ', $place->description ?? '');
+        $description = Str::squish(html_entity_decode(strip_tags($descriptionHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         $metaTitle = $place->meta_title ?: 'Недвижимость в городе ' . $place->name . ' — Visita Caribe';
         $metaDescription = $place->meta_description
             ?: ($description !== ''
-                ? Str::limit(html_entity_decode($description, ENT_QUOTES | ENT_HTML5, 'UTF-8'), 160)
+                ? Str::limit($description, 160)
                 : 'Продажа и аренда недвижимости: ' . $place->name . '. Каталог объектов с фотографиями, ценами и характеристиками.');
 
         if ($page > 1) {
@@ -77,7 +78,7 @@ class RealestateCityController extends Controller
         return response()->view('realestate.city', compact(
             'place', 'properties', 'canonicalUrl', 'metaTitle', 'metaDescription',
             'coverUrl', 'saleCount', 'rentCount', 'indexable', 'nearbyCities',
-            'types', 'locationPath'
+            'types', 'locationPath', 'description'
         ))
             ->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
             ->header('Cache-Control', 'public, max-age=120');
