@@ -140,27 +140,12 @@
 
         @if(filled($place->description))
             <section id="city-description" aria-labelledby="city-description-heading" class="mx-auto max-w-[1320px] px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-                <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_250px] lg:gap-16">
-                    <div class="min-w-0">
-                        <p class="mb-3 text-xs text-[#7c9584]">О городе</p>
-                        <h2 id="city-description-heading" class="mb-8 text-3xl font-normal tracking-tight sm:text-4xl">{{ $place->name }}</h2>
-                        <div class="text-[15px] leading-8 text-[#465d51] [&_p]:mb-5 [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-normal [&_h2]:tracking-tight [&_h2]:text-[#193e35] [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-xl [&_h3]:font-medium [&_h3]:text-[#193e35] [&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-2 [&_a]:font-medium [&_a]:text-[#215c47] [&_a]:underline [&_blockquote]:my-7 [&_blockquote]:border-l-2 [&_blockquote]:border-[#b9c9b6] [&_blockquote]:pl-5">
-                            {!! $place->description !!}
-                        </div>
+                <div class="max-w-[900px]">
+                    <p class="mb-3 text-xs text-[#7c9584]">О городе</p>
+                    <h2 id="city-description-heading" class="mb-8 text-3xl font-normal tracking-tight sm:text-4xl">{{ $place->name }}</h2>
+                    <div class="text-[15px] leading-8 text-[#465d51] [&_p]:mb-5 [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-normal [&_h2]:tracking-tight [&_h2]:text-[#193e35] [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-xl [&_h3]:font-medium [&_h3]:text-[#193e35] [&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-2 [&_a]:font-medium [&_a]:text-[#215c47] [&_a]:underline [&_blockquote]:my-7 [&_blockquote]:border-l-2 [&_blockquote]:border-[#b9c9b6] [&_blockquote]:pl-5">
+                        {!! $place->description !!}
                     </div>
-                    <aside class="lg:pt-14">
-                        <p class="mb-5 text-xs text-[#7c9182]">Недвижимость в {{ $place->name }}</p>
-                        <div class="flex flex-wrap gap-2 lg:flex-col">
-                            <a href="{{ $housesUrl }}" class="inline-flex items-center justify-between gap-3 rounded-full bg-white px-5 py-3 text-sm font-medium text-[#173b35] transition hover:bg-[#e5eae3]">
-                                Дома и виллы
-                                <x-tabler-arrow-up-right class="size-4" stroke-width="1.5" />
-                            </a>
-                            <a href="{{ $apartmentsUrl }}" class="inline-flex items-center justify-between gap-3 rounded-full bg-white px-5 py-3 text-sm font-medium text-[#173b35] transition hover:bg-[#e5eae3]">
-                                Квартиры
-                                <x-tabler-arrow-up-right class="size-4" stroke-width="1.5" />
-                            </a>
-                        </div>
-                    </aside>
                 </div>
             </section>
         @endif
