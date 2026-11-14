@@ -150,6 +150,25 @@ class RealestateCityPageTest extends TestCase
         $this->get($city->publicUrl() . '/page/1')->assertNotFound();
     }
 
+    public function test_other_cities_start_with_current_region_and_include_other_regions_without_descriptions(): void
+    {
+        $city = $this->city(['description' => '<p>Город у реки</p>']);
+        $sameRegion = City::create(['name' => 'Zarate', 'region_id' => $city->region_id]);
+        $otherRegion = Region::create([
+            'name' => 'Cordoba',
+            'country_id' => $city->region->country_id,
+        ]);
+        $outside = City::create(['name' => 'Avellaneda', 'region_id' => $otherRegion->id]);
+
+        $response = $this->get($city->publicUrl());
+
+        $response->assertOk()
+            ->assertSee('Другие города')
+            ->assertSee($sameRegion->publicUrl(), false)
+            ->assertSee($outside->publicUrl(), false)
+            ->assertSeeInOrder(['Zarate', 'Avellaneda']);
+    }
+
     public function test_empty_unwritten_city_is_noindex_and_described_city_is_in_sitemap(): void
     {
         $city = $this->city();
