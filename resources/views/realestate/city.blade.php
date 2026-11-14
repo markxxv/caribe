@@ -137,7 +137,7 @@
             </div>
         </section>
 
-        @if(filled($place->description))
+        @if($description !== '')
             <section id="city-description" aria-labelledby="city-description-heading" class="mx-auto max-w-[1320px] px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
                 <div class="max-w-[900px]">
                     <p class="mb-3 text-xs text-[#7c9584]">О городе</p>
