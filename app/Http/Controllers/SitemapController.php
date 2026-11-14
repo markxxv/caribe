@@ -10,6 +10,7 @@ use App\Models\Recipe;
 use App\Models\RecipeCategory;
 use App\Models\Tour;
 use App\Models\Realestate\Realestate;
+use App\Models\Realestate\City;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -109,6 +110,24 @@ class SitemapController extends Controller
                     }
                 });
         }
+
+        City::query()
+            ->where(function ($query) {
+                $query->where(function ($descriptions) {
+                    $descriptions->whereNotNull('description')->where('description', '<>', '');
+                })->orWhereHas('realestates', fn ($properties) => $properties
+                    ->where('active', true)->where('sold', false));
+            })
+            ->with('region.country')
+            ->orderBy('id')
+            ->chunkById(200, function ($cities) use ($entries) {
+                foreach ($cities as $city) {
+                    $entries->push([
+                        'url' => $city->publicUrl(),
+                        'lastmod' => $city->updated_at?->toAtomString(),
+                    ]);
+                }
+            });
 
         Realestate::query()
             ->where('active', true)
