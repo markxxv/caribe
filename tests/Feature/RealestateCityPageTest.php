@@ -116,6 +116,9 @@ class RealestateCityPageTest extends TestCase
         $this->get($city->publicCoverUrl())
             ->assertOk()
             ->assertHeader('Content-Type', 'image/png');
+
+        $city->update(['active' => false]);
+        $this->get($city->publicCoverUrl())->assertNotFound();
     }
 
     public function test_city_description_section_is_hidden_for_empty_rich_text(): void
@@ -176,6 +179,14 @@ class RealestateCityPageTest extends TestCase
             'country_id' => $city->region->country_id,
         ]);
         $outside = City::create(['name' => 'Avellaneda', 'region_id' => $otherRegion->id]);
+
+        $hidden = City::create(['name' => 'Hidden city', 'region_id' => $city->region_id, 'active' => false]);
+        $otherRegion->update(['active' => false]);
+        $this->get($city->publicUrl())
+            ->assertOk()
+            ->assertDontSee($hidden->publicUrl(), false)
+            ->assertDontSee($outside->publicUrl(), false);
+        $otherRegion->update(['active' => true]);
 
         $response = $this->get($city->publicUrl());
 

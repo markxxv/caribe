@@ -15,6 +15,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();
+            $table->boolean('active')->default(true)->index();
             $table->timestamps();
         });
 
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();
+            $table->boolean('active')->default(true)->index();
             $table->timestamps();
 
             $table->unique(['country_id', 'slug']);
@@ -39,6 +41,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();
+            $table->boolean('active')->default(true)->index();
             $table->timestamps();
 
             $table->unique(['region_id', 'slug']);
@@ -52,6 +55,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();
+            $table->boolean('active')->default(true)->index();
             $table->timestamps();
 
             $table->unique(['city_id', 'slug']);

@@ -9,6 +9,8 @@ class District extends BaseModel
 {
     protected $table = 'property_districts';
 
+    protected ?string $publicationParent = 'city';
+
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);

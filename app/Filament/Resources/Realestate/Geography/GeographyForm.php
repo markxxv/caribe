@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -71,6 +72,14 @@ class GeographyForm
 
                     Grid::make(1)
                         ->schema([
+                            Section::make('Публикация')
+                                ->icon('tabler-eye')
+                                ->schema([
+                                    Toggle::make('active')
+                                        ->label('Активно')
+                                        ->default(true),
+                                ]),
+
                             ...($level === 'country' ? [] : [
                                 Section::make('Расположение')
                                     ->icon('tabler-map-pin')

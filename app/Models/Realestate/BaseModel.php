@@ -2,6 +2,7 @@
 
 namespace App\Models\Realestate;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -16,6 +17,37 @@ abstract class BaseModel extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $guarded = ['id'];
+
+    protected $attributes = ['active' => true];
+
+    protected ?string $publicationParent = null;
+
+    protected function casts(): array
+    {
+        return ['active' => 'boolean'];
+    }
+
+    /** Public geography must also have a published chain of parents. */
+    public function scopePublished(Builder $query): Builder
+    {
+        $query->where($this->qualifyColumn('active'), true);
+
+        if ($this->publicationParent !== null) {
+            $query->whereHas($this->publicationParent, fn (Builder $parent) => $parent->published());
+        }
+
+        return $query;
+    }
+
+    public function isPublished(): bool
+    {
+        if (! $this->active) {
+            return false;
+        }
+
+        return $this->publicationParent === null
+            || $this->{$this->publicationParent}?->isPublished() === true;
+    }
 
     protected function slugSource(): string
     {

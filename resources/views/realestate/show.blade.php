@@ -144,7 +144,11 @@
                 <a href="{{ route('realestate.index') }}" class="transition-colors hover:text-[#17342f]">Недвижимость</a>
                 <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
                 @if($realestate->city)
-                    <a href="{{ $realestate->city->publicUrl() }}" class="transition-colors hover:text-[#17342f]">{{ $realestate->city->name }}</a>
+                    @if($realestate->city->isPublished())
+                        <a href="{{ $realestate->city->publicUrl() }}" class="transition-colors hover:text-[#17342f]">{{ $realestate->city->name }}</a>
+                    @else
+                        <span>{{ $realestate->city->name }}</span>
+                    @endif
                     <x-tabler-chevron-right class="size-3.5" stroke-width="1.5" />
                 @endif
                 <span class="max-w-[240px] truncate text-[#17342f]">{{ $realestate->title }}</span>

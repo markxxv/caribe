@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Realestate\City;
 use App\Models\Realestate\Country;
+use App\Models\Realestate\District;
 use App\Models\Realestate\Realestate;
 use App\Models\Realestate\Region;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,6 +78,53 @@ class RealestateCatalogTest extends TestCase
             ->assertDontSee('Other villa');
 
         $this->get('/realestate/in/city/argentina/unknown/pinamar')->assertNotFound();
+    }
+
+    public function test_inactive_geography_and_descendants_are_hidden_without_unpublishing_properties(): void
+    {
+        $country = Country::create(['name' => 'Argentina']);
+        $region = Region::create(['name' => 'Buenos Aires', 'country_id' => $country->id]);
+        $city = City::create(['name' => 'Pinamar', 'region_id' => $region->id, 'description' => '<p>Город у океана</p>']);
+        $district = District::create(['name' => 'Nayades', 'city_id' => $city->id]);
+        $property = $this->property('Published home', [
+            'country_id' => $country->id, 'region_id' => $region->id,
+            'city_id' => $city->id, 'district_id' => $district->id,
+        ]);
+
+        $paths = [
+            'country/argentina',
+            'region/argentina/buenos-aires',
+            'city/argentina/buenos-aires/pinamar',
+            'district/argentina/buenos-aires/pinamar/nayades',
+        ];
+
+        foreach ([$country, $region, $city, $district] as $index => $place) {
+            $place->update(['active' => false]);
+
+            $response = $this->get('/realestate')->assertOk()->assertSee('Published home');
+            $response->assertViewHas('locations', fn (array $locations): bool =>
+                collect($locations)->pluck('value')->all() === array_slice($paths, 0, $index));
+            $response->assertViewHas('cityHighlights', fn ($cities): bool =>
+                $cities->contains('id', $city->id) === ($index === 3));
+
+            foreach (array_slice($paths, $index) as $path) {
+                $this->get('/realestate/in/' . $path)->assertNotFound();
+            }
+
+            if ($index < 3) {
+                $this->get($city->publicUrl())->assertNotFound();
+                $this->get('/sitemap.xml')->assertDontSee($city->publicUrl(), false);
+                $this->get(route('realestate.show', ['url' => $property->slug]))
+                    ->assertOk()->assertDontSee('href="' . $city->publicUrl() . '"', false);
+            }
+
+            $this->assertTrue($property->refresh()->active);
+            $place->update(['active' => true]);
+        }
+
+        $this->get($city->publicUrl())->assertOk();
+        $this->get('/realestate/in/' . $paths[3])->assertOk();
+        $this->get('/sitemap.xml')->assertSee($city->publicUrl(), false);
     }
 
     public function test_invalid_segments_cannot_be_used_to_build_search_queries(): void

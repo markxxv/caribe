@@ -9,6 +9,8 @@ class Region extends BaseModel
 {
     protected $table = 'property_regions';
 
+    protected ?string $publicationParent = 'country';
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);

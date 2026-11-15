@@ -12,7 +12,9 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -50,7 +52,7 @@ class GeographyTable
                     ->searchable()
                     ->sortable()
                     ->weight('medium')
-                    ->url(fn (Model $record): string => self::frontUrl($record, $level))
+                    ->url(fn (Model $record): ?string => self::frontUrl($record, $level))
                     ->openUrlInNewTab()
                     ->description(fn (Model $record): ?string => match ($level) {
                         'country' => null,
@@ -62,6 +64,10 @@ class GeographyTable
                             $record->city?->region?->country?->name,
                         ])->filter()->join(' · '),
                     }),
+
+                ToggleColumn::make('active')
+                    ->label('Активно')
+                    ->sortable(),
 
                 TextColumn::make('realestates_count')
                     ->label('Объекты')
@@ -80,8 +86,10 @@ class GeographyTable
                 TextColumn::make('slug')
                     ->label($level === 'city' ? 'Страница на сайте' : 'Slug')
                     ->icon('tabler-external-link')
-                    ->formatStateUsing(fn (string $state): string => $level === 'city' ? 'Открыть страницу' : $state)
-                    ->url(fn (Model $record): string => self::frontUrl($record, $level))
+                    ->formatStateUsing(fn (string $state, Model $record): string => $level === 'city'
+                        ? ($record->isPublished() ? 'Открыть страницу' : 'Скрыта')
+                        : $state)
+                    ->url(fn (Model $record): ?string => self::frontUrl($record, $level))
                     ->openUrlInNewTab()
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: $level !== 'city'),
@@ -92,7 +100,9 @@ class GeographyTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters(match ($level) {
+            ->filters(array_merge([
+                TernaryFilter::make('active')->label('Активно'),
+            ], match ($level) {
                 'country' => [],
                 'region' => [
                     SelectFilter::make('country_id')
@@ -115,7 +125,7 @@ class GeographyTable
                         ->searchable()
                         ->preload(),
                 ],
-            })
+            }))
             ->recordActions([
                 EditAction::make(),
             ])
@@ -129,8 +139,12 @@ class GeographyTable
     }
 
     /** Адрес каталога недвижимости, отфильтрованного по этой локации. */
-    private static function frontUrl(Model $record, string $level): string
+    private static function frontUrl(Model $record, string $level): ?string
     {
+        if (! $record->isPublished()) {
+            return null;
+        }
+
         if ($level === 'city') {
             return $record->publicUrl();
         }

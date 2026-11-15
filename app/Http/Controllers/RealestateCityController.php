@@ -54,6 +54,7 @@ class RealestateCityController extends Controller
 
         // Show every other city: current region first, then all remaining regions.
         $nearbyCities = City::query()
+            ->published()
             ->whereKeyNot($place->id)
             ->with(['region.country', 'media'])
             ->orderByRaw('CASE WHEN region_id = ? THEN 0 ELSE 1 END', [$place->region_id])
@@ -113,6 +114,7 @@ class RealestateCityController extends Controller
     private function findCity(string $country, string $region, string $city): City
     {
         return City::query()
+            ->published()
             ->with(['region.country', 'media'])
             ->where('slug', $city)
             ->whereHas('region', fn ($query) => $query

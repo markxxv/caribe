@@ -32,19 +32,19 @@ class RealestateController extends Controller
 
         if ($state['location_type'] !== null) {
             $slugs = $state['location_slugs'];
-            $country = Country::query()->where('slug', $slugs[0])->firstOrFail();
+            $country = Country::query()->published()->where('slug', $slugs[0])->firstOrFail();
             $place = $country;
 
             if (count($slugs) >= 2) {
-                $place = $country->regions()->where('slug', $slugs[1])->firstOrFail();
+                $place = $country->regions()->published()->where('slug', $slugs[1])->firstOrFail();
             }
 
             if (count($slugs) >= 3) {
-                $place = $place->cities()->where('slug', $slugs[2])->firstOrFail();
+                $place = $place->cities()->published()->where('slug', $slugs[2])->firstOrFail();
             }
 
             if (count($slugs) >= 4) {
-                $place = $place->districts()->where('slug', $slugs[3])->firstOrFail();
+                $place = $place->districts()->published()->where('slug', $slugs[3])->firstOrFail();
             }
 
             $query->where($state['location_type'] . '_id', $place->id);
@@ -119,7 +119,11 @@ class RealestateController extends Controller
 
         // Present only geography that exists in the current database.
         $locations = [];
-        foreach (Country::query()->with('regions.cities.districts')->orderBy('name')->get() as $country) {
+        foreach (Country::query()->published()->with([
+            'regions' => fn ($query) => $query->published(),
+            'regions.cities' => fn ($query) => $query->published(),
+            'regions.cities.districts' => fn ($query) => $query->published(),
+        ])->orderBy('name')->get() as $country) {
             $countryPath = $country->slug;
             $locations[] = ['value' => 'country/' . $countryPath, 'label' => $country->name, 'context' => 'Страна'];
             foreach ($country->regions as $region) {
@@ -162,6 +166,7 @@ class RealestateController extends Controller
         $cityHighlights = collect();
         if (! $hasFilters && $state['page'] === 1) {
             $cityHighlights = City::query()
+                ->published()
                 ->where(function ($query) {
                     $query->whereNotNull('description')->where('description', '<>', '')
                         ->orWhereHas('realestates', fn ($properties) => $properties
@@ -185,7 +190,7 @@ class RealestateController extends Controller
     {
         $realestate = Realestate::query()
             ->where('slug', $url)
-            ->with(['country', 'region', 'city', 'district', 'media'])
+            ->with(['country', 'region', 'city.region.country', 'district', 'media'])
             ->firstOrFail();
 
         // Drafts are available for review in the admin session, but not publicly.

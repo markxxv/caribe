@@ -112,6 +112,7 @@ class SitemapController extends Controller
         }
 
         City::query()
+            ->published()
             ->where(function ($query) {
                 $query->where(function ($descriptions) {
                     $descriptions->whereNotNull('description')->where('description', '<>', '');

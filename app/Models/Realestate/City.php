@@ -9,6 +9,8 @@ class City extends BaseModel
 {
     protected $table = 'property_cities';
 
+    protected ?string $publicationParent = 'region';
+
     public function publicUrl(): string
     {
         return route('realestate.city', [

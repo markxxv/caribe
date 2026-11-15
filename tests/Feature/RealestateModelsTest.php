@@ -48,6 +48,10 @@ class RealestateModelsTest extends TestCase
         $this->assertCount(1, $region->cities);
         $this->assertCount(1, $city->districts);
         $this->assertCount(1, $district->realestates);
+        foreach ([$country, $region, $city, $district] as $place) {
+            $this->assertTrue($place->refresh()->active);
+            $this->assertTrue($place->isPublished());
+        }
         $this->assertTrue($property->active);
         $this->assertFalse($property->newbuild);
         $this->assertFalse($property->sold);
