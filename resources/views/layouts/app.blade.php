@@ -1,3 +1,5 @@
+@props(['editRecord' => null])
+
 <!DOCTYPE html>
 <html lang="@yield('pageLang', 'ru')">
 <head>
@@ -84,6 +86,19 @@
 {{ $slot }}
 
 @include('layouts.footer')
+
+@if ($editRecord && auth()->check())
+    @php
+        $editResource = \Filament\Facades\Filament::getPanel('dashboard')->getModelResource($editRecord);
+    @endphp
+
+    @if ($editResource && isset($editResource::getPages()['edit']) && $editResource::canEdit($editRecord))
+        <a href="{{ $editResource::getUrl('edit', ['record' => $editRecord], panel: 'dashboard') }}" target="_blank" rel="noopener noreferrer" data-admin-edit-link aria-label="Редактировать страницу" title="Редактировать страницу" class="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 z-[60] inline-flex h-11 items-center gap-2 rounded-full bg-[#102a27] px-3.5 text-sm font-medium text-white shadow-lg transition-colors hover:bg-[#23483e] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#102a27] md:bottom-5 md:left-5">
+            <x-tabler-pencil class="size-5 shrink-0" stroke-width="1.5" />
+            <span class="hidden sm:inline">Редактировать</span>
+        </a>
+    @endif
+@endif
 
 @vite('resources/js/app.js')
 </body>

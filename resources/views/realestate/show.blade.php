@@ -82,7 +82,7 @@
     @section('robots', 'noindex, nofollow')
 @endif
 
-<x-layout>
+<x-layout :edit-record="$realestate">
     @php
         $type = \App\Filament\Resources\Realestate\Schemas\RealestateForm::propertyTypes()[$realestate->property_type ?? ''] ?? $realestate->property_type;
         $operation = \App\Filament\Resources\Realestate\Schemas\RealestateForm::operationTypes()[$realestate->operation ?? ''] ?? $realestate->operation;

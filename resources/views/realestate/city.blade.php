@@ -68,7 +68,7 @@
     @endsection
 @endif
 
-<x-layout>
+<x-layout :edit-record="$place">
     <main class="min-h-screen bg-[#f5f6f2] text-[#17362f]">
         <section class="relative isolate overflow-hidden bg-[#153b35] text-white">
             @if($coverUrl)

@@ -198,6 +198,7 @@ class RealestateController extends Controller
 
         return response()->view('realestate.show', compact('realestate'))
             ->header('X-Robots-Tag', $realestate->active && ! $realestate->sold ? 'index, follow' : 'noindex, nofollow')
-            ->header('Cache-Control', $realestate->active ? 'public, max-age=300' : 'private, no-store');
+            ->header('Cache-Control', $realestate->active && ! auth()->check() ? 'public, max-age=300' : 'private, no-store')
+            ->header('Vary', 'Cookie');
     }
 }

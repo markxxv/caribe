@@ -12,7 +12,7 @@
     @section('robots', 'noindex, follow')
 @endif
 
-<x-layout>
+<x-layout :edit-record="$activeCategory">
     <!-- Editorial hero -->
     <section class="relative overflow-hidden bg-[#153b35] pb-12 pt-28 text-white sm:pb-14 sm:pt-32 lg:pb-16 lg:pt-36">
         <div aria-hidden="true" class="pointer-events-none absolute -right-24 -top-40 size-[500px] rounded-full bg-[#7b9c8d]/15 blur-3xl lg:right-[5%]"></div>

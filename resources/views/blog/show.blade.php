@@ -43,7 +43,7 @@
     <script type="application/ld+json">{!! json_encode($pageSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 @endsection
 
-<x-layout>
+<x-layout :edit-record="$blog">
     <article class="relative">
         <!-- Hero Header -->
         <header class="relative py-24 lg:py-32 text-white overflow-hidden">

@@ -77,7 +77,8 @@ class RealestateCityController extends Controller
             'types', 'housesUrl', 'apartmentsUrl', 'description'
         ))
             ->header('X-Robots-Tag', $indexable ? 'index, follow' : 'noindex, follow')
-            ->header('Cache-Control', 'public, max-age=120');
+            ->header('Cache-Control', auth()->check() ? 'private, no-store' : 'public, max-age=120')
+            ->header('Vary', 'Cookie');
     }
 
     /**
