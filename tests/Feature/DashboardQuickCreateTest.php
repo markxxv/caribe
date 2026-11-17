@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\BlogCategories\BlogCategoryResource;
 use App\Filament\Resources\Blogs\BlogResource;
+use App\Filament\Resources\Events\EventResource;
 use App\Filament\Resources\News\NewsResource;
 use App\Filament\Resources\PersonalBlogs\PersonalBlogResource;
 use App\Filament\Resources\Realestate\Cities\CityResource;
@@ -38,6 +39,7 @@ class DashboardQuickCreateTest extends TestCase
             TourResource::class,
             BlogResource::class,
             NewsResource::class,
+            EventResource::class,
             PersonalBlogResource::class,
             RecipeResource::class,
             RealestateResource::class,

@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Resources\Blogs\BlogResource;
+use App\Filament\Resources\Events\EventResource;
 use App\Filament\Resources\News\NewsResource;
 use App\Filament\Resources\PersonalBlogs\PersonalBlogResource;
 use App\Filament\Resources\Realestate\RealestateResource;
@@ -43,6 +44,13 @@ class QuickCreateWidget extends Widget
                 'description' => 'События и актуальные новости',
                 'icon' => 'tabler-news',
                 'tone' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
+            ],
+            [
+                'resource' => EventResource::class,
+                'title' => 'Подборка мероприятий',
+                'description' => 'Афиша интересных событий',
+                'icon' => 'tabler-calendar-event',
+                'tone' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
             ],
             [
                 'resource' => PersonalBlogResource::class,
