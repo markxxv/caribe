@@ -56,6 +56,7 @@
                     <a href="/tours" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Туры</a>
                     <a href="/blog" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Блог</a>
                     <a href="{{ route('recipes.index') }}" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Рецепты</a>
+                    <a href="{{ route('events.index') }}" class="nav-link text-white hover:text-gg-gold transition-colors duration-300">Афиша</a>
                 </div>
             </div>
 
@@ -120,20 +121,24 @@
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">04</span>
                     <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Рецепты</span>
                 </a>
-                <a href="/news" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('news', 'news/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                <a href="{{ route('events.index') }}" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->routeIs('events.*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
                     <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">05</span>
+                    <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Афиша</span>
+                </a>
+                <a href="/news" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('news', 'news/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">06</span>
                     <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Новости</span>
                 </a>
                 <a href="{{ route('article.index', ['category' => 'emigratsiya']) }}" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('articles/emigratsiya', 'article/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
-                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">06</span>
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">07</span>
                     <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Эмиграция</span>
                 </a>
                 <a href="/realestate" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->is('realestate', 'realestate/*') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
-                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">07</span>
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">08</span>
                     <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Недвижимость</span>
                 </a>
                 <a href="/contact" class="group flex items-baseline gap-5 py-1.5 transition-colors {{ request()->routeIs('contact') ? 'text-[#eccd31]' : 'text-white hover:text-[#eccd31]' }}">
-                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">08</span>
+                    <span class="w-6 shrink-0 text-xs font-normal tabular-nums text-[#eccd31]/65">09</span>
                     <span class="text-[28px] font-normal tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-[36px]">Контакты</span>
                 </a>
             </nav>
