@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Front;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\RealestateController;
 use App\Http\Controllers\RealestateCityController;
 use App\Http\Controllers\SitemapController;
@@ -51,6 +52,10 @@ Route::get('/recipes/category/{category}/{filters}', [ContentController::class, 
 Route::get('/recipes/{filters}', [ContentController::class, 'index'])
     ->where('filters', '(?:search|page)/.+')->defaults('type', 'recipes')->name('recipes.filtered');
 Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('type', 'recipes')->name('recipes.show');
+
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{event}', [EventController::class, 'show'])
+    ->where('event', '[0-9]+(?:-[a-z0-9-]+)?')->name('events.show');
 
 Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
 

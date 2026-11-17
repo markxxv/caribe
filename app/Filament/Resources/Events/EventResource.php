@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -44,6 +45,12 @@ class EventResource extends Resource
                         ->placeholder('Куда сходить в ноябре')
                         ->required()
                         ->maxLength(255),
+                    Select::make('country_id')
+                        ->label('Страна')
+                        ->relationship('country', 'title')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
                     Toggle::make('active')
                         ->label('Опубликовано')
                         ->default(true),
@@ -106,6 +113,9 @@ class EventResource extends Resource
                 TextColumn::make('title')
                     ->label('Заголовок')
                     ->searchable(),
+                TextColumn::make('country.title')
+                    ->label('Страна')
+                    ->sortable(),
                 TextColumn::make('items_count')
                     ->label('Мероприятий')
                     ->state(fn (Event $record): int => count($record->items)),

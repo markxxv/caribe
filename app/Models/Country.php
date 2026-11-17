@@ -28,4 +28,9 @@ class Country extends Model
         return $this->belongsToMany(PersonalBlog::class, 'country_personal_blog');
     }
 
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
+
 }

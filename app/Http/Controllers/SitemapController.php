@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\BlogCategory;
+use App\Models\Event;
 use App\Models\News;
 use App\Models\PersonalBlog;
 use App\Models\Recipe;
@@ -26,6 +27,7 @@ class SitemapController extends Controller
             ['url' => route('news.index')],
             ['url' => route('article.index')],
             ['url' => route('recipes.index')],
+            ['url' => route('events.index')],
             ['url' => route('realestate.index')],
             ['url' => route('services')],
             ['url' => route('contact')],
@@ -94,6 +96,18 @@ class SitemapController extends Controller
             ->each(fn (string $slug) => $entries->push([
                 'url' => route('recipes.category', ['category' => $slug]),
             ]));
+
+        Event::query()
+            ->where('active', true)
+            ->select(['id', 'title', 'updated_at'])
+            ->chunkById(200, function ($events) use ($entries) {
+                foreach ($events as $event) {
+                    $entries->push([
+                        'url' => $event->url,
+                        'lastmod' => $event->updated_at?->toAtomString(),
+                    ]);
+                }
+            });
 
         foreach ([News::class, PersonalBlog::class, Recipe::class] as $model) {
             $model::query()
