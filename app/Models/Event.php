@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Spatie\Sluggable\HasSlug;
+use Spatie\Sluggable\SlugOptions;
 
 class Event extends Model
 {
-    protected $fillable = ['title', 'country_id', 'active', 'items'];
+    use HasSlug;
+
+    protected $fillable = ['title', 'slug', 'country_id', 'active', 'items', 'created_at'];
 
     protected $casts = [
         'active' => 'boolean',
@@ -26,16 +30,18 @@ class Event extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function getPublicSlugAttribute(): string
+    public function getSlugOptions(): SlugOptions
     {
-        $slug = Str::slug($this->title);
-
-        return $this->id . ($slug !== '' ? '-' . $slug : '');
+        return SlugOptions::create()
+            ->generateSlugsFrom(fn (Event $event) => rtrim(Str::substr(Str::slug($event->title), 0, 240), '-') ?: 'event')
+            ->saveSlugsTo('slug')
+            ->slugsShouldBeNoLongerThan(240)
+            ->doNotGenerateSlugsOnUpdate();
     }
 
     public function getUrlAttribute(): string
     {
-        return route('events.show', ['event' => $this->public_slug]);
+        return route('events.show', ['slug' => $this->slug]);
     }
 
     public function chronologicalItems(): Collection

@@ -45,13 +45,19 @@ class EventController extends Controller
         return view('events.index', compact('events', 'canonical', 'description', 'schema'));
     }
 
-    public function show(string $event): View|RedirectResponse
+    public function show(string $slug): View|RedirectResponse
     {
-        $record = Event::query()->where('active', true)->with('country')->findOrFail(Str::before($event, '-'));
+        $record = Event::query()->with('country')->where('slug', $slug)->first();
 
-        if ($record->public_slug !== $event) {
-            return redirect()->to($record->url, 301);
+        if (! $record) {
+            // Previously published URLs used {id}-{title-slug}; retain their redirects.
+            abort_unless(preg_match('/^(\d+)(?:-|$)/', $slug, $matches), 404);
+            $legacy = Event::query()->where('active', true)->findOrFail($matches[1]);
+
+            return redirect()->to($legacy->url, 301);
         }
+
+        abort_unless($record->active, 404);
 
         $items = $record->chronologicalItems();
         $canonical = $record->url;

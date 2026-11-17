@@ -10,6 +10,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -49,6 +50,7 @@ class EventTest extends TestCase
                     'country_id' => $country->id,
                     'active' => true,
                     'items' => $items,
+                    'created_at' => '2026-11-12 10:30:00',
                 ])
                 ->call('create')
                 ->assertHasNoFormErrors();
@@ -58,13 +60,28 @@ class EventTest extends TestCase
             $this->assertTrue($event->active);
             $this->assertTrue($event->country->is($country));
             $this->assertEquals($items, $event->items);
+            $this->assertSame(Str::slug('Афиша ноября'), $event->slug);
+            $this->assertSame('2026-11-12 10:30', $event->created_at->format('Y-m-d H:i'));
 
             Livewire::test(EditEvent::class, ['record' => $event->getRouteKey()])
-                ->fillForm(['items' => array_reverse($items)])
+                ->fillForm([
+                    'title' => 'Обновлённая афиша',
+                    'items' => array_reverse($items),
+                    'created_at' => '2026-11-13 11:45:00',
+                ])
                 ->call('save')
                 ->assertHasNoFormErrors();
 
             $this->assertEquals(array_reverse($items), $event->refresh()->items);
+            $this->assertSame(Str::slug('Афиша ноября'), $event->slug);
+            $this->assertSame('2026-11-13 11:45', $event->created_at->format('Y-m-d H:i'));
+
+            Livewire::test(EditEvent::class, ['record' => $event->getRouteKey()])
+                ->fillForm(['slug' => 'november-agenda'])
+                ->call('save')
+                ->assertHasNoFormErrors();
+
+            $this->assertSame('november-agenda', $event->refresh()->slug);
         } finally {
             $undoRepeaterFake();
         }
@@ -118,12 +135,24 @@ class EventTest extends TestCase
             ->assertSee('"hasMap":"https://maps.google.com/?q=Teatro+Colon"', false)
             ->assertDontSee('javascript:alert(1)', false);
 
-        $this->get(route('events.show', ['event' => $event->id]))->assertStatus(301)->assertRedirect($event->url);
+        $this->get(route('events.show', ['slug' => $event->id]))->assertStatus(301)->assertRedirect($event->url);
+        $this->get(route('events.show', ['slug' => $event->id . '-' . $event->slug]))->assertStatus(301)->assertRedirect($event->url);
+        $this->assertSame(route('events.show', ['slug' => $event->slug]), $event->url);
         $this->get($draft->url)->assertNotFound();
 
         $this->get('/sitemap.xml')->assertOk()
             ->assertSee(route('events.index'))
             ->assertSee($event->url)
             ->assertDontSee($draft->url);
+    }
+
+    public function test_duplicate_event_titles_generate_unique_slugs(): void
+    {
+        $first = Event::create(['title' => 'Афиша ноября', 'items' => []]);
+        $second = Event::create(['title' => 'Афиша ноября', 'items' => []]);
+
+        $this->assertSame(Str::slug('Афиша ноября'), $first->slug);
+        $this->assertNotSame($first->slug, $second->slug);
+        $this->assertStringStartsWith($first->slug . '-', $second->slug);
     }
 }

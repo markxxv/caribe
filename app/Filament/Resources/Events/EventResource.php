@@ -9,6 +9,7 @@ use App\Models\Event;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -45,6 +46,22 @@ class EventResource extends Resource
                         ->placeholder('Куда сходить в ноябре')
                         ->required()
                         ->maxLength(255),
+                    TextInput::make('slug')
+                        ->label('Slug')
+                        ->prefixIcon('tabler-link')
+                        ->helperText('Создаётся автоматически при сохранении. Можно изменить вручную.')
+                        ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true)
+                        ->required(fn (?Event $record): bool => $record !== null),
+                    DateTimePicker::make('created_at')
+                        ->label('Дата создания')
+                        ->native(false)
+                        ->locale('ru')
+                        ->displayFormat('d.m.Y H:i')
+                        ->seconds(false)
+                        ->default(fn () => now())
+                        ->required(),
                     Select::make('country_id')
                         ->label('Страна')
                         ->relationship('country', 'title')
@@ -113,6 +130,11 @@ class EventResource extends Resource
                 TextColumn::make('title')
                     ->label('Заголовок')
                     ->searchable(),
+                TextColumn::make('slug')
+                    ->label('Slug')
+                    ->searchable()
+                    ->url(fn (Event $record): ?string => $record->active ? $record->url : null)
+                    ->openUrlInNewTab(),
                 TextColumn::make('country.title')
                     ->label('Страна')
                     ->sortable(),

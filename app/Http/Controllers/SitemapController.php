@@ -99,7 +99,7 @@ class SitemapController extends Controller
 
         Event::query()
             ->where('active', true)
-            ->select(['id', 'title', 'updated_at'])
+            ->select(['id', 'slug', 'updated_at'])
             ->chunkById(200, function ($events) use ($entries) {
                 foreach ($events as $event) {
                     $entries->push([
