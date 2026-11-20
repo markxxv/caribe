@@ -130,7 +130,7 @@ class SeoInfrastructureTest extends TestCase
             ->assertOk()
             ->assertSee('name="robots" content="noindex, follow"', false);
 
-        $this->get('/realestate/price/100000-300000')
+        $this->get('/realestate/currency/USD/price/100000-300000')
             ->assertOk()
             ->assertHeader('X-Robots-Tag', 'noindex, follow')
             ->assertSee('name="robots" content="noindex, follow"', false);

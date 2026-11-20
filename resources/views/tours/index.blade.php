@@ -1,7 +1,7 @@
 @php
-    $toursCanonicalUrl = $isArgentina ? route('tours.argentina') : route('tours.index');
-    $hasTourQuery = ($listingFilters['country'] && ! $isArgentina)
-        || $listingFilters['search'] || $listingFilters['page'] > 1;
+    $toursCanonicalUrl = \App\Support\Content\ListingFilters::url($baseUrl, $listingFilters, null, true);
+    $hasTourFilters = ($listingFilters['country'] && ! $isArgentina) || $listingFilters['search'];
+    $hasTourQuery = $hasTourFilters || $listingFilters['page'] > 1;
     $isEditorialLanding = ! $listingFilters['country'] && ! $hasTourQuery;
 
     $toursMetaTitle = $isArgentina
@@ -21,7 +21,7 @@
 @section('metaDescription', $toursMetaDescription)
 @section('ogType', 'website')
 @section('ogImage', asset('img/guide_elena.png'))
-@if (! $hasTourQuery)
+@if (! $hasTourFilters)
     @section('canonicalUrl', $toursCanonicalUrl)
 @else
     @section('robots', 'noindex, follow')

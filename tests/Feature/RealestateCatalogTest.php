@@ -152,7 +152,14 @@ class RealestateCatalogTest extends TestCase
             ->assertSee('/realestate/page/2', false)
             ->assertDontSee('?page=2', false);
 
-        $this->get('/realestate/page/2')->assertOk()->assertSee('Residence 1');
+        $this->get('/realestate/page/2')->assertOk()->assertSee('Residence 1')
+            ->assertHeader('X-Robots-Tag', 'index, follow')
+            ->assertSee('rel="canonical" href="' . url('/realestate/page/2') . '"', false)
+            ->assertDontSee('name="robots" content="noindex, follow"', false);
+
+        $this->get('/realestate/currency/USD/price/100000-300000/page/2')->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, follow')
+            ->assertSee('name="robots" content="noindex, follow"', false);
         $this->get('/realestate/page/3')->assertNotFound();
     }
 

@@ -160,7 +160,6 @@ class RealestateController extends Controller
             && $state['area_min'] === null && $state['area_max'] === null
             && $state['beds'] === null && $state['baths'] === null
             && $state['ref'] === null && $state['sort'] === 'recent'
-            && $state['page'] === 1
             && $state['location_type'] !== 'city';
 
         $cityHighlights = collect();

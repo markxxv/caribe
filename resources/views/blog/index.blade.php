@@ -6,7 +6,7 @@
     @section('metaDescription', 'Статьи Елены Вивас об Аргентине и Латинской Америке: путешествия, история, культура, природа и полезная информация о регионах.')
 @endif
 @section('ogType', 'website')
-@if (! $listingFilters['search'] && $listingFilters['page'] === 1)
+@if (! $listingFilters['search'])
     @section('canonicalUrl', \App\Support\Content\ListingFilters::url($baseUrl, $listingFilters))
 @else
     @section('robots', 'noindex, follow')

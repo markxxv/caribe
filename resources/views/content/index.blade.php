@@ -6,7 +6,7 @@
     @section('metaDescription', $cfg['metaDescription'])
 @endif
 @section('ogType', 'website')
-@if (! $listingFilters['search'] && $listingFilters['page'] === 1)
+@if (! $listingFilters['search'])
     @section('canonicalUrl', \App\Support\Content\ListingFilters::url($indexUrl, $listingFilters))
 @else
     @section('robots', 'noindex, follow')

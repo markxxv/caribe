@@ -115,6 +115,8 @@ class ContentController extends Controller
         $items = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->paginate(12, ['*'], 'page', $listingFilters['page']);
 
+        abort_if(! $listingFilters['search'] && $listingFilters['page'] > $items->lastPage(), 404);
+
         $countries = $cfg['countryRelation']
             ? Country::query()
                 ->whereHas($cfg['countryRelation'], fn ($q) => $q->where('active', true))

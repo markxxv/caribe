@@ -178,11 +178,43 @@ class ListingPathFiltersTest extends TestCase
 
         $this->get('/blog/page/2')
             ->assertOk()
+            ->assertSee('rel="canonical" href="' . url('/blog/page/2') . '"', false)
+            ->assertDontSee('name="robots" content="noindex, follow"', false);
+
+        $this->get('/blog/page/3')->assertNotFound();
+
+        $this->get('/blog/search/' . rawurlencode('Публикация') . '/page/2')
+            ->assertOk()
             ->assertSee('name="robots" content="noindex, follow"', false);
 
         $this->get('/blog?page=2')
             ->assertStatus(301)
             ->assertRedirect('/blog/page/2');
+    }
+
+    public function test_public_pagination_has_its_own_canonical_in_other_sections(): void
+    {
+        $argentina = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
+        foreach (range(1, 13) as $index) {
+            $tour = Tour::create(['title' => 'Тур ' . $index, 'active' => true]);
+            $tour->countries()->attach($argentina);
+            News::create(['title' => 'Новость ' . $index, 'active' => true]);
+            Recipe::create(['title' => 'Рецепт ' . $index, 'active' => true]);
+            PersonalBlog::create([
+                'title' => 'Статья ' . $index,
+                'category_slug' => 'emigratsiya',
+                'category_name' => 'Эмиграция',
+                'active' => true,
+            ]);
+        }
+
+        foreach (['/tours', '/tours/argentina', '/news', '/recipes', '/articles/emigratsiya'] as $path) {
+            $this->get($path . '/page/2')->assertOk()
+                ->assertSee('rel="canonical" href="' . url($path . '/page/2') . '"', false)
+                ->assertDontSee('name="robots" content="noindex, follow"', false);
+
+            $this->get($path . '/page/3')->assertNotFound();
+        }
     }
 
     public function test_recipe_search_uses_clean_path_and_other_sections_remain_accessible(): void

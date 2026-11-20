@@ -50,7 +50,7 @@ class RealestateCityController extends Controller
 
         $coverUrl = $place->publicCoverUrl();
 
-        $indexable = $page === 1 && ($description !== '' || $properties->total() > 0);
+        $indexable = $description !== '' || $properties->total() > 0;
 
         // Show every other city: current region first, then all remaining regions.
         $nearbyCities = City::query()

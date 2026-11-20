@@ -164,7 +164,9 @@ class RealestateCityPageTest extends TestCase
         $this->get($city->publicUrl() . '/page/2')
             ->assertOk()
             ->assertSee('Дом 1')
-            ->assertHeader('X-Robots-Tag', 'noindex, follow');
+            ->assertHeader('X-Robots-Tag', 'index, follow')
+            ->assertSee('rel="canonical" href="' . $city->publicUrl() . '/page/2"', false)
+            ->assertDontSee('name="robots" content="noindex, follow"', false);
 
         $this->get($city->publicUrl() . '/page/3')->assertNotFound();
         $this->get($city->publicUrl() . '/page/1')->assertNotFound();

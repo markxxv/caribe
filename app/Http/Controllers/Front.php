@@ -82,6 +82,8 @@ class Front extends Controller
         $blogs = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->paginate(12, ['*'], 'page', $listingFilters['page']);
 
+        abort_if(! $listingFilters['search'] && $listingFilters['page'] > $blogs->lastPage(), 404);
+
         $countries = Country::query()
             ->whereHas('blogs', fn ($q) => $q->where('active', true))
             ->orderBy('title')->get();
@@ -160,6 +162,8 @@ class Front extends Controller
 
         $tours = $query->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->paginate(12, ['*'], 'page', $listingFilters['page']);
+
+        abort_if(! $listingFilters['search'] && $listingFilters['page'] > $tours->lastPage(), 404);
 
         $countries = Country::query()
             ->whereHas('tours', fn ($q) => $q->where('active', true))
