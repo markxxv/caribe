@@ -10,6 +10,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -59,7 +60,9 @@ class EventTest extends TestCase
 
             $this->assertTrue($event->active);
             $this->assertTrue($event->country->is($country));
-            $this->assertEquals($items, $event->items);
+            $this->assertEquals($items, array_map(fn (array $item, array $expected) => array_intersect_key($item, $expected), $event->items, $items));
+            $itemSlugs = array_column($event->items, 'slug');
+            $this->assertCount(2, array_unique($itemSlugs));
             $this->assertSame(Str::slug('Афиша ноября'), $event->slug);
             $this->assertSame('2026-11-12 10:30', $event->created_at->format('Y-m-d H:i'));
 
@@ -72,7 +75,8 @@ class EventTest extends TestCase
                 ->call('save')
                 ->assertHasNoFormErrors();
 
-            $this->assertEquals(array_reverse($items), $event->refresh()->items);
+            $this->assertEquals(array_reverse($items), array_map(fn (array $item, array $expected) => array_intersect_key($item, $expected), $event->refresh()->items, array_reverse($items)));
+            $this->assertSame(array_reverse($itemSlugs), array_column($event->items, 'slug'));
             $this->assertSame(Str::slug('Афиша ноября'), $event->slug);
             $this->assertSame('2026-11-13 11:45', $event->created_at->format('Y-m-d H:i'));
 
@@ -110,7 +114,7 @@ class EventTest extends TestCase
             'title' => 'Куда сходить в ноябре',
             'items' => [
                 ['date' => '2026-11-28', 'title' => 'Позднее событие', 'announcement' => 'Выставка', 'location' => 'MALBA'],
-                ['date' => '2026-11-21', 'title' => 'Раннее событие', 'announcement' => 'Концерт', 'location' => 'Teatro Colón', 'map_url' => 'https://maps.google.com/?q=Teatro+Colon'],
+                ['date' => '2026-11-21', 'title' => 'Раннее событие', 'announcement' => 'Концерт', 'location' => 'Teatro Colón', 'city' => 'Buenos Aires', 'street_address' => 'Cerrito 628', 'map_url' => 'https://maps.google.com/?q=Teatro+Colon', 'end_date' => '2026-11-22', 'start_time' => '19:00', 'end_time' => '21:00', 'performer' => 'Orchestra', 'performer_type' => 'PerformingGroup', 'price' => 0, 'currency' => 'ARS', 'ticket_url' => 'https://example.com/tickets', 'availability' => 'InStock'],
                 ['date' => '2026-11-22', 'title' => 'Безопасная ссылка', 'location' => 'Буэнос-Айрес', 'map_url' => 'javascript:alert(1)'],
             ],
         ]);
@@ -129,11 +133,32 @@ class EventTest extends TestCase
             ->assertSee('datetime="2026-11-21"', false)
             ->assertSee('ноября')
             ->assertSee('rel="canonical" href="' . $event->url . '"', false)
+            ->assertDontSee('"@type":"Event"', false)
+            ->assertDontSee('javascript:alert(1)', false);
+
+        $item = $event->chronologicalItems()->first();
+        $this->get($event->url)->assertSee($item['detail_url'], false);
+        $this->get($item['detail_url'])
+            ->assertOk()
+            ->assertSee('rel="canonical" href="' . $item['detail_url'] . '"', false)
+            ->assertSee('Раннее событие')
+            ->assertSee('Cerrito 628')
+            ->assertSee('Orchestra')
+            ->assertSee('https://example.com/tickets')
             ->assertSee('"@type":"Event"', false)
             ->assertSee('"addressCountry":"Аргентина"', false)
-            ->assertSee('"startDate":"2026-11-21"', false)
-            ->assertSee('"hasMap":"https://maps.google.com/?q=Teatro+Colon"', false)
-            ->assertDontSee('javascript:alert(1)', false);
+            ->assertSee('"addressLocality":"Buenos Aires"', false)
+            ->assertSee('"streetAddress":"Cerrito 628"', false)
+            ->assertSee('"startDate":"2026-11-21T19:00:00"', false)
+            ->assertSee('"endDate":"2026-11-22T21:00:00"', false)
+            ->assertSee('"eventStatus":"https://schema.org/EventScheduled"', false)
+            ->assertSee('"performer":{"@type":"PerformingGroup","name":"Orchestra"}', false)
+            ->assertSee('"price":0,"priceCurrency":"ARS"', false)
+            ->assertSee('"hasMap":"https://maps.google.com/?q=Teatro+Colon"', false);
+
+        $incomplete = $event->chronologicalItems()->last();
+        $this->get($incomplete['detail_url'])->assertOk()->assertDontSee('"@type":"Event"', false);
+        $this->get($event->url . '/not-a-real-event')->assertNotFound();
 
         $this->get(route('events.show', ['slug' => $event->id]))->assertStatus(301)->assertRedirect($event->url);
         $this->get(route('events.show', ['slug' => $event->id . '-' . $event->slug]))->assertStatus(301)->assertRedirect($event->url);
@@ -143,7 +168,55 @@ class EventTest extends TestCase
         $this->get('/sitemap.xml')->assertOk()
             ->assertSee(route('events.index'))
             ->assertSee($event->url)
+            ->assertSee($item['detail_url'])
             ->assertDontSee($draft->url);
+    }
+
+    public function test_legacy_item_data_is_enriched_without_fabricating_offers(): void
+    {
+        $this->withoutVite();
+        $country = Country::create(['title' => 'Аргентина', 'slug' => 'argentina']);
+        $items = [
+            [
+                'date' => '2026-11-22',
+                'title' => 'Sonorama — международный фестиваль винила',
+                'announcement' => 'С 15:00 до 23:00.',
+                'location' => 'Ciudad Cultural Konex, Sarmiento 3131',
+                'city' => 'Edited city',
+            ],
+            [
+                'date' => '2026-11-22',
+                'title' => 'Ratha Yatra — фестиваль индийской культуры',
+                'announcement' => 'С 12:00 до 20:00. Вход свободный.',
+                'location' => 'Plaza Francia, Recoleta',
+            ],
+        ];
+
+        $id = DB::table('events')->insertGetId([
+            'title' => 'Куда сходить в Буэнос-Айресе в ноябре',
+            'slug' => 'kuda-sxodit-v-buenos-airese-v-noiabre-2026',
+            'active' => true,
+            'items' => json_encode($items, JSON_UNESCAPED_UNICODE),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $migration = require database_path('migrations/2026_11_21_000000_enrich_existing_agenda_items.php');
+        $migration->up();
+
+        $event = Event::findOrFail($id);
+        $this->assertSame($country->id, $event->country_id);
+        $this->assertSame('Edited city', $event->items[0]['city']);
+        $this->assertSame('Sarmiento 3131', $event->items[0]['street_address']);
+        $this->assertSame('2026-11-22', $event->items[0]['end_date']);
+        $this->assertArrayNotHasKey('price', $event->items[0]);
+        $this->assertSame(0, $event->items[1]['price']);
+
+        $page = $this->get($event->chronologicalItems()->first()['detail_url']);
+        $page->assertOk()
+            ->assertSee('"endDate":"2026-11-22T23:00:00"', false)
+            ->assertDontSee('"offers":', false)
+            ->assertDontSee('"performer":', false);
     }
 
     public function test_duplicate_event_titles_generate_unique_slugs(): void

@@ -99,13 +99,19 @@ class SitemapController extends Controller
 
         Event::query()
             ->where('active', true)
-            ->select(['id', 'slug', 'updated_at'])
+            ->select(['id', 'slug', 'items', 'updated_at'])
             ->chunkById(200, function ($events) use ($entries) {
                 foreach ($events as $event) {
                     $entries->push([
                         'url' => $event->url,
                         'lastmod' => $event->updated_at?->toAtomString(),
                     ]);
+                    foreach ($event->chronologicalItems() as $item) {
+                        $entries->push([
+                            'url' => $item['detail_url'],
+                            'lastmod' => $event->updated_at?->toAtomString(),
+                        ]);
+                    }
                 }
             });
 

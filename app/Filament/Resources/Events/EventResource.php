@@ -6,10 +6,12 @@ use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
 use App\Models\Event;
+use App\Support\Events\EventDetails;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -107,6 +109,66 @@ class EventResource extends Resource
                                 ->url()
                                 ->rule('url:http,https')
                                 ->maxLength(2048),
+                            Hidden::make('slug'),
+                            Hidden::make('country'),
+                            Section::make('Подробности мероприятия и SEO')
+                                ->schema([
+                                    TextInput::make('city')
+                                        ->label('Город')
+                                        ->maxLength(255),
+                                    TextInput::make('street_address')
+                                        ->label('Улица и номер дома')
+                                        ->maxLength(255),
+                                    DatePicker::make('end_date')
+                                        ->label('Дата окончания')
+                                        ->native(false)
+                                        ->locale('ru')
+                                        ->displayFormat('j F Y')
+                                        ->format('Y-m-d')
+                                        ->afterOrEqual('date'),
+                                    Select::make('event_status')
+                                        ->label('Статус')
+                                        ->options(EventDetails::STATUSES)
+                                        ->placeholder('Запланировано'),
+                                    TextInput::make('start_time')
+                                        ->label('Начало (местное время)')
+                                        ->placeholder('19:00')
+                                        ->regex('/^(?:[01]\d|2[0-3]):[0-5]\d$/')
+                                        ->maxLength(5),
+                                    TextInput::make('end_time')
+                                        ->label('Окончание (местное время)')
+                                        ->placeholder('21:00')
+                                        ->regex('/^(?:[01]\d|2[0-3]):[0-5]\d$/')
+                                        ->maxLength(5),
+                                    TextInput::make('performer')
+                                        ->label('Имя исполнителя или коллектива')
+                                        ->maxLength(255),
+                                    Select::make('performer_type')
+                                        ->label('Тип исполнителя')
+                                        ->options(['Person' => 'Человек', 'PerformingGroup' => 'Коллектив'])
+                                        ->placeholder('Человек'),
+                                    TextInput::make('price')
+                                        ->label('Цена от (0 — бесплатный вход)')
+                                        ->numeric()
+                                        ->minValue(0),
+                                    TextInput::make('currency')
+                                        ->label('Валюта (ISO)')
+                                        ->placeholder('ARS')
+                                        ->regex('/^[A-Z]{3}$/')
+                                        ->maxLength(3)
+                                        ->requiredWith('price'),
+                                    TextInput::make('ticket_url')
+                                        ->label('Официальная ссылка на билеты')
+                                        ->url()
+                                        ->rule('url:http,https')
+                                        ->maxLength(2048),
+                                    Select::make('availability')
+                                        ->label('Наличие билетов')
+                                        ->options(EventDetails::AVAILABILITIES),
+                                ])
+                                ->columns(2)
+                                ->collapsed()
+                                ->columnSpanFull(),
                         ])
                         ->columns(2)
                         ->defaultItems(1)

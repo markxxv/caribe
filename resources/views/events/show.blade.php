@@ -35,7 +35,7 @@
                                 <span class="mt-1 text-xs font-medium sm:text-sm">{{ $item['month'] }}</span>
                             </time>
                             <div class="min-w-0 py-1 sm:py-2">
-                                <h3 class="mb-2 text-lg font-medium tracking-tight text-[#153b35] sm:text-2xl">{{ $item['title'] }}</h3>
+                                <h3 class="mb-2 text-lg font-medium tracking-tight text-[#153b35] sm:text-2xl"><a href="{{ $item['detail_url'] }}" class="transition hover:text-emerald-800 hover:underline">{{ $item['title'] }}</a></h3>
                                 @if(filled($item['announcement'] ?? null))
                                     <p class="whitespace-pre-line text-sm text-[#48584f] sm:text-base">{{ $item['announcement'] }}</p>
                                 @endif

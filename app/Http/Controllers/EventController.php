@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Support\Events\EventDetails;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -65,27 +66,6 @@ class EventController extends Controller
             ? $items->pluck('title')->implode(', ') . '. Даты и места проведения.'
             : 'Афиша и информация о мероприятиях.'), 180);
 
-        $eventNodes = $items->map(function (array $item, int $index) use ($record, $canonical): array {
-            $place = ['@type' => 'Place', 'name' => $item['location'] ?? ''];
-
-            if ($record->country) {
-                $place['address'] = ['@type' => 'PostalAddress', 'addressCountry' => $record->country->title];
-            }
-
-            if ($item['map_url']) {
-                $place['hasMap'] = $item['map_url'];
-            }
-
-            return [
-                '@type' => 'Event',
-                '@id' => $canonical . '#event-' . ($index + 1),
-                'name' => $item['title'],
-                'startDate' => $item['date'],
-                'description' => $item['announcement'] ?? '',
-                'location' => $place,
-            ];
-        });
-
         $page = [
             '@type' => 'CollectionPage',
             '@id' => $canonical . '#page',
@@ -112,18 +92,43 @@ class EventController extends Controller
                     '@id' => $canonical . '#list',
                     'itemListOrder' => 'https://schema.org/ItemListOrderAscending',
                     'numberOfItems' => $items->count(),
-                    'itemListElement' => $eventNodes->map(fn (array $node, int $index) => [
+                    'itemListElement' => $items->map(fn (array $item, int $index) => [
                         '@type' => 'ListItem',
                         'position' => $index + 1,
-                        'item' => ['@id' => $node['@id']],
+                        'name' => $item['title'],
+                        'url' => $item['detail_url'],
                     ])->all(),
                 ],
                 $this->breadcrumbs($canonical, $record),
-                ...$eventNodes->all(),
             ],
         ];
 
         return view('events.show', compact('record', 'items', 'canonical', 'description', 'schema'));
+    }
+
+    public function detail(string $slug, string $itemSlug): View
+    {
+        $record = Event::query()->where('active', true)->with('country')->where('slug', $slug)->firstOrFail();
+        $item = $record->chronologicalItems()->firstWhere('slug', $itemSlug);
+        abort_unless($item, 404);
+
+        $canonical = $item['detail_url'];
+        $description = Str::limit((string) ($item['announcement'] ?? $item['title']), 180);
+        $details = EventDetails::data($record, $item);
+        $breadcrumb = $this->breadcrumbs($canonical, $record);
+        $breadcrumb['itemListElement'][2]['item'] = $record->url;
+        $breadcrumb['itemListElement'][] = [
+            '@type' => 'ListItem', 'position' => 4, 'name' => $item['title'], 'item' => $canonical,
+        ];
+        $schema = [
+            '@context' => 'https://schema.org',
+            '@graph' => [$breadcrumb],
+        ];
+        if ($node = EventDetails::schema($record, $item)) {
+            $schema['@graph'][] = $node;
+        }
+
+        return view('events.detail', compact('record', 'item', 'canonical', 'description', 'details', 'schema'));
     }
 
     private function breadcrumbs(string $canonical, ?Event $event = null): array

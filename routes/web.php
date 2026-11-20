@@ -56,6 +56,9 @@ Route::get('/recipes/{slug}', [ContentController::class, 'show'])->defaults('typ
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{slug}', [EventController::class, 'show'])
     ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')->name('events.show');
+Route::get('/events/{slug}/{itemSlug}', [EventController::class, 'detail'])
+    ->where(['slug' => '[a-z0-9]+(?:-[a-z0-9]+)*', 'itemSlug' => '[a-z0-9]+(?:-[a-z0-9]+)*'])
+    ->name('events.detail');
 
 Route::get('/realestate', [RealestateController::class, 'index'])->name('realestate.index');
 

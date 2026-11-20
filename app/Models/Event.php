@@ -25,6 +25,52 @@ class Event extends Model
         'active' => true,
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Event $event): void {
+            if ($event->isDirty('items') && is_array($event->items)) {
+                $event->items = self::withItemSlugs($event->items);
+            }
+        });
+    }
+
+    // Keep detail links stable when a collection is reordered or edited.
+    // Legacy SQL inserts without item slugs use the same deterministic fallback.
+    private static function withItemSlugs(array $items): array
+    {
+        $used = [];
+        $reserved = [];
+        foreach ($items as $item) {
+            if (is_array($item) && is_string($item['slug'] ?? null) && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D', $item['slug'])) {
+                $reserved[rtrim(Str::substr($item['slug'], 0, 180), '-')] = true;
+            }
+        }
+        foreach ($items as &$item) {
+            if (! is_array($item) || ! is_string($item['title'] ?? null) || ! is_string($item['date'] ?? null)) {
+                continue;
+            }
+
+            $stored = $item['slug'] ?? null;
+            $hasStored = is_string($stored) && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D', $stored);
+            $base = $hasStored
+                ? rtrim(Str::substr($stored, 0, 180), '-')
+                : (rtrim(Str::substr(Str::slug($item['date'] . ' ' . $item['title']), 0, 160), '-') ?: 'event');
+            $slug = $base;
+            $number = 2;
+            if (isset($used[$slug]) || (! $hasStored && isset($reserved[$slug]))) {
+                $base = rtrim(Str::substr($base, 0, 160), '-');
+                do {
+                    $slug = $base . '-' . $number++;
+                } while (isset($used[$slug]) || isset($reserved[$slug]));
+            }
+            $used[$slug] = true;
+            $item['slug'] = $slug;
+        }
+        unset($item);
+
+        return $items;
+    }
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
@@ -46,9 +92,9 @@ class Event extends Model
 
     public function chronologicalItems(): Collection
     {
-        return collect($this->items ?? [])
+        return collect(self::withItemSlugs($this->items ?? []))
             ->filter(function ($item): bool {
-                if (! is_array($item) || ! is_string($item['date'] ?? null) || ! filled($item['title'] ?? null)) {
+                if (! is_array($item) || ! is_string($item['date'] ?? null) || ! is_string($item['title'] ?? null) || ! filled($item['title'])) {
                     return false;
                 }
 
@@ -63,9 +109,12 @@ class Event extends Model
 
                 return [
                     ...$item,
+                    'location' => is_string($item['location'] ?? null) ? $item['location'] : null,
+                    'announcement' => is_string($item['announcement'] ?? null) ? $item['announcement'] : null,
                     'day' => $date->format('j'),
                     'month' => Str::after($date->isoFormat('D MMMM'), ' '),
                     'year' => $date->format('Y'),
+                    'detail_url' => route('events.detail', ['slug' => $this->slug, 'itemSlug' => $item['slug']]),
                     'map_url' => is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
                         && in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true) ? $url : null,
                 ];
